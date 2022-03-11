@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Visual Studio code
+.vscode/
+
+# Development and testing files
+/scratch/
+/scratch.*
