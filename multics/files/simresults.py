@@ -1,8 +1,11 @@
 from .exceptions import InvalidFileFormat
+from .files import File
 
-class SimResults:
+class SimResults(File):
     def __init__(self, file: str, comment_char: str = '#',
                  autorefresh: bool = False):
+        super().__init__()
+        
         # Declare variables
         self.__filelines: list = None
         self.__title: str = None
