@@ -16,8 +16,8 @@ class Test_Files(unittest.TestCase):
         # Verify that `multics.files.File.clean_contents()` correctly
         # removes line comments
         file = multics.files.File(comment_char='#')
-        file.set_contents(['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
-                           'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9'])
+        file._contents = ['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
+                          'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9']
 
         file._clean_contents(
             remove_comments=True,
@@ -36,8 +36,8 @@ class Test_Files(unittest.TestCase):
         # Verify that `multics.files.File.clean_contents()` correctly
         # strips whitespace from the beginning and end of lines
         file = multics.files.File(comment_char='#')
-        file.set_contents(['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
-                           'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9'])
+        file._contents = ['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
+                          'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9']
 
         file._clean_contents(
             remove_comments=False,
@@ -56,8 +56,8 @@ class Test_Files(unittest.TestCase):
         # Verify that `multics.files.File.clean_contents()` correctly
         # concatenates lines ending with backslashes
         file = multics.files.File(comment_char='#')
-        file.set_contents(['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
-                           'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9'])
+        file._contents = ['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
+                          'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9']
 
         file._clean_contents(
             remove_comments=False,
@@ -76,8 +76,8 @@ class Test_Files(unittest.TestCase):
         # Verify that `multics.files.File.clean_contents()` correctly
         # removes lines containing only whitespace
         file = multics.files.File(comment_char='#')
-        file.set_contents(['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
-                           'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9'])
+        file._contents = ['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
+                          'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9']
 
         file._clean_contents(
             remove_comments=False,

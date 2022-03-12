@@ -52,11 +52,6 @@ class SimResults(File):
             self.refresh()
 
         return [self._simdata[key]['description'] for key in self._simdata]
-
-    def set_contents(self, data: list):
-        super().set_contents(data)
-
-        self.refresh(read_file=False)
     
     def read(self, file: str):
         self.file = file

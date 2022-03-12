@@ -7,11 +7,6 @@ class File:
     def contents(self):
         return self._contents
 
-    def set_contents(self, data: list):
-        if not(isinstance(data, list)):
-            raise TypeError('Input data must be a list')
-        self._contents = data
-
     def read(self, file: str):
         with open(file, 'r', encoding='UTF-8') as fileID:
             self._contents = fileID.readlines()
