@@ -1,18 +1,19 @@
+import warnings
+
 from .exceptions import InvalidFileFormat
 from .files import File
 
 class SimResults(File):
     def __init__(self, file: str, comment_char: str = '#',
                  autorefresh: bool = False):
-        super().__init__()
-        
+        super().__init__(comment_char)
+
         # Declare variables
-        self.__filelines: list = None
-        self.__title: str = None
-        self.__simdata: dict = None
+        self._contents: list = None
+        self._title: str = None
+        self._simdata: dict = None
 
         # Store inputs
-        self.__comment_char = comment_char
         self.autorefresh = autorefresh
         self.file = file
 
@@ -24,14 +25,14 @@ class SimResults(File):
         if self.autorefresh:
             self.refresh()
 
-        return self.__title
+        return self._title
 
     @property
     def simdata(self):
         if self.autorefresh:
             self.refresh()
 
-        return self.__simdata
+        return self._simdata
 
     @property
     def printvars(self):
@@ -42,22 +43,19 @@ class SimResults(File):
         if self.autorefresh:
             self.refresh()
 
-        return [self.__simdata[key]['units'] for key in self.__simdata]
+        return [self._simdata[key]['units'] for key in self._simdata]
 
     @property
     def descriptions(self):
         if self.autorefresh:
             self.refresh()
 
-        return [self.__simdata[key]['description'] for key in self.__simdata]
+        return [self._simdata[key]['description'] for key in self._simdata]
 
-    def __remove_blank_filelines(self):
-        self.__filelines = [line for line in self.__filelines if len(line) > 0]
+    def set_contents(self, data: list):
+        super().set_contents(data)
 
-    def __remove_comment_filelines(self, comment_char: str = '#'):
-        self.__filelines = [line.split(comment_char, maxsplit=1)[0] \
-                            for line in self.__filelines]
-        self.__remove_blank_filelines()
+        self.refresh(read_file=False)
 
     def __get_max_list_str_len(self, input_list: list):
         max_len = 0
@@ -69,14 +67,14 @@ class SimResults(File):
         return max_len
 
     def __print_var(self, key: str, indent: int = 0):
-        if key not in self.__simdata.keys():
+        if key not in self._simdata:
             raise KeyError(f'Unknown print variable "{key}"')
 
         _len_var = self.__get_max_list_str_len(self.printvars)
         _len_units = self.__get_max_list_str_len(self.units)
 
-        _print_unit = f"[{self.__simdata[key]['units']}]"
-        _print_desc = self.__simdata[key]['description']
+        _print_unit = f"[{self._simdata[key]['units']}]"
+        _print_desc = self._simdata[key]['description']
 
         print(' ' * indent, end='')
         print(f"""{key:{_len_var+4}s} {_print_unit:{_len_units+4}s} {_print_desc}""")
@@ -86,48 +84,48 @@ class SimResults(File):
         return matches
 
     def refresh(self, read_file: bool = True, remove_newlines: bool = True):
+        # Read raw file contents
         if read_file:
-            # Read raw file contents
-            with open(self.file, 'r') as fileID:
-                self.__filelines = fileID.readlines()
-
-            # Optionally remove newlines
-            if remove_newlines:
-                self.__filelines = [line.strip() for line in self.__filelines]
-
-        # Remove blank lines
-        self.__remove_blank_filelines()
+            self.readlines(self.file)
 
         # Extract title
-        _possible_titles = [line for line in self.__filelines \
-                            if line.startswith((self.__comment_char + 'Title:',
-                                                self.__comment_char + ' Title:'))]
+        _possible_titles = [line for line in self._contents \
+                            if line.startswith((self._comment_char + 'Title:',
+                                                self._comment_char + ' Title:'))]
 
-        self.__title = _possible_titles[0].split('Title:', maxsplit=1)[1].strip()
+        if len(_possible_titles) > 1:
+            warnings.warn('Multiple simulation result titles found. Using first title')
 
-        # Remove all comment lines
-        self.__remove_comment_filelines(self.__comment_char)
+        self._title = _possible_titles[0].split('Title:', maxsplit=1)[1].strip()
+
+        # Pre-process input file
+        self.clean_contents(
+            remove_comments=True,
+            strip=True,
+            concat_lines=True,
+            remove_blank_lines=remove_newlines
+        )
 
         # Extract simulation results
-        for i, line in enumerate(self.__filelines):
+        for i, line in enumerate(self._contents):
             if line.startswith('$'):
                 _sim_vars = line.split('$')[1:]
                 n = i + 1
 
-        _sim_data = list(zip(*[[float(x) for x in line.split()] for line in self.__filelines[n:]]))
+        _sim_data = list(zip(*[[float(x) for x in line.split()] for line in self._contents[n:]]))
 
         if (len(_sim_vars) != len(_sim_data)):
             raise InvalidFileFormat(('Number of print variables and '
                                      'data columns are different'))
 
-        self.__simdata = {}
+        self._simdata = {}
         for i, var in enumerate(_sim_vars):
             _var = var.split(':')
 
             if (len(_var) != 3):
                 raise InvalidFileFormat('Print variable format is incorrect')
 
-            self.__simdata[_var[0]] = {
+            self._simdata[_var[0]] = {
                 'units': _var[1],
                 'description': _var[2],
                 'data': _sim_data[i],
@@ -137,7 +135,10 @@ class SimResults(File):
         if (refresh or self.autorefresh):
             self.refresh()
 
-        return self.__simdata[var]
+        return self._simdata[var]
+
+    def get_data(self, var: str, refresh: bool = False):
+        return self.get(var, refresh)['data']
 
     def get_printvar(self, description: str):
         matches = [key for key in self.printvars \
