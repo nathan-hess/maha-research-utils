@@ -12,11 +12,11 @@ class File:
             raise TypeError('Input data must be a list')
         self._contents = data
 
-    def readlines(self, file: str):
+    def read(self, file: str):
         with open(file, 'r', encoding='UTF-8') as fileID:
             self._contents = fileID.readlines()
 
-    def clean_contents(self, remove_comments: bool = True, strip: bool = True,
+    def _clean_contents(self, remove_comments: bool = True, strip: bool = True,
                        concat_lines: bool = True,
                        remove_blank_lines: bool = True):
         # Store original file contents

@@ -57,6 +57,10 @@ class SimResults(File):
         super().set_contents(data)
 
         self.refresh(read_file=False)
+    
+    def read(self, file: str):
+        self.file = file
+        self.refresh(read_file=True)
 
     def __print_var(self, key: str, indent: int = 0):
         if key not in self._simdata:
@@ -74,7 +78,7 @@ class SimResults(File):
     def refresh(self, read_file: bool = True, remove_newlines: bool = True):
         # Read raw file contents
         if read_file:
-            self.readlines(self.file)
+            super().read(self.file)
 
         # Extract title
         _possible_titles = [line for line in self._contents \
@@ -87,7 +91,7 @@ class SimResults(File):
         self._title = _possible_titles[0].split('Title:', maxsplit=1)[1].strip()
 
         # Pre-process input file
-        self.clean_contents(
+        self._clean_contents(
             remove_comments=True,
             strip=True,
             concat_lines=True,

@@ -19,7 +19,7 @@ class Test_Files(unittest.TestCase):
         file.set_contents(['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
                            'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9'])
 
-        file.clean_contents(
+        file._clean_contents(
             remove_comments=True,
             strip=False,
             concat_lines=False,
@@ -39,7 +39,7 @@ class Test_Files(unittest.TestCase):
         file.set_contents(['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
                            'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9'])
 
-        file.clean_contents(
+        file._clean_contents(
             remove_comments=False,
             strip=True,
             concat_lines=False,
@@ -59,7 +59,7 @@ class Test_Files(unittest.TestCase):
         file.set_contents(['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
                            'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9'])
 
-        file.clean_contents(
+        file._clean_contents(
             remove_comments=False,
             strip=False,
             concat_lines=True,
@@ -79,7 +79,7 @@ class Test_Files(unittest.TestCase):
         file.set_contents(['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
                            'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9'])
 
-        file.clean_contents(
+        file._clean_contents(
             remove_comments=False,
             strip=False,
             concat_lines=False,
