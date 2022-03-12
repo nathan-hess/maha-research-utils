@@ -2,6 +2,7 @@ import warnings
 
 from .exceptions import InvalidFileFormat
 from .files import File
+from multics.utils.vartools import list_search, max_list_item_len
 
 class SimResults(File):
     def __init__(self, file: str, comment_char: str = '#',
@@ -57,31 +58,18 @@ class SimResults(File):
 
         self.refresh(read_file=False)
 
-    def __get_max_list_str_len(self, input_list: list):
-        max_len = 0
-
-        for item in input_list:
-            if (len(item) > max_len):
-                max_len = len(item)
-
-        return max_len
-
     def __print_var(self, key: str, indent: int = 0):
         if key not in self._simdata:
             raise KeyError(f'Unknown print variable "{key}"')
 
-        _len_var = self.__get_max_list_str_len(self.printvars)
-        _len_units = self.__get_max_list_str_len(self.units)
+        _len_var = max_list_item_len(self.printvars)
+        _len_units = max_list_item_len(self.units)
 
         _print_unit = f"[{self._simdata[key]['units']}]"
         _print_desc = self._simdata[key]['description']
 
         print(' ' * indent, end='')
         print(f"""{key:{_len_var+4}s} {_print_unit:{_len_units+4}s} {_print_desc}""")
-
-    def __list_search_case_insensitive(self, name: str, search_list: list):
-        matches = [item for item in search_list if name.lower() in item.lower()]
-        return matches
 
     def refresh(self, read_file: bool = True, remove_newlines: bool = True):
         # Read raw file contents
@@ -150,7 +138,7 @@ class SimResults(File):
 
         return matches[0]
 
-    def search(self, name: str):
+    def search(self, name: str, case_sensitive: bool = False):
         # Get lists of variable names and descriptions
         _printvars = self.printvars
         _descriptions = self.descriptions
@@ -170,14 +158,14 @@ class SimResults(File):
             print(f'Unable to find "{name}"')
 
             # Display similar print variables
-            _matches = self.__list_search_case_insensitive(name, _printvars)
+            _matches = list_search(name, _printvars, case_sensitive)
             if (len(_matches) > 0):
                 print(f'\nThe following print variables contain "{name}":')
                 for var in _matches:
                     self.__print_var(var, indent=4)
 
             # Display similar print variable descriptions
-            _matches = self.__list_search_case_insensitive(name, _descriptions)
+            _matches = list_search(name, _descriptions, case_sensitive)
             if (len(_matches) > 0):
                 print(f'\nThe following descriptions contain "{name}":')
                 for desc in _matches:
