@@ -138,35 +138,72 @@ class SimResults(File):
 
         return matches[0]
 
-    def search(self, name: str, case_sensitive: bool = False):
+    def search(self, name: str, case_sensitive: bool = False, 
+               print_results: bool = True, return_results: bool = False):
         # Get lists of variable names and descriptions
         _printvars = self.printvars
         _descriptions = self.descriptions
 
         # Check list of print variables
         if (name in _printvars):
-            print(f'Found print variable "{name}":')
-            self.__print_var(name, indent=4)
+            if print_results:
+                print(f'Found print variable "{name}":')
+                self.__print_var(name, indent=4)
+
+            if return_results:
+                return {
+                    'match_found': True,
+                    'match_type': 'printvar',
+                    'matches_printvar': [name],
+                }
 
         # Check list of print variable descriptions
         elif (name in _descriptions):
-            print(f'Found description "{name}":')
-            self.__print_var(self.get_printvar(name), indent=4)
+            if print_results:
+                print(f'Found description "{name}":')
+                self.__print_var(self.get_printvar(name), indent=4)
+
+            if return_results:
+                return {
+                    'match_found': True,
+                    'match_type': 'description',
+                    'matches_description': [self.get_printvar(name)],
+                }
 
         # Print variables and descriptions that contain `name`
         else:
-            print(f'Unable to find "{name}"')
+            if print_results:
+                print(f'Unable to find "{name}"')
+            
+            if return_results:
+                output_dict = {'match_found': False}
 
             # Display similar print variables
             _matches = list_search(name, _printvars, case_sensitive)
             if (len(_matches) > 0):
-                print(f'\nThe following print variables contain "{name}":')
-                for var in _matches:
-                    self.__print_var(var, indent=4)
+                if print_results:
+                    print(f'\nThe following print variables contain "{name}":')
+                    for var in _matches:
+                        self.__print_var(var, indent=4)
+                
+                if return_results:
+                    output_dict['matches_printvar'] \
+                        = [name for name in _matches]
 
             # Display similar print variable descriptions
             _matches = list_search(name, _descriptions, case_sensitive)
             if (len(_matches) > 0):
-                print(f'\nThe following descriptions contain "{name}":')
-                for desc in _matches:
-                    self.__print_var(self.get_printvar(desc), indent=4)
+                if print_results:
+                    print(f'\nThe following descriptions contain "{name}":')
+                    for desc in _matches:
+                        self.__print_var(self.get_printvar(desc), indent=4)
+
+                if return_results:
+                    output_dict['matches_description'] \
+                        = [self.get_printvar(desc) for desc in _matches]
+
+            if return_results:
+                return output_dict
+
+    def search_noninteractive(self, name: str, case_sensitive: bool = False):
+        return self.search(name, case_sensitive, False, True)
