@@ -1,3 +1,5 @@
+import os
+
 class File:
     def __init__(self, comment_char) -> None:
         self._contents: list = None
@@ -7,9 +9,20 @@ class File:
     def contents(self):
         return self._contents
 
-    def read(self, file: str):
-        with open(file, 'r', encoding='UTF-8') as fileID:
+    def read(self, input_file: str):
+        with open(input_file, 'r', encoding='UTF-8') as fileID:
             self._contents = fileID.readlines()
+    
+    def write(self, output_file: str, write_mode: str = 'w',
+              prologue: str = None, epilogue: str = '\n',
+              overwrite: bool = False):
+        if os.path.isfile(output_file):
+            if not overwrite:       # FIXME: add logger
+                raise FileExistsError(f'Output file "{output_file}" '
+                                      f'already exists')
+        
+        with open(output_file, write_mode, encoding='UTF-8') as fileID:
+            fileID.write(prologue + '\n'.join(self._contents) + epilogue)
 
     def _clean_contents(self, remove_comments: bool = True, strip: bool = True,
                        concat_lines: bool = True,

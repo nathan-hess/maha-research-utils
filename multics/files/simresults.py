@@ -56,6 +56,9 @@ class SimResults(File):
     def read(self, file: str):
         self.file = file
         self.refresh(read_file=True)
+    
+    def write(self, output_file: str):
+        super().write(output_file, prologue=f'# Title: {self._title}\n')
 
     def __print_var(self, key: str, indent: int = 0):
         if key not in self._simdata:
