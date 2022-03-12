@@ -1,8 +1,8 @@
 import warnings
 
+from multics.utils.vartools import list_search, max_list_item_len
 from .exceptions import InvalidFileFormat
 from .files import File
-from multics.utils.vartools import list_search, max_list_item_len
 
 class SimResults(File):
     def __init__(self, file: str, comment_char: str = '#',
@@ -138,7 +138,7 @@ class SimResults(File):
 
         return matches[0]
 
-    def search(self, name: str, case_sensitive: bool = False, 
+    def search(self, name: str, case_sensitive: bool = False,
                print_results: bool = True, return_results: bool = False):
         # Get lists of variable names and descriptions
         _printvars = self.printvars
@@ -174,7 +174,7 @@ class SimResults(File):
         else:
             if print_results:
                 print(f'Unable to find "{name}"')
-            
+
             if return_results:
                 output_dict = {'match_found': False}
 
@@ -185,10 +185,9 @@ class SimResults(File):
                     print(f'\nThe following print variables contain "{name}":')
                     for var in _matches:
                         self.__print_var(var, indent=4)
-                
+
                 if return_results:
-                    output_dict['matches_printvar'] \
-                        = [name for name in _matches]
+                    output_dict['matches_printvar'] = list(_matches)
 
             # Display similar print variable descriptions
             _matches = list_search(name, _descriptions, case_sensitive)
@@ -205,5 +204,5 @@ class SimResults(File):
             if return_results:
                 return output_dict
 
-    def search_noninteractive(self, name: str, case_sensitive: bool = False):
+    def search_noninteractive(self, name: str, case_sensitive: bool = False) -> dict:
         return self.search(name, case_sensitive, False, True)
