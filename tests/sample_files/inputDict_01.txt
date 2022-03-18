@@ -1,0 +1,251 @@
+# This is the input dictionary which the code uses to find input variables.
+# Throughout this dictionary, anything that occurs on a line after
+# a "#" character is ignored.
+
+# This is the file dictionary which the code uses to find input files.
+fileDict{
+    #--------------------------------------------------#
+
+    #Location to print the output results to
+    resultsFile	./simulation_results.txt
+
+    #Location to write output availability table (if this entry
+    # doesn't exist, no file will be written)
+    outputListFile  ../outputlist.html
+    #--------------------------------------------------#
+}
+
+########################################################
+#-----------------Variable Definitions-----------------#
+########################################################
+
+# COMMON BODY PROPERTIES
+# Mass and inertia
+BodyMass                kg          1
+BodyIxx                 kg*m^2      1
+BodyIyy                 kg*m^2      $BodyIxx
+BodyIzz                 kg*m^2      $BodyIxx
+BodyIxy                 kg*m^2      $2*BodyIxx
+BodyIxz                 kg*m^2      $2*BodyIxx
+BodyIyz                 kg*m^2      $4.29*BodyIxx
+
+# Degrees of freedom
+BodyLinXDOF             -           1
+BodyLinYDOF             -           1
+BodyLinZDOF             -           0
+BodyAngXDOF             -           0
+BodyAngYDOF             -           0
+BodyAngZDOF             -           0
+
+# BODY 1
+# Initial position and velocity
+Body1_x0                m           0
+Body1_y0                m           3.3
+Body1_z0                m           0
+
+Body1_u0                m/s         0
+Body1_v0                m/s         0
+Body1_w0                m/s         40
+
+Body1Roll0              deg         4
+Body1Pitch0             deg         93.2
+Body1Yaw0               deg         0
+
+Body1p0                 rad/s       0
+Body1q0                 rad/s       0.1
+Body1r0                 rad/s       0
+
+# Motion
+Body1MotionX            m/s         @0.25
+
+# BODY 2
+# Initial position and velocity
+Body2_x0                m           1
+Body2_y0                m           0
+Body2_z0                m           0
+
+Body2_u0                m/s         0.4
+Body2_v0                m/s         0.291
+Body2_w0                m/s         2010.3
+
+Body2Roll0              deg         0
+Body2Pitch0             deg         0
+Body2Yaw0               deg         0.7
+
+Body2p0                 rad/s       0.3
+Body2q0                 rad/s       0
+Body2r0                 rad/s       0
+
+# Motion
+Body2MotionX            m/s         @0.5
+
+# SPRING
+SpringConstant          N/m         10.0
+SpringDampingConstant   kg/s        0.0
+
+# SIMULATION DURATION
+TStartPrinting          s           0.0
+TEndPrinting            s           10.0
+PrintInterval           s           0.01
+printScreenInterval     -           1
+
+# INTEGRATOR
+# Maximum steps for LSODA
+IntegratorMaxSteps	    -           1e8
+
+# Absolute convergence tolerance
+IntegratorAbsTol	-           1e-8
+
+# Relative convergence tolerance
+IntegratorRelTol        -           1e-8
+
+# Decimal precision to print for each value in output files
+writePrec               -           9
+
+# SIMULATION CONTROL
+# Whether to wait until the user presses "Enter" before exiting (if set to 1,
+# this can still be overridden by running Multics with the "-nw" option)
+PAUSE_ON_SIM_END        -   	    0
+
+#<- END OF VARIABLE DEFINITION
+
+#------------------------------------------------------#
+#------------------------------------------------------#
+#------------------------------------------------------#
+
+# Specify the fundamental units that make up the provided unit, then specify all units
+# using the same components.
+#
+#	No.	Property			SI unit
+#	1	Mass				kilogram (kg)
+#	2	Length				metre (m)
+#	3	Time				second (s)
+#	4	Temperature			Kelvin (K)
+#	5	Quantity			mole (mol)
+#	6	Current				ampere (A)
+#	7	Luminous intensity	candela (cd)
+#
+# Where the value specified is the unit's exponent
+#   Example: N = kg^1*m^1*s^-2*K^0*mol^0*A^0*cd^0 = [1 1 -2 0 0 0 0]
+# Fundamental unit definitions can only be seperated by spaces/tabs
+
+# After specifing the type of unit, specify the units used above and their multiplier and adder to get to MKS:
+#    unit   m   b
+# Converted_Unit = (m * Base_Unit) + b
+#
+# Example: for pressure from bar (gauge) to Pa (absolute): 
+#   bar 	1e5    1.013e5 
+# This means that Pa_abs = (1e5 * bar_gauge) + 1.013e5
+unitDict{
+
+    # Null (unitless)
+    #1 2 3 4 5 6 7 
+    [0 0 0 0 0 0 0]
+    null	1	0
+    -	1	0
+    %	0.01	0
+    1	1	0
+
+    # Length
+    #1 2 3 4 5 6 7 
+    [0 1 0 0 0 0 0]
+    m	1	0
+    cm	 1e-2	0
+    mm	1e-3 0
+    micron	1e-6	0
+    in	0.0254	0
+    ft	0.3048	0
+    
+    # Surface Roughness
+    #1 2 3 4 5 6 7 
+    [0 1 0 0 0 0 0]
+    Ra_micron 1.1e-6	0
+    Rq_micron 1	0e-6
+    Ra_muin 0.0275e-6	0
+    Rq_muin 0.025e-6	0
+
+    # Volume
+    #1 2 3 4 5 6 7 
+    [0 3 0 0 0 0 0]
+    L	1e-3	0
+
+    # Mass
+    #1 2 3 4 5 6 7 
+    [1 0 0 0 0 0 0]
+    kg	1	0
+    g	0.001	0
+    lbm 0.45359237 0
+
+    # Force
+    #1 2  3 4 5 6 7 
+    [1 1 -2 0 0 0 0]
+    N	1	0
+    kN	1e3	0
+    lbf 4.448 0
+
+    # Pressure
+    #1  2  3 4 5 6 7 
+    [1 -1 -2 0 0 0 0]
+    Pa_a   1	0
+    Pa	1	1.013e5
+    MPa_a	1e6 0
+    GPa_a	1e9 0
+    bar_a	1e5	0
+    bar	1e5	1.013e5
+    psi_a 6895 0
+    psi 6895 1.013e5
+
+    # Temperature
+    #1 2 3 4 5 6 7 
+    [0 0 0 1 0 0 0]
+    K	1	0
+    degC	1	273.15
+    degC_diff	1	0
+    degR	.5555556	0
+    degF	.5555556	255.372
+    degF_diff	.5555556	0
+
+    # Dynamic Viscocity
+    #1  2  3 4 5 6 7 
+    [1 -1 -1 0 0 0 0]
+    cP	0.001	0
+
+    # Kinematic Viscocity
+    #1 2  3 4 5 6 7 
+    [0 2 -1 0 0 0 0]
+    cSt	1e-6	0
+
+    # Energy
+    #1 2  3 4 5 6 7 
+    [1 2 -2 0 0 0 0]
+    J	1	0
+    kJ	1e3	0
+
+    # Power
+    #1 2  3 4 5 6 7 
+    [1 2 -3 0 0 0 0]
+    W	1	0
+    kW	1e3	0
+
+    # Angle
+    #1 2 3 4 5 6 7 
+    [0 0 0 0 0 0 0]
+    rad	1	0
+    deg 0.0174532925199432957692369 0
+    rev 6.283185307179586476925286766559 0
+
+    # Time
+    #1 2 3 4 5 6 7 
+    [0 0 1 0 0 0 0]
+    ms	0.001	0
+    s	1	0
+    min 60 0
+    hr 3600 0
+
+    # Frequency
+    #1 2  3 4 5 6 7 
+    [0 0 -1 0 0 0 0]
+    Hz	1	0
+    kHz	1000	0
+
+}
