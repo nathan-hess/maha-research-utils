@@ -5,8 +5,7 @@ from .exceptions import InvalidFileFormat
 from .files import File
 
 class SimResults(File):
-    def __init__(self, file: str, comment_char: str = '#',
-                 autorefresh: bool = False):
+    def __init__(self, file: str, comment_char: str = '#'):
         super().__init__(comment_char)
 
         # Declare variables
@@ -15,7 +14,6 @@ class SimResults(File):
         self._simdata: dict = None
 
         # Store inputs
-        self.autorefresh = autorefresh
         self.file = file
 
         # Read data file
@@ -23,16 +21,10 @@ class SimResults(File):
 
     @property
     def title(self):
-        if self.autorefresh:
-            self.refresh()
-
         return self._title
 
     @property
     def simdata(self):
-        if self.autorefresh:
-            self.refresh()
-
         return self._simdata
 
     @property
@@ -41,16 +33,10 @@ class SimResults(File):
 
     @property
     def units(self):
-        if self.autorefresh:
-            self.refresh()
-
         return [self._simdata[key]['units'] for key in self._simdata]
 
     @property
     def descriptions(self):
-        if self.autorefresh:
-            self.refresh()
-
         return [self._simdata[key]['description'] for key in self._simdata]
     
     def read(self, file: str):
@@ -122,7 +108,7 @@ class SimResults(File):
             }
 
     def get(self, var: str, refresh: bool = False):
-        if (refresh or self.autorefresh):
+        if refresh:
             self.refresh()
 
         return self._simdata[var]
