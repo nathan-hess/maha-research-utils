@@ -1,9 +1,8 @@
 ##############################################################################
 # --- IMPORT DEPENDENCIES -------------------------------------------------- #
 ##############################################################################
-# Standard library imports
+# Third-party imports
 import numpy as np
-
 import scipy.interpolate
 
 # Custom package and module imports
@@ -181,14 +180,18 @@ class FluidPropertyFile(Table):
 
         # Perform interpolation
         if (interpolator == 'griddata'):
-            if not 'method' in kwargs:
-                raise KeyError('If "griddata" is chosen as the interpolation '
-                               'function, a keyword argument "method" must '
-                               'be provided')
-            
             return list(scipy.interpolate.griddata(
                 np.stack((self._table[0], self._table[1]), axis=1),
                 _prop_data,
                 np.stack((_vals_p, _vals_T), axis=1),
-                method=kwargs['method']
+                **kwargs
             ))
+        elif (interpolator == 'RBFInterpolator'):
+            return list(scipy.interpolate.RBFInterpolator(
+                np.stack((self._table[0], self._table[1]), axis=1),
+                _prop_data,
+                **kwargs)(np.stack((_vals_p, _vals_T), axis=1))
+            )
+        else:
+            raise NotImplementedError(f'Interpolation function '
+                                      f'"{interpolator}" is not supported')
