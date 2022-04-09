@@ -18,7 +18,7 @@ class Test_SimResults(unittest.TestCase):
         # file and identifies the print variables
         data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
-        self.assertEqual(
+        self.assertListEqual(
             list(data.printvars),
             ['t', 'xBody', 'yBody', 'zBody', 'FxSpring', 'FySpring', 'FzSpring']
         )
@@ -38,7 +38,7 @@ class Test_SimResults(unittest.TestCase):
         # file and identifies the units
         data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
-        self.assertEqual(
+        self.assertListEqual(
             data.units,
             ['s', 'm', 'm', 'm', 'N', 'N', 'N']
         )
@@ -48,7 +48,7 @@ class Test_SimResults(unittest.TestCase):
         # file and identifies the descriptions
         data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
-        self.assertEqual(
+        self.assertListEqual(
             data.descriptions,
             ['Sim Time', 'Body casing frame position in x', 'Body casing frame position in y',
              'Body casing frame position in z', 'Spring Force x', 'Spring Force y', 'Spring Force z']
@@ -59,7 +59,7 @@ class Test_SimResults(unittest.TestCase):
         # file and extracts simulation result data
         data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
-        self.assertEqual(
+        self.assertDictEqual(
             data.get('t'),
             {
                 'units': 's',
@@ -73,7 +73,7 @@ class Test_SimResults(unittest.TestCase):
         # file and extracts simulation result data
         data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
-        self.assertEqual(
+        self.assertDictEqual(
             data.get('yBody'),
             {
                 'units': 'm',
@@ -87,7 +87,7 @@ class Test_SimResults(unittest.TestCase):
         # file and extracts simulation result data
         data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
-        self.assertEqual(
+        self.assertDictEqual(
             data.get('FxSpring'),
             {
                 'units': 'N',
@@ -101,7 +101,7 @@ class Test_SimResults(unittest.TestCase):
         # file and searches for a term
         data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
-        self.assertEqual(
+        self.assertDictEqual(
             data.search_noninteractive('t'),
             {
                 'match_found': True,
@@ -115,7 +115,7 @@ class Test_SimResults(unittest.TestCase):
         # file and searches for a term
         data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
-        self.assertEqual(
+        self.assertDictEqual(
             data.search_noninteractive('Spring Force x'),
             {
                 'match_found': True,
@@ -129,7 +129,7 @@ class Test_SimResults(unittest.TestCase):
         # file and searches for a term
         data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
-        self.assertEqual(
+        self.assertDictEqual(
             data.search_noninteractive('Position'),
             {
                 'match_found': False,
