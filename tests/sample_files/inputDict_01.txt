@@ -205,12 +205,12 @@ unitDict{
     degF	.5555556	255.372
     degF_diff	.5555556	0
 
-    # Dynamic Viscocity
+    # Dynamic Viscosity
     #1  2  3 4 5 6 7 
     [1 -1 -1 0 0 0 0]
     cP	0.001	0
 
-    # Kinematic Viscocity
+    # Kinematic Viscosity
     #1 2  3 4 5 6 7 
     [0 2 -1 0 0 0 0]
     cSt	1e-6	0
