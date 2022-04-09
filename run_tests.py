@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 # Import Python test module and test classes
 import unittest
 from tests import *

@@ -63,3 +63,7 @@ class File:
             if (len(line.strip()) > 0):
                 self._contents.append(line)
             i += 1
+
+class Table(File):
+    def __init__(self, comment_char) -> None:
+        super().__init__(comment_char)

@@ -1,3 +1,6 @@
+import numpy as np
+
+
 ##############################################################################
 # --- LIST UTILITIES ------------------------------------------------------- #
 ##############################################################################
@@ -53,3 +56,15 @@ def check_numeric_list_equal(list1: list, list2: list, tol: float = 1e-16,
                 return False
 
     return True
+
+def to_np_1D_array(item):
+    item = np.array(item).flatten()
+
+    if item.ndim == 0:
+        item = np.array(item, 1)
+
+    if item.ndim != 1:
+        raise ValueError(f'Input must be at most 1D, but given '
+                         f'data are {item.ndim}D')
+
+    return item
