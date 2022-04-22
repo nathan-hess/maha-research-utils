@@ -5,7 +5,7 @@
 import unittest
 
 # Custom package and module imports
-import multics
+import mahautils
 from tests import SAMPLE_FILES_DIR
 
 
@@ -14,9 +14,9 @@ from tests import SAMPLE_FILES_DIR
 ##############################################################################
 class Test_SimResults(unittest.TestCase):
     def test_printvars(self):
-        # Checks that `multics.files.SimResults()` correctly reads a sample
+        # Checks that `mahautils.files.SimResults()` correctly reads a sample
         # file and identifies the print variables
-        data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
+        data = mahautils.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
         self.assertListEqual(
             list(data.printvars),
@@ -24,9 +24,9 @@ class Test_SimResults(unittest.TestCase):
         )
 
     def test_title(self):
-        # Checks that `multics.files.SimResults()` correctly reads a sample
+        # Checks that `mahautils.files.SimResults()` correctly reads a sample
         # file and identifies the title
-        data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
+        data = mahautils.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
         self.assertEqual(
             data.title,
@@ -34,9 +34,9 @@ class Test_SimResults(unittest.TestCase):
         )
 
     def test_units(self):
-        # Checks that `multics.files.SimResults()` correctly reads a sample
+        # Checks that `mahautils.files.SimResults()` correctly reads a sample
         # file and identifies the units
-        data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
+        data = mahautils.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
         self.assertListEqual(
             data.units,
@@ -44,9 +44,9 @@ class Test_SimResults(unittest.TestCase):
         )
 
     def test_descriptions(self):
-        # Checks that `multics.files.SimResults()` correctly reads a sample
+        # Checks that `mahautils.files.SimResults()` correctly reads a sample
         # file and identifies the descriptions
-        data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
+        data = mahautils.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
         self.assertListEqual(
             data.descriptions,
@@ -55,9 +55,9 @@ class Test_SimResults(unittest.TestCase):
         )
 
     def test_get_01(self):
-        # Checks that `multics.files.SimResults()` correctly reads a sample
+        # Checks that `mahautils.files.SimResults()` correctly reads a sample
         # file and extracts simulation result data
-        data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
+        data = mahautils.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
         self.assertDictEqual(
             data.get('t'),
@@ -69,9 +69,9 @@ class Test_SimResults(unittest.TestCase):
         )
 
     def test_get_02(self):
-        # Checks that `multics.files.SimResults()` correctly reads a sample
+        # Checks that `mahautils.files.SimResults()` correctly reads a sample
         # file and extracts simulation result data
-        data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
+        data = mahautils.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
         self.assertDictEqual(
             data.get('yBody'),
@@ -83,9 +83,9 @@ class Test_SimResults(unittest.TestCase):
         )
 
     def test_get_03(self):
-        # Checks that `multics.files.SimResults()` correctly reads a sample
+        # Checks that `mahautils.files.SimResults()` correctly reads a sample
         # file and extracts simulation result data
-        data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
+        data = mahautils.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
         self.assertDictEqual(
             data.get('FxSpring'),
@@ -97,9 +97,9 @@ class Test_SimResults(unittest.TestCase):
         )
 
     def test_search_noninteractive_01(self):
-        # Checks that `multics.files.SimResults()` correctly reads a sample
+        # Checks that `mahautils.files.SimResults()` correctly reads a sample
         # file and searches for a term
-        data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
+        data = mahautils.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
         self.assertDictEqual(
             data.search_noninteractive('t'),
@@ -111,9 +111,9 @@ class Test_SimResults(unittest.TestCase):
         )
 
     def test_search_noninteractive_02(self):
-        # Checks that `multics.files.SimResults()` correctly reads a sample
+        # Checks that `mahautils.files.SimResults()` correctly reads a sample
         # file and searches for a term
-        data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
+        data = mahautils.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
         self.assertDictEqual(
             data.search_noninteractive('Spring Force x'),
@@ -125,9 +125,9 @@ class Test_SimResults(unittest.TestCase):
         )
 
     def test_search_noninteractive_03(self):
-        # Checks that `multics.files.SimResults()` correctly reads a sample
+        # Checks that `mahautils.files.SimResults()` correctly reads a sample
         # file and searches for a term
-        data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
+        data = mahautils.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
         self.assertDictEqual(
             data.search_noninteractive('Position'),
@@ -138,9 +138,9 @@ class Test_SimResults(unittest.TestCase):
         )
 
     def test_search_noninteractive_04(self):
-        # Checks that `multics.files.SimResults()` correctly reads a sample
+        # Checks that `mahautils.files.SimResults()` correctly reads a sample
         # file and searches for a term
-        data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
+        data = mahautils.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
         self.assertEqual(
             data.search_noninteractive('in'),
@@ -152,9 +152,9 @@ class Test_SimResults(unittest.TestCase):
         )
 
     def test_search_noninteractive_05(self):
-        # Checks that `multics.files.SimResults()` correctly reads a sample
+        # Checks that `mahautils.files.SimResults()` correctly reads a sample
         # file and searches for a term
-        data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
+        data = mahautils.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
         self.assertEqual(
             data.search_noninteractive('nonExistentTerm'),
@@ -162,9 +162,9 @@ class Test_SimResults(unittest.TestCase):
         )
 
     def test_search_noninteractive_case(self):
-        # Checks that `multics.files.SimResults()` correctly reads a sample
+        # Checks that `mahautils.files.SimResults()` correctly reads a sample
         # file and searches for a term (case-sensitive)
-        data = multics.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
+        data = mahautils.files.SimResults(SAMPLE_FILES_DIR / 'simulation_results_01.txt')
 
         self.assertEqual(
             data.search_noninteractive('Position', case_sensitive=True),

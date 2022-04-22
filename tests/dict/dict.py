@@ -5,8 +5,8 @@
 import unittest
 
 # Custom package and module imports
-import multics
-from multics.dict.exceptions import IncompatibleUnits
+import mahautils
+from mahautils.dict.exceptions import IncompatibleUnits
 
 
 ##############################################################################
@@ -15,7 +15,7 @@ from multics.dict.exceptions import IncompatibleUnits
 class Test_UnitDict(unittest.TestCase):
     def test_convert_m_cm(self):
         # Checks that conversion from meter to centimeters is correct
-        unit_dict = multics.dict.UnitDict(multics.dict.BASE_UNITS['MKS'])
+        unit_dict = mahautils.dict.UnitDict(mahautils.dict.BASE_UNITS['MKS'])
         unit_dict.add_unit('m',  [0,1,0,0,0,0,0], 1,    0)
         unit_dict.add_unit('cm', [0,1,0,0,0,0,0], 0.01, 0)
 
@@ -26,7 +26,7 @@ class Test_UnitDict(unittest.TestCase):
 
     def test_incompatible_units(self):
         # Checks that incompatible unit types are correctly identified
-        unit_dict = multics.dict.UnitDict(multics.dict.BASE_UNITS['MKS'])
+        unit_dict = mahautils.dict.UnitDict(mahautils.dict.BASE_UNITS['MKS'])
         unit_dict.add_unit('m/s', [0,1,-1,0,0,0,0], 1,    0)
         unit_dict.add_unit('cm',  [0,1, 0,0,0,0,0], 0.01, 0)
 
@@ -35,7 +35,7 @@ class Test_UnitDict(unittest.TestCase):
 
     def test_check_defined(self):
         # Checks that a previously-defined unit is correctly identified
-        unit_dict = multics.dict.UnitDict(multics.dict.BASE_UNITS['MKS'])
+        unit_dict = mahautils.dict.UnitDict(mahautils.dict.BASE_UNITS['MKS'])
         unit_dict.add_unit('m',  [0,1,0,0,0,0,0], 1,    0)
         unit_dict.add_unit('cm', [0,1,0,0,0,0,0], 0.01, 0)
 
@@ -44,7 +44,7 @@ class Test_UnitDict(unittest.TestCase):
 
     def test_check_undefined(self):
         # Checks that a unit that is not already defined is correctly identified
-        unit_dict = multics.dict.UnitDict(multics.dict.BASE_UNITS['MKS'])
+        unit_dict = mahautils.dict.UnitDict(mahautils.dict.BASE_UNITS['MKS'])
         unit_dict.add_unit('m',  [0,1,0,0,0,0,0], 1,    0)
         unit_dict.add_unit('cm', [0,1,0,0,0,0,0], 0.01, 0)
 
@@ -55,7 +55,7 @@ class Test_UnitDict(unittest.TestCase):
     def test_str(self):
         # Checks that the string representation of a unit dictionary matches
         # expected format
-        unit_dict = multics.dict.UnitDict(multics.dict.BASE_UNITS['MKS'])
+        unit_dict = mahautils.dict.UnitDict(mahautils.dict.BASE_UNITS['MKS'])
         unit_dict.add_unit('m',  [0,1,0,0,0,0,0], 1.00,  0)
         unit_dict.add_unit('cm', [0,1,0,0,0,0,0], 1/100, 0)
 

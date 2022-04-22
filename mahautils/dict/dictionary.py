@@ -1,4 +1,4 @@
-from multics.utils.vartools import max_list_item_len
+from mahautils.utils.vartools import max_list_item_len
 
 class Dictionary:
     def __init__(self) -> None:

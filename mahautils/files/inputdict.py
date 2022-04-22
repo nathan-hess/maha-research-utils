@@ -5,7 +5,7 @@
 import os
 
 # Custom package and module imports
-from multics.dict import FileDict, UnitDict, BASE_UNITS
+from mahautils.dict import FileDict, UnitDict, BASE_UNITS
 from .exceptions import VarExists, VarDoesNotExist
 from .files import File
 

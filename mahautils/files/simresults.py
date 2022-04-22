@@ -1,6 +1,6 @@
 import warnings
 
-from multics.utils.vartools import list_search, max_list_item_len
+from mahautils.utils.vartools import list_search, max_list_item_len
 from .exceptions import InvalidFileFormat
 from .files import File
 

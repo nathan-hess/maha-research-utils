@@ -6,7 +6,7 @@ import numpy as np
 import scipy.interpolate
 
 # Custom package and module imports
-from multics.utils.vartools import to_np_1D_array
+from mahautils.utils.vartools import to_np_1D_array
 from .exceptions import InvalidFileFormat
 from .files import Table
 

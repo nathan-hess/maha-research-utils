@@ -2,7 +2,7 @@
 # --- IMPORT DEPENDENCIES -------------------------------------------------- #
 ##############################################################################
 # Custom package and module imports
-from multics.utils.vartools import check_list_types, check_numeric_list_equal
+from mahautils.utils.vartools import check_list_types, check_numeric_list_equal
 from .dictionary import Dictionary
 from .exceptions import IncompatibleUnits
 
