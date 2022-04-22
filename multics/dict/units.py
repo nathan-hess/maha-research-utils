@@ -36,14 +36,37 @@ class UnitDict(Dictionary):
             self.base_exps = base_exps
             self.m = m
             self.b = b
-        
+
+        def __str__(self) -> str:
+            return f'{{{self.base_exps}; {self.m}*x + {self.b}}}'
+
         def to_base(self, x: float):
+            """Convert a quantity to the base unit system
+
+            Converts a value from the class's unit to the base system
+            of units
+
+            Parameters
+            ----------
+            x : float
+                The value to convert to the base unit system
+            """
             if not isinstance(x, (int, float)):
                 raise TypeError('Input "x" must be of type "int" or "float"')
 
             return self.m * x + self.b
         
         def from_base(self, x: float):
+            """Convert a quantity to the class's units from base unit system
+
+            Converts a value to the class's unit from the base system
+            of units
+
+            Parameters
+            ----------
+            x : float
+                The value to convert to the class's unit
+            """
             if not isinstance(x, (int, float)):
                 raise TypeError('Input "x" must be of type "int" or "float"')
 
@@ -65,7 +88,25 @@ class UnitDict(Dictionary):
         self._num_base_units = len(base_unit_names)
     
     def add_unit(self, unit: str, base_exps: list, m: float, b: float):
-        '''Adds a unit to the unit dictionary'''
+        """Adds a unit to the unit dictionary
+
+        Stores a unit with a known relationship to the base units
+        in the unit dictionary
+
+        Parameters
+        ----------
+        unit : str
+            Name or abbreviation of the unit to store
+        base_exps : list
+            List containing the powers to which each base unit should be
+            raised to match the units of the input argument unit
+        m : float
+            Value by which to multiply values in the input unit by to
+            obtain a value in the base units
+        b : float
+            Value to add (after multiplying by ``m``) to values in the
+            input unit to obtain a value in the base units
+        """
         # Validate inputs
         if not isinstance(unit, str):
             raise TypeError('Input "unit" must be a string')
@@ -93,6 +134,10 @@ class UnitDict(Dictionary):
 
     def check_compatible_types(self, unit1: str, unit2: str,
                                throw_error: bool = False):
+        """Checks whether a unit can be converted to another unit
+        
+        Checks whether units are compatible (are composed)
+        """
         list_eq = check_numeric_list_equal(
             list1=self._contents[unit1].base_exps,
             list2=self._contents[unit2].base_exps,

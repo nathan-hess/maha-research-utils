@@ -51,3 +51,16 @@ class Test_UnitDict(unittest.TestCase):
         self.assertFalse(unit_dict.check_unit_defined('kg'))
         self.assertFalse(unit_dict.check_unit_defined('m/s'))
         self.assertFalse(unit_dict.check_unit_defined('mol'))
+
+    def test_str(self):
+        # Checks that the string representation of a unit dictionary matches
+        # expected format
+        unit_dict = multics.dict.UnitDict(multics.dict.BASE_UNITS['MKS'])
+        unit_dict.add_unit('m',  [0,1,0,0,0,0,0], 1.00,  0)
+        unit_dict.add_unit('cm', [0,1,0,0,0,0,0], 1/100, 0)
+
+        self.assertEqual(
+            str(unit_dict),
+            ('m   :  {[0, 1, 0, 0, 0, 0, 0]; 1.0*x + 0}\n'
+             'cm  :  {[0, 1, 0, 0, 0, 0, 0]; 0.01*x + 0}')
+        )
