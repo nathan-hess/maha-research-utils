@@ -7,13 +7,13 @@ import os
 # Custom package and module imports
 from mahautils.dict import FileDict, UnitDict, BASE_UNITS
 from .exceptions import VarExists, VarDoesNotExist
-from .files import File
+from .files import TextFile
 
 
 ##############################################################################
 # --- INPUT DICTIONARY FILE READER/WRITER ---------------------------------- #
 ##############################################################################
-class InputDict(File):
+class InputDict(TextFile):
     def __init__(self, comment_char: str = '#'):
         super().__init__(comment_char)
 

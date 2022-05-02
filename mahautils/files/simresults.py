@@ -2,9 +2,9 @@ import warnings
 
 from mahautils.utils.vartools import list_search, max_list_item_len
 from .exceptions import InvalidFileFormat
-from .files import File
+from .files import TextFile
 
-class SimResults(File):
+class SimResults(TextFile):
     def __init__(self, file: str, comment_char: str = '#'):
         super().__init__(comment_char)
 

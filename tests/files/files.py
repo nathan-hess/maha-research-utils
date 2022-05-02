@@ -13,9 +13,9 @@ import mahautils
 ##############################################################################
 class Test_Files(unittest.TestCase):
     def test_clean_removeComments(self):
-        # Verify that `mahautils.files.File.clean_contents()` correctly
+        # Verify that `mahautils.files.TextFile.clean_contents()` correctly
         # removes line comments
-        file = mahautils.files.File(comment_char='#')
+        file = mahautils.files.TextFile(comment_char='#')
         file._contents = ['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
                           'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9']
 
@@ -33,9 +33,9 @@ class Test_Files(unittest.TestCase):
         )
     
     def test_clean_strip(self):
-        # Verify that `mahautils.files.File.clean_contents()` correctly
+        # Verify that `mahautils.files.TextFile.clean_contents()` correctly
         # strips whitespace from the beginning and end of lines
-        file = mahautils.files.File(comment_char='#')
+        file = mahautils.files.TextFile(comment_char='#')
         file._contents = ['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
                           'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9']
 
@@ -53,9 +53,9 @@ class Test_Files(unittest.TestCase):
         )
     
     def test_clean_concat(self):
-        # Verify that `mahautils.files.File.clean_contents()` correctly
+        # Verify that `mahautils.files.TextFile.clean_contents()` correctly
         # concatenates lines ending with backslashes
-        file = mahautils.files.File(comment_char='#')
+        file = mahautils.files.TextFile(comment_char='#')
         file._contents = ['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
                           'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9']
 
@@ -73,9 +73,9 @@ class Test_Files(unittest.TestCase):
         )
 
     def test_clean_removeBlank(self):
-        # Verify that `mahautils.files.File.clean_contents()` correctly
+        # Verify that `mahautils.files.TextFile.clean_contents()` correctly
         # removes lines containing only whitespace
-        file = mahautils.files.File(comment_char='#')
+        file = mahautils.files.TextFile(comment_char='#')
         file._contents = ['Line1 ', '#Line2\t  ', ' Li#ne\\3', 'Ln #4', '\n',
                           'L5\\', 'Line6', 'Line7\\', 'Line8\\', 'line 9']
 

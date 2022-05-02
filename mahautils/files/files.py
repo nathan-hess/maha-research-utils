@@ -1,9 +1,15 @@
 import os
 
 class File:
+    def __init__(self) -> None:
+        pass
+
+class TextFile(File):
     def __init__(self, comment_char) -> None:
         self._contents: list = None
         self._comment_char: str = comment_char
+
+        super().__init__()
 
     @property
     def contents(self):
@@ -64,6 +70,10 @@ class File:
                 self._contents.append(line)
             i += 1
 
-class Table(File):
+class BinaryFile(File):
+    def __init__(self) -> None:
+        super().__init__()
+
+class Table(TextFile):
     def __init__(self, comment_char) -> None:
         super().__init__(comment_char)
