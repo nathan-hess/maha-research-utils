@@ -1,8 +1,14 @@
 class InvalidFileFormat(Exception):
-    pass
+    """File format does not match expected format"""
+
 
 class VarExists(KeyError):
-    pass
+    """Maha Multics input dictionary variable already exists"""
+
 
 class VarDoesNotExist(KeyError):
-    pass
+    """Maha Multics input dictionary variable does not exist"""
+
+
+class VTKFormatError(Exception):
+    """VTK file does not have expected data format"""
