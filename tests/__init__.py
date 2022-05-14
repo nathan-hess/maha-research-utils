@@ -1,6 +1,6 @@
-# Define variables available to all tests
 import pathlib
 
+# Define variables available to all tests
 TEST_DIR = pathlib.Path(__file__).resolve().parent
 SAMPLE_FILES_DIR = TEST_DIR / 'sample_files'
 
