@@ -1,10 +1,15 @@
 ##############################################################################
 # --- IMPORT DEPENDENCIES -------------------------------------------------- #
 ##############################################################################
+# Standard library imports
+import pathlib
+
 # Third-party imports
+import matplotlib.pyplot as plt
 import numpy as np
 import vtk
 import vtk.util.numpy_support  # type: ignore  # pylint: disable=E0401,E0611
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 # Custom package and module imports
 from mahautils.utils.vartools import list_search, max_list_item_len
@@ -49,7 +54,7 @@ class VTK(BinaryFile):
 
     @property
     def coordinates(self):
-        """Returns a dictionary containing mesh coordinates of VTK point"""
+        """Returns a dictionary containing mesh coordinates of VTK points"""
         coordinates = np.array(self._point_coordinates)
         return {
             'x': coordinates[:, 0],
@@ -57,6 +62,21 @@ class VTK(BinaryFile):
             'z': coordinates[:, 2],
             'array': np.array(coordinates),
         }
+
+    @property
+    def x(self):
+        """Returns x-coordinates of VTK mesh points"""
+        return np.array(self._point_coordinates)[:, 0]
+
+    @property
+    def y(self):
+        """Returns y-coordinates of VTK mesh points"""
+        return np.array(self._point_coordinates)[:, 1]
+
+    @property
+    def z(self):
+        """Returns z-coordinates of VTK mesh points"""
+        return np.array(self._point_coordinates)[:, 2]
 
     @property
     def point_data(self):
@@ -177,3 +197,46 @@ class VTK(BinaryFile):
     def search_noninteractive(self, name: str,
                               case_sensitive: bool = False) -> dict:
         return self.search(name, case_sensitive, False, True)
+
+    def plot_scalar(self, name: str, show: bool = True,
+                    output_file: str = None, save_transparent: bool = True):
+        # Verify that data correspond to a scalar
+        if self.get_type(name) != 'scalar':
+            raise ValueError('Only scalar data can be plotted')
+
+        # Create figure
+        fig = plt.figure(figsize=(8, 5))
+        ax = fig.add_subplot(projection='3d')
+
+        # Plot scalar
+        colors = ax.scatter(self.x, self.y, self.z, c=self.get_data(name))
+
+        # Add plot title and labels
+        plt.title(name, fontweight='bold')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        ax.set_zlabel('z')
+
+        # Add colorbar
+        cax = inset_axes(
+            ax,
+            width='3%',
+            height='90%',
+            loc='lower left',
+            bbox_to_anchor=(1.05, 0, 1, 1),
+            bbox_transform=ax.transAxes,
+            borderpad=4
+        )
+        fig.colorbar(colors, cax=cax)
+
+        if output_file is not None:
+            file = pathlib.Path(output_file).expanduser().resolve()
+
+            if not file.parent.is_dir():
+                raise NotADirectoryError(f'Output figure path "{file.parent}" '
+                                         f'does not exist')
+
+            plt.savefig(file, transparent=save_transparent)
+
+        if show:
+            plt.show()
