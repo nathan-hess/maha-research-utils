@@ -128,9 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Visual Studio Code
-.vscode/
-
 # Development and testing files
 /scratch/
 /scratch.*
