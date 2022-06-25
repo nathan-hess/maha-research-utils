@@ -1,0 +1,18 @@
+{
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.banditEnabled": true,
+    "python.linting.ignorePatterns": [
+        "**/site-packages/**/*.py",
+        ".vscode/*.py",
+        "run_tests.py",
+        "tests/**",
+        "utilities/**",
+        "scratch/**/*.py",
+        "scratch.py"
+    ],
+    "files.associations": {
+        "pylintrc": "ini"
+    }
+}
