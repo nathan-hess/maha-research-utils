@@ -1,3 +1,5 @@
+"""Custom Exceptions"""
+
+
 class InvalidFileFormat(Exception):
-    def __init__(self, message='Error in file format'):
-        super().__init__(message)
+    """Raise an error about invalid file format"""
