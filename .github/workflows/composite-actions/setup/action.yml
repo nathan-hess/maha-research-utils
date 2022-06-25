@@ -1,0 +1,31 @@
+name: Setup Composite Action
+description:  Update system, set up Python, and install dependencies
+
+inputs:
+  python-version:
+    description: Version of Python to set up
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Update System
+      shell: bash
+      run: sudo apt update && sudo apt -y upgrade
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install System Packages
+      shell: bash
+      run: |
+        sudo apt -y install graphviz libenchant-2-dev
+
+    - name: Install Python Packages
+      shell: bash
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install wheel
+        python3 -m pip install -r ${GITHUB_WORKSPACE}/requirements.txt
