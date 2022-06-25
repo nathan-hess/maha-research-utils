@@ -1,0 +1,32 @@
+[flake8]
+ignore =
+    # Ignore "unexpected spaces around keyword / parameter equals" to
+    # improve code readability
+    E251,
+
+    # Ignore "multiple spaces before operator" to improve code readability
+    E221,
+
+    # Ignore "missing whitespace around arithmetic operator" to improve
+    # code readability
+    E226,
+
+    # Ignore "invalid escape sequence" to prevent flagging false positives
+    # in docstrings
+    W605,
+
+    # Ignore "multiple spaces after ','" to improve code readability
+    E241,
+
+    # Allow bare except statements
+    E722
+
+exclude =
+    __pycache__
+
+per-file-ignores =
+    # Prevent "imported but unused" and "unable to detect undefined names"
+    # errors for __init__.py files
+    __init__.py: F401, F403
+
+max-line-length = 85

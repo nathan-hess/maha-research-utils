@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Development and testing files
+/scratch/
+/scratch.*

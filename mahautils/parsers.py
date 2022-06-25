@@ -1,6 +1,11 @@
+"""Functions to parse Maha Multics files"""
+
 from .exceptions import InvalidFileFormat
 
+
 class SimResults:
+    """Parser for simulation results files"""
+
     def __init__(self, file: str, comment_char: str = '#',
                  autorefresh: bool = False):
         # Declare variables
@@ -18,6 +23,7 @@ class SimResults:
 
     @property
     def title(self):
+        """Returns the title of the file"""
         if self.autorefresh:
             self.refresh()
 
@@ -25,6 +31,7 @@ class SimResults:
 
     @property
     def simdata(self):
+        """Returns the simulation data dictionary"""
         if self.autorefresh:
             self.refresh()
 
@@ -32,10 +39,12 @@ class SimResults:
 
     @property
     def printvars(self):
+        """Returns a list of print variables"""
         return self.simdata.keys()
 
     @property
     def units(self):
+        """Returns a list of units"""
         if self.autorefresh:
             self.refresh()
 
@@ -43,6 +52,7 @@ class SimResults:
 
     @property
     def descriptions(self):
+        """Returns a list of descriptions"""
         if self.autorefresh:
             self.refresh()
 
@@ -52,7 +62,7 @@ class SimResults:
         self.__filelines = [line for line in self.__filelines if len(line) > 0]
 
     def __remove_comment_filelines(self, comment_char: str = '#'):
-        self.__filelines = [line.split(comment_char, maxsplit=1)[0] \
+        self.__filelines = [line.split(comment_char, maxsplit=1)[0]
                             for line in self.__filelines]
         self.__remove_blank_filelines()
 
@@ -66,7 +76,7 @@ class SimResults:
         return max_len
 
     def __print_var(self, key: str, indent: int = 0):
-        if key not in self.__simdata.keys():
+        if key not in self.__simdata:
             raise KeyError(f'Unknown print variable "{key}"')
 
         _len_var = self.__get_max_list_str_len(self.printvars)
@@ -83,9 +93,10 @@ class SimResults:
         return matches
 
     def refresh(self, read_file: bool = True, remove_newlines: bool = True):
+        """Parses a simulation results file"""
         if read_file:
             # Read raw file contents
-            with open(self.file, 'r') as fileID:
+            with open(self.file, 'r', encoding='utf_8') as fileID:
                 self.__filelines = fileID.readlines()
 
             # Optionally remove newlines
@@ -96,7 +107,7 @@ class SimResults:
         self.__remove_blank_filelines()
 
         # Extract title
-        _possible_titles = [line for line in self.__filelines \
+        _possible_titles = [line for line in self.__filelines
                             if line.startswith((self.__comment_char + 'Title:',
                                                 self.__comment_char + ' Title:'))]
 
@@ -111,7 +122,8 @@ class SimResults:
                 _sim_vars = line.split('$')[1:]
                 n = i + 1
 
-        _sim_data = list(zip(*[[float(x) for x in line.split()] for line in self.__filelines[n:]]))
+        _sim_data = list(zip(*[[float(x) for x in line.split()]
+                               for line in self.__filelines[n:]]))
 
         if (len(_sim_vars) != len(_sim_data)):
             raise InvalidFileFormat(('Number of print variables and '
@@ -131,13 +143,15 @@ class SimResults:
             }
 
     def get(self, var: str, refresh: bool = False):
+        """Retrieves data from simulation results"""
         if (refresh or self.autorefresh):
             self.refresh()
 
         return self.__simdata[var]
 
     def get_printvar(self, description: str):
-        matches = [key for key in self.printvars \
+        """Retrieves print variable name based on description"""
+        matches = [key for key in self.printvars
                    if self.get(key)['description'] == description]
 
         if (len(matches) != 1):
@@ -147,6 +161,7 @@ class SimResults:
         return matches[0]
 
     def search(self, name: str):
+        """Searches for a variable name or description"""
         # Get lists of variable names and descriptions
         _printvars = self.printvars
         _descriptions = self.descriptions
