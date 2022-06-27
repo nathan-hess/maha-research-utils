@@ -25,6 +25,9 @@ def compute_file_hash(file: Union[str, pathlib.Path],
     Returns
     -------
     str
+        Name of hash function (in the format used by ``hashlib``) which
+        was computed
+    str
         Hash of ``file`` as computed by the hash function specified
         by ``hash_function``
 
@@ -39,15 +42,13 @@ def compute_file_hash(file: Union[str, pathlib.Path],
     are valid inputs: ``'256256'``, ``'SHA-256'``, ``'sha_256'``.
     """
     # Set hash function
-    file_hash_function = getattr(
-        hashlib,
-        hash_function.lower().replace('-', '').replace('_', '')
-    )
-    file_hash = file_hash_function()
+    hash_name = hash_function.lower().replace('-', '').replace('_', '')
+    file_hash_function = getattr(hashlib, hash_name)
 
     # Compute file hash
+    file_hash: hashlib._Hash = file_hash_function()
     with open(file, 'rb') as fileID:
         while block := fileID.read(file_hash.block_size):
             file_hash.update(block)
 
-    return file_hash.hexdigest()
+    return (hash_name, file_hash.hexdigest())
