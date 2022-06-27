@@ -79,7 +79,7 @@ class File:
         return self._hashes
 
     def compute_file_hashes(self,
-                            hash_functions: Union[tuple, str] = ('md5', 'sha256')):
+            hash_functions: Union[tuple, str] = ('md5', 'sha256')):  # noqa : E128
         """Computes hashes of the file
 
         Computes the hashes of the file and populates the ``self.hashes``
