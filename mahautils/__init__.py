@@ -4,8 +4,8 @@ from . import utils
 
 
 # PROGRAM VERSION ------------------------------------------------------------
-VERSION_MAJOR = 0
-VERSION_MINOR = 0
-VERSION_PATCH = 0
+_VERSION_MAJOR = 0
+_VERSION_MINOR = 0
+_VERSION_PATCH = 0
 
-__version__ = f'{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}'
+__version__ = f'{_VERSION_MAJOR}.{_VERSION_MINOR}.{_VERSION_PATCH}'
