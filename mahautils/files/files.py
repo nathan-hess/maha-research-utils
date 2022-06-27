@@ -6,6 +6,7 @@ import pathlib
 from typing import Union
 
 from mahautils.utils.filetools import compute_file_hash
+from mahautils.utils.vartools import convert_to_tuple
 
 
 class File:
@@ -86,7 +87,7 @@ class File:
 
         Parameters
         ----------
-        hash_functions : tuple or str
+        hash_functions : tuple or str, optional
             Tuple of strings (or individual string) specifying which hash(es)
             to compute. Any hash functions supported by ``hashlib`` can be
             used. Default is ``('md5', 'sha256')``
@@ -101,8 +102,9 @@ class File:
                 f'Cannot compute hash for non-existent file "{self.file}"'
             )
 
-        if isinstance(hash_functions, str):
-            hash_functions = (hash_functions,)
+        # Ensure that inputs such as `hash_functions=('md5')` are still
+        # interpreted as a tuple, not a string
+        hash_functions = convert_to_tuple(hash_functions)
 
         # Compute file hash(es)
         for func in hash_functions:
