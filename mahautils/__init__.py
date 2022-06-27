@@ -1,5 +1,6 @@
 """Package for analyzing Maha Multics software files"""
 
+from . import files
 from . import utils
 
 
