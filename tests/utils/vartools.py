@@ -1,6 +1,9 @@
 import unittest
 
-from mahautils.utils.vartools import convert_to_tuple
+from mahautils.utils.vartools import (
+    convert_to_tuple,
+    max_list_item_len,
+)
 
 
 class Test_ConvertToTuple(unittest.TestCase):
@@ -38,3 +41,37 @@ class Test_ConvertToTuple(unittest.TestCase):
             convert_to_tuple(print),
             (print,)
         )
+
+
+class Test_MaxListLength(unittest.TestCase):
+    def test_string_list(self):
+        # Verifies that the maximum length of a list of strings
+        # is correctly identified
+        self.assertEqual(
+            max_list_item_len(['item1', 'phrase with spaces', 'newline\n', '']), 18)
+
+        self.assertEqual(max_list_item_len(['', '', '', '', '']), 0)
+
+    def test_mixed_list(self):
+        # Verifies that the maximum length of a list of mixed types
+        # is correctly identified
+        self.assertEqual(
+            max_list_item_len(['item1', [1, 2, 0], (int, dict), '']), 5)
+
+        self.assertEqual(
+            max_list_item_len(['m1', [1, 2, 0], (int, dict), '']), 3)
+
+    def test_max_length_tuple(self):
+        # Verifies that the maximum length of items in a tuple is
+        # correctly identified
+        self.assertEqual(
+            max_list_item_len(('item1', 'phrase with spaces', 'newline\n', '')), 18)
+
+        self.assertEqual(
+            max_list_item_len(('m1', [1, 2, 0], (int, dict), '')), 3)
+
+    def test_invalid_object_list(self):
+        # Verifies that an error is thrown if attempting to determine the
+        # maximum length of a list with types whose lengths are not defined
+        with self.assertRaises(TypeError):
+            max_list_item_len([2, 'string'])

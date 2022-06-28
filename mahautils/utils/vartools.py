@@ -2,7 +2,7 @@
 This module contains functions for processing and analyzing variables.
 """
 
-from typing import Any
+from typing import Any, Union
 
 
 def convert_to_tuple(value: Any):
@@ -33,3 +33,19 @@ def convert_to_tuple(value: Any):
     if not isinstance(value, tuple):
         return (value,)
     return value
+
+
+def max_list_item_len(input_list: Union[list, tuple]):
+    """Finds the maximum length of any item in a list or tuple
+
+    Parameters
+    ----------
+    input_list : list or tuple
+        Array of items to process
+
+    Returns
+    -------
+    int
+        Length of item in list with maximum length
+    """
+    return max(list(map(len, input_list)))
