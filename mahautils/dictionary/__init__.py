@@ -4,3 +4,4 @@ key-value format, similar to Python's built-in ``dict`` objects
 """
 
 from .dictionary import Dictionary
+from .filedict import FileDictionary
