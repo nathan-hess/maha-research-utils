@@ -25,6 +25,13 @@ class TextFile(File):
         List containing each line of the original file
     trailing_newline : bool
         Whether the original file had a newline at the end of the file
+
+    Methods
+    -------
+    read():
+        Read file from disk
+    write():
+        Write file to disk
     """
 
     def __init__(self, file: Union[str, pathlib.Path],

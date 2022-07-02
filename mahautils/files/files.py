@@ -21,7 +21,7 @@ class File:
 
     Methods
     -------
-    compute_hashes(hash_functions=['md5', 'sha256'])
+    compute_hashes()
         Computes file hashes and populates the ``hashes`` dictionary
     """
 
@@ -37,7 +37,7 @@ class File:
             File that the object is to represent
         """
         # File path
-        self._file = pathlib.Path(file).resolve()
+        self._file = pathlib.Path(file)
 
         # File hashes
         self._hashes: dict = {}
