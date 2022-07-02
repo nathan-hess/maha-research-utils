@@ -1,4 +1,5 @@
 bandit
 flake8
 mypy
+numpy
 pylint

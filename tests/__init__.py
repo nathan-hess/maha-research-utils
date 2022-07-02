@@ -22,4 +22,5 @@ SAMPLE_FILES_DIR = PROJECT_TEST_DIR / 'sample_files'
 # Import and run tests
 from .dictionary import *
 from .files import *
+from .units import *
 from .utils import *
