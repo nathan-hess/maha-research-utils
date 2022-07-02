@@ -48,3 +48,22 @@ jobs:
 
       - name: Run Linting with Flake8
         run: flake8 --count mahautils/
+
+  mypy:
+    name: Mypy Type Checks (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.8', '3.9', '3.10']
+    steps:
+      - name: Check Out Repository Files
+        uses: actions/checkout@v3
+
+      - name: Run Setup Action
+        uses: ./.github/workflows/composite-actions/setup
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run Static Type Checking with Mypy
+        run: mypy mahautils/
