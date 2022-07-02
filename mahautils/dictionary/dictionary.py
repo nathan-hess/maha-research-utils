@@ -66,13 +66,16 @@ class Dictionary(dict):
         return str(self)
 
     def __str__(self):
-        # Determine maximum string length of keys in dictionary
-        _max_key_len = max_list_item_len(self.keys())
+        if len(self) > 0:
+            # Determine maximum string length of keys in dictionary
+            _max_key_len = max_list_item_len(self.keys())
 
-        # Create dictionary string representation
-        representation = '\n'.join(
-            [(f'{" "*self.str_indent}{key:{_max_key_len+self.str_pad_left}s}'
-              f':{" "*self.str_pad_right}{value}')
-             for key, value in self.items()])
+            # Create dictionary string representation
+            representation = '\n'.join(
+                [(f'{" "*self.str_indent}{key:{_max_key_len+self.str_pad_left}s}'
+                  f':{" "*self.str_pad_right}{value}')
+                 for key, value in self.items()])
+        else:
+            representation = ''
 
         return representation
