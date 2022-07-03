@@ -39,7 +39,7 @@ def compute_file_hash(file: Union[str, pathlib.Path],
     Inputs for the ``hash_function`` argument are not case-sensitive, and
     dashes (``-``) and underscores (``_``) can be used interchangeably, or
     omitted.  Thus, to use the SHA-256 hash function, any of the following
-    are valid inputs: ``'256256'``, ``'SHA-256'``, ``'sha_256'``.
+    are valid inputs: ``'sha256'``, ``'SHA-256'``, ``'sha_256'``.
     """
     # Set hash function
     hash_name = hash_function.lower().replace('-', '').replace('_', '')
