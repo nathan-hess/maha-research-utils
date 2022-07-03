@@ -55,6 +55,13 @@ class FileDictionary(Dictionary):
             Base directory from which relative paths stored in the dictionary
             are referenced
         """
+        # Prevent users from passing the "content" keyword argument (this
+        # way, they have to use the file dictionary's customized methods
+        # to add content to the dictionary)
+        if 'contents' in kwargs:
+            del kwargs['contents']
+
+        # Pass any remaining keyword arguments to parent class
         super().__init__(**kwargs)
 
         # Verify that `base_dir` exists and can be converted
