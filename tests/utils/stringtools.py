@@ -1,9 +1,35 @@
 import unittest
 
 from mahautils.utils.stringtools import (
+    check_matched_parentheses,
     find_matching_parenthesis,
     strip_parentheses,
 )
+
+
+class Test_CheckMatchedParentheses(unittest.TestCase):
+    def test_matched(self):
+        # Verifies that strings with matching parentheses are correctly
+        # identified
+        self.assertTrue(check_matched_parentheses('(())() variables ((())())'))
+        self.assertTrue(check_matched_parentheses(''))
+        self.assertTrue(check_matched_parentheses('()'))
+        self.assertTrue(check_matched_parentheses('(      )'))
+
+    def test_unmatched_count(self):
+        # Verifies that strings with differing numbers of opening and closing
+        # parentheses are identified as not having matching parentheses
+        self.assertFalse(check_matched_parentheses('((  )()'))
+        self.assertFalse(check_matched_parentheses('((  (()'))
+
+    def test_unmatched_order(self):
+        # Verifies that strings with equal numbers of opening and closing
+        # parentheses but in which each opening parenthesis does not correspond
+        # to a closing parenthesis *later in the string* are identified as
+        # not having matching parentheses
+        self.assertFalse(check_matched_parentheses('()(()))(()'))
+        self.assertFalse(check_matched_parentheses(')(()'))
+        self.assertFalse(check_matched_parentheses(')('))
 
 
 class Test_FindMatchingParenthesis(unittest.TestCase):

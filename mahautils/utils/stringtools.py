@@ -3,6 +3,37 @@ This module contains functions for processing and analyzing strings.
 """
 
 
+def check_matched_parentheses(value: str):
+    """Checks whether all opening parentheses in a string have
+    corresponding closing parentheses
+
+    Parameters
+    ----------
+    value : str
+        String to process
+
+    Returns
+    -------
+    bool
+        Returns ``True`` if for every opening parenthesis (``(``),
+        there is a closing parenthesis (``)``) that occurs later in
+        the string, and ``False`` otherwise
+    """
+    counter = 0
+    for char in value:
+        if char == '(':
+            counter += 1
+        elif char == ')':
+            counter -= 1
+
+        # If counter is negative, this indicates that `)` occurred
+        # before the corresponding `(`
+        if counter < 0:
+            return False
+
+    return counter == 0
+
+
 def find_matching_parenthesis(value: str, begin: int):
     """Finds the index of the parenthesis matching a parenthesis at
     a given index
