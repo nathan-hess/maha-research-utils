@@ -60,7 +60,7 @@ class Test_StripParentheses(unittest.TestCase):
         )
         self.assertEqual(
             strip_parentheses('( text)  )'),
-            'text)'
+            '( text)  )'
         )
         self.assertEqual(
             strip_parentheses('( (text)  )'),
@@ -68,11 +68,11 @@ class Test_StripParentheses(unittest.TestCase):
         )
         self.assertEqual(
             strip_parentheses('( (((() text)  ))))'),
-            ') text'
+            '( (((() text)  ))))'
         )
         self.assertEqual(
             strip_parentheses('( ((() text)  ))) ( )) '),
-            '(() text)  ))) ('
+            '( ((() text)  ))) ( ))'
         )
 
     def test_no_strip(self):
@@ -88,7 +88,7 @@ class Test_StripParentheses(unittest.TestCase):
         )
         self.assertEqual(
             strip_parentheses('( text)  )', strip=False),
-            ' text)  '
+            '( text)  )'
         )
         self.assertEqual(
             strip_parentheses('( (text)  )', strip=False),
@@ -96,7 +96,7 @@ class Test_StripParentheses(unittest.TestCase):
         )
         self.assertEqual(
             strip_parentheses('( (((() text)  ))))', strip=False),
-            ' (((() text)  )))'
+            '( (((() text)  ))))'
         )
         self.assertEqual(
             strip_parentheses('( ((() text)  ))) ( )) ', strip=False),
@@ -116,7 +116,7 @@ class Test_StripParentheses(unittest.TestCase):
         )
         self.assertEqual(
             strip_parentheses('( text)  )', max_pairs=1),
-            'text)'
+            '( text)  )'
         )
         self.assertEqual(
             strip_parentheses('( (text)  )', max_pairs=1),
@@ -124,11 +124,11 @@ class Test_StripParentheses(unittest.TestCase):
         )
         self.assertEqual(
             strip_parentheses('( (((() text)  ))))', max_pairs=3),
-            '(() text)  )'
+            '( (((() text)  ))))'
         )
         self.assertEqual(
             strip_parentheses('( ((() text)  ))) ( )) ', max_pairs=1),
-            '((() text)  ))) ( )'
+            '( ((() text)  ))) ( ))'
         )
 
     def test_return_pairs(self):
@@ -143,7 +143,7 @@ class Test_StripParentheses(unittest.TestCase):
         )
         self.assertTupleEqual(
             strip_parentheses('( text)  )', return_num_pairs_removed=True),
-            ('text)', 1)
+            ('( text)  )', 0)
         )
         self.assertTupleEqual(
             strip_parentheses('( (text)  )', return_num_pairs_removed=True),
@@ -151,14 +151,23 @@ class Test_StripParentheses(unittest.TestCase):
         )
         self.assertTupleEqual(
             strip_parentheses('( (((() text)  ))))', return_num_pairs_removed=True),
-            (') text', 5)
+            ('( (((() text)  ))))', 0)
         )
         self.assertTupleEqual(
             strip_parentheses('( ((() text)  ))) ( )) ', return_num_pairs_removed=True),
-            ('(() text)  ))) (', 2)
+            ('( ((() text)  ))) ( ))', 0)
+        )
+
+        self.assertTupleEqual(
+            strip_parentheses('( (((() text)  ()() )))', return_num_pairs_removed=True),
+            ('(() text)  ()()', 3)
         )
 
         self.assertTupleEqual(
             strip_parentheses('( (((() text)  ))))', max_pairs=3, return_num_pairs_removed=True),
-            ('(() text)  )', 3)
+            ('( (((() text)  ))))', 0)
+        )
+        self.assertTupleEqual(
+            strip_parentheses('( (((() text)  ()() )))', max_pairs=2, return_num_pairs_removed=True),
+            ('((() text)  ()() )', 2)
         )

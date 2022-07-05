@@ -74,7 +74,8 @@ def strip_parentheses(value: str, max_pairs: int = 0, strip: bool = True,
     """Remove matched leading/trailing parentheses from strings
 
     Removes matched parentheses from a string (i.e., if a string begins with
-    ``(`` and ends with ``)``, the parentheses are removed), as well as an
+    ``(`` and the corresponding closing parenthesis ``)`` is the last
+    character in the string, the parentheses are removed), as well as an
     any leading and/or trailing whitespace. Users can optionally disable
     whitespace removal.  Note that if ``strip`` is set to ``False``, then
     matched parentheses are removed if and only if the first character in
@@ -107,14 +108,20 @@ def strip_parentheses(value: str, max_pairs: int = 0, strip: bool = True,
 
     num_removed = 0
     while (value.startswith('(') and value.endswith(')')):
-        value = value[1:-1]
-        num_removed += 1
+        # Only remove leading and trailing parentheses if they form
+        # a matching pair
+        if find_matching_parenthesis(value, -1) == 0:
+            value = value[1:-1].strip() if strip else value[1:-1]
+            num_removed += 1
+        else:
+            break
 
-        value = value.strip() if strip else value
-
+        # If the maximum number of pairs of parentheses have been
+        # removed, exit the loop
         if num_removed >= max_pairs > 0:
             break
 
+    # Output results
     if not return_num_pairs_removed:
         return value
 
