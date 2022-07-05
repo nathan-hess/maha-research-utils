@@ -3,6 +3,72 @@ This module contains functions for processing and analyzing strings.
 """
 
 
+def find_matching_parenthesis(value: str, begin: int):
+    """Finds the index of the parenthesis matching a parenthesis at
+    a given index
+
+    Finds the "other parenthesis" that forms a closed pair of matched
+    parenthesis in a string ``value``, beginning from the parenthesis
+    at index ``begin``. Note that if the character at index ``begin``
+    is ``(``, then ``value`` is searched in the forward direction (left
+    to right), while if it is ``)`` then the search direction is reversed
+    (right to left).
+
+    Parameters
+    ----------
+    value : str
+        String to search for matching parenthesis
+    begin : int
+        Index in ``value`` where one of the parentheses in the matched
+        pair is found
+
+    Returns
+    -------
+    int
+        Returns the index of the matching parenthesis, or ``-1`` if the
+        parenthesis at index ``begin`` in ``value`` does not have a
+        matching parenthesis in ``value``
+
+    Raises
+    ------
+    ValueError
+        If the character at index ``begin`` in ``value`` is not one of
+        ``(`` or ``)``
+    """
+    # Adjust if user provides an index relative to the end of the string
+    if begin < 0:
+        begin += len(value)
+
+    # Define search direction and ending index depending on whether the
+    # `begin` index specifies and opening or closing parenthesis
+    begin_char = value[begin]
+
+    if begin_char == '(':
+        k = 1
+        end = len(value)
+    elif begin_char == ')':
+        k = -1
+        end = -1
+    else:
+        raise ValueError(f'Character at index {begin} of "{value}" is '
+                         f'"{begin_char}", which is not a parenthesis')
+
+    # Search string to find the matching parenthesis
+    counter = 0
+    for i in range(begin, end, k):
+        if value[i] == '(':
+            counter += 1
+        elif value[i] == ')':
+            counter -= 1
+
+        # The first time `counter` returns to zero, the matching
+        # parenthesis has been found
+        if counter == 0:
+            return i
+
+    return -1
+
+
 def strip_parentheses(value: str, max_pairs: int = 0, strip: bool = True,
                       return_num_pairs_removed: bool = False):
     """Remove matched leading/trailing parentheses from strings
