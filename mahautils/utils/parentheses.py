@@ -6,6 +6,10 @@ a corresponding closing parenthesis, in the correct order), among other
 capabilities.
 """
 
+from typing import Union
+
+from .exceptions import UnmatchedParenthesesError
+
 
 def check_matched_parentheses(value: str):
     """Checks whether all opening parentheses in a string have
@@ -100,6 +104,89 @@ def find_matching_parenthesis(value: str, begin: int):
         # parenthesis has been found
         if counter == 0:
             return i
+
+    return -1
+
+
+def find_skip_parentheses(value: str, target_chars: Union[str, tuple],
+                          begin: int, direction: str = 'forward'):
+    """Finds the index of a target character, skipping over matched
+    parentheses
+
+    This function is useful for finding the index of a particular character
+    in a string, ignoring content inside of matched parentheses.  It begins
+    at a given index in a string and searches until any of a given set of
+    target characters are found.  If an opening or closing parenthesis is
+    reached, the function skips to the corresponding parentheses that
+    completes the pair before resuming the search (i.e., content inside of
+    matched parentheses is not searched)
+
+    Parameters
+    ----------
+    value : str
+        String to search
+    target_chars : str or tuple
+        A string or tuple with one or more characters to search for
+    begin : int
+        Index in ``value`` at which to begin searching
+    direction : str, optional
+        Whether to search ``value`` in order of increasing or decreasing
+        index.  Can be either ``'forward'`` or ``'reverse'`` (default
+        is ``'forward'``)
+
+    Returns
+    -------
+    int
+        The index of the first occurence of any characters in ``target_chars``
+        found in ``value``, beginning the search at index ``begin`` and
+        searching in the direction specified by ``direction`` and ignoring
+        content inside of matched parentheses.  If none of ``target_chars``
+        are found, ``-1`` is returned
+
+    Notes
+    -----
+    When searching, the function will not "enter" matched parentheses;
+    however, if the index specified by ``begin`` is inside a set of
+    parentheses, the function will search inside of these parentheses and
+    can "leave" these parentheses and search in parts of the string outside
+    these parentheses
+    """
+    # Verify that "value" argument is a string
+    if not isinstance(value, str):
+        raise TypeError('Argument "value" must be of type "str"')
+
+    # Verify that "begin" is a valid index for the given string
+    if not(-len(value) <= begin <= len(value) - 1):
+        raise IndexError(
+            f'Index {begin} at which to begin search is not valid for '
+            f'string "{value}" (length {len(value)})')
+
+    # Adjust if user provides an index relative to the end of the string
+    i = begin + len(value) if begin < 0 else begin
+
+    # Set increment by which to advance to next character when
+    # searching string
+    if direction not in ('forward', 'reverse'):
+        raise ValueError('Argument "direction" must be one of: '
+                         '"forward" or "reverse"')
+
+    k = 1 if direction == 'forward' else -1
+
+    while 0 <= i < len(value):
+        # Check whether target character has been found
+        if value[i] in target_chars:
+            return i
+
+        # Check whether an opening or closing parenthesis has been
+        # found; if so, move to the end of the matched pair
+        if any(((direction == 'forward' and value[i] == '('),
+                (direction == 'reverse' and value[i] == ')'))):
+            if (i := find_matching_parenthesis(value, i)) == -1:
+                raise UnmatchedParenthesesError(
+                    f'Unmatched parentheses found in string "{value}"')
+
+        # Advance to next character in string
+        i += k
 
     return -1
 
