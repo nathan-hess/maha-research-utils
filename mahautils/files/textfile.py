@@ -132,7 +132,7 @@ class TextFile(File):
             # Remove comments
             if remove_comments:
                 if not(skip_full_line_comments
-                       and line.strip().startswith(self.comment_chars)):  # noqa: W503, E501
+                       and line.strip().startswith(self.comment_chars)):
                     for comment_char in self.comment_chars:
                         line = line.split(comment_char, maxsplit=1)[0]
 

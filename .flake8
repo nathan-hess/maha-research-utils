@@ -19,7 +19,10 @@ ignore =
     E241,
 
     # Allow bare except statements
-    E722
+    E722,
+
+    # Allow line breaks before binary operators (matches PEP 8 style)
+    W503
 
 exclude =
     __pycache__
