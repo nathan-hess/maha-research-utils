@@ -3,11 +3,28 @@ This module contains classes for representing units that are part of a given
 system of units.
 """
 
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 import numpy as np
 
 from .unitsystem import UnitSystem, UnitSystemSI
+
+# Disable Pylint's "unused argument" warnings.  In this case, we want to allow
+# users to pass keyword arguments but ignore them -- this allows users to
+# define different units using the same code.
+#
+# For instance, using the line below, if users set "myUnit" using one
+# of the lines below:
+#   myUnit = mahautils.units.Unit(...)
+#   myUnit = mahautils.units.UnitLinearSI(...)
+# Then they can easily define different units using the same code:
+#   unit = myUnit(unit_system=UnitSystem(1), ...)
+#
+# However, if units didn't accept other keyword arguments, then this approach
+# would fail because the different classes of units in this module require
+# different combinations of keyword arguments
+#
+# pylint: disable=unused-argument
 
 
 class Unit:
@@ -48,7 +65,8 @@ class Unit:
                                           np.ndarray],
                  to_base_function: Callable[[np.ndarray], np.ndarray],
                  from_base_function: Callable[[np.ndarray], np.ndarray],
-                 identifier: Optional[str] = None, name: Optional[str] = None):
+                 identifier: Optional[str] = None, name: Optional[str] = None,
+                 **kwargs: Any):
         """Define an arbitrary unit
 
         Defines a fundamental or derived unit that is part of a given system
@@ -73,6 +91,8 @@ class Unit:
         name : str, optional
             A name describing the unit (example: kilogram) (default
             is ``None``)
+        **kwargs : Any, optional
+            Other keyword arguments (can be passed as inputs but are ignored)
         """
         # Store system of units
         self._unit_system = unit_system
@@ -206,7 +226,8 @@ class UnitLinear(Unit):
                  derived_exponents: Union[List[float], Tuple[float, ...],
                                           np.ndarray],
                  scale: float, offset: float,
-                 identifier: Optional[str] = None, name: Optional[str] = None):
+                 identifier: Optional[str] = None, name: Optional[str] = None,
+                 **kwargs):
         # Store inputs
         if not isinstance(scale, (float, int, np.number)):
             raise TypeError('Argument "scale" must be of type "float"')
@@ -255,7 +276,8 @@ class UnitLinearSI(UnitLinear):
                  derived_exponents: Union[List[float], Tuple[float, ...],
                                           np.ndarray],
                  scale: float, offset: float,
-                 identifier: Optional[str] = None, name: Optional[str] = None):
+                 identifier: Optional[str] = None, name: Optional[str] = None,
+                 **kwargs):
         super().__init__(
             unit_system       = UnitSystemSI(),
             derived_exponents = derived_exponents,
