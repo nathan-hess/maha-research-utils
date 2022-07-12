@@ -60,6 +60,7 @@ class Unit:
         Converts a value or array from the given unit to the base
         units of the unit system
     """
+
     def __init__(self, unit_system: UnitSystem,
                  derived_exponents: Union[List[float], Tuple[float, ...],
                                           np.ndarray],
@@ -222,6 +223,7 @@ class UnitLinear(Unit):
 
         outputs = (scale * inputs) + offset
     """
+
     def __init__(self, unit_system: UnitSystem,
                  derived_exponents: Union[List[float], Tuple[float, ...],
                                           np.ndarray],
@@ -272,6 +274,7 @@ class UnitLinearSI(UnitLinear):
     mahautils.units.Unit : Parent class
     mahautils.units.UnitLinear : Parent class
     """
+
     def __init__(self,
                  derived_exponents: Union[List[float], Tuple[float, ...],
                                           np.ndarray],
