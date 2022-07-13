@@ -156,7 +156,7 @@ class TextFile(File):
         check if the file has been modified later)
         """
         # Compute and store file hashes
-        super().compute_file_hashes()
+        super().store_file_hashes()
 
         # Read file
         with open(self.file, 'r', encoding='utf_8') as fileID:

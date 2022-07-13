@@ -7,6 +7,7 @@ from typing import Union
 
 from mahautils.utils.filetools import compute_file_hash
 from mahautils.utils.vartools import convert_to_tuple
+from .exceptions import UntrackedFileError
 
 
 class File:
@@ -78,12 +79,33 @@ class File:
         """Returns the file hashes"""
         return self._hashes
 
+    @property
+    def has_changed(self):
+        """Returns whether the file has changed since the last time file
+        hashes were computed"""
+        if len(self.hashes) == 0:
+            raise UntrackedFileError(
+                'File hashes have not yet been computed. Cannot '
+                'evaluate whether file has changed')
+
+        # Compute hashes of current file
+        current_hashes = self.compute_file_hashes(tuple(self.hashes.keys()),
+                                                  store=False)
+
+        # Check whether current file hashes match those stored
+        for key, value in self.hashes.items():
+            if current_hashes[key] != value:
+                return True
+
+        return False
+
     def compute_file_hashes(self,
-            hash_functions: Union[tuple, str] = ('md5', 'sha256')):  # noqa : E128
+            hash_functions: Union[tuple, str] = ('md5', 'sha256'),  # noqa : E128
+            store: bool = False):                                   # noqa : E128
         """Computes hashes of the file
 
-        Computes the hashes of the file and populates the ``self.hashes``
-        dictionary with their values
+        Computes and returns the hashes of the file, with the option to
+        populate the ``self.hashes`` dictionary with their values
 
         Parameters
         ----------
@@ -91,6 +113,15 @@ class File:
             Tuple of strings (or individual string) specifying which hash(es)
             to compute. Any hash functions supported by ``hashlib`` can be
             used. Default is ``('md5', 'sha256')``
+        store : bool, optional
+            Whether to store the computed hashes in the ``self.hashes``
+            dictionary (default is ``False``)
+
+        Returns
+        -------
+        dict
+            A dictionary containing the file hashes specified by
+            ``hash_functions``
 
         See Also
         --------
@@ -107,6 +138,33 @@ class File:
         hash_functions = convert_to_tuple(hash_functions)
 
         # Compute file hash(es)
+        output = {}
         for func in hash_functions:
             hash_name, file_hash = compute_file_hash(self.file, func)
-            self._hashes[hash_name] = file_hash
+            output[hash_name] = file_hash
+
+            if store:
+                self._hashes[hash_name] = file_hash
+
+        return output
+
+    def store_file_hashes(self,
+            hash_functions: Union[tuple, str] = ('md5', 'sha256')):  # noqa : E128
+        """Computes and stores hashes of the file
+
+        Computes given hashes of the file and populates the
+        ``self.hashes`` dictionary with their values
+
+        Parameters
+        ----------
+        hash_functions : tuple or str, optional
+            Tuple of strings (or individual string) specifying which hash(es)
+            to compute. Any hash functions supported by ``hashlib`` can be
+            used. Default is ``('md5', 'sha256')``
+
+        See Also
+        --------
+        mahautils.utils.filetools.compute_file_hash :
+            Function used to compute file hashes
+        """
+        _ = self.compute_file_hashes(hash_functions, store=True)

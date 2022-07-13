@@ -1,7 +1,9 @@
+import shutil
 import unittest
 
 from mahautils.files import File
-from tests import SAMPLE_FILES_DIR
+from mahautils.files.exceptions import UntrackedFileError
+from tests import CreateTempTestDir, SAMPLE_FILES_DIR
 
 
 class Test_File(unittest.TestCase):
@@ -43,7 +45,7 @@ class Test_File(unittest.TestCase):
     def test_file_repr_after_single(self):
         # Verifies that file object descriptor is computed correctly after
         # computing file hashes
-        self.file_from_pathlib.compute_file_hashes('sha512')
+        self.file_from_pathlib.compute_file_hashes('sha512', store=True)
         self.assertEqual(
             self.file_from_pathlib.__repr__(),
             (f"<class 'mahautils.files.files.File'>\n"
@@ -52,7 +54,7 @@ class Test_File(unittest.TestCase):
              f"    sha512: {self.hashes['sha512']}")
         )
 
-        self.file_from_str.compute_file_hashes('sha512')
+        self.file_from_str.compute_file_hashes('sha512', store=True)
         self.assertEqual(
             self.file_from_str.__repr__(),
             (f"<class 'mahautils.files.files.File'>\n"
@@ -64,7 +66,7 @@ class Test_File(unittest.TestCase):
     def test_file_repr_after_multiple(self):
         # Verifies that file object descriptor is computed correctly after
         # computing file hashes
-        self.file_from_pathlib.compute_file_hashes(('md5', 'sha256'))
+        self.file_from_pathlib.compute_file_hashes(('md5', 'sha256'), store=True)
         self.assertEqual(
             self.file_from_pathlib.__repr__(),
             (f"<class 'mahautils.files.files.File'>\n"
@@ -74,7 +76,7 @@ class Test_File(unittest.TestCase):
              f"    sha256: {self.hashes['sha256']}")
         )
 
-        self.file_from_str.compute_file_hashes(('md5', 'sha256'))
+        self.file_from_str.compute_file_hashes(('md5', 'sha256'), store=True)
         self.assertEqual(
             self.file_from_str.__repr__(),
             (f"<class 'mahautils.files.files.File'>\n"
@@ -83,3 +85,83 @@ class Test_File(unittest.TestCase):
              f"    md5: {self.hashes['md5']}\n"
              f"    sha256: {self.hashes['sha256']}")
         )
+
+    def test_store_hashes(self):
+        # Verifies that file hashes are stored correctly
+        self.file_from_pathlib.store_file_hashes(('md5', 'sha384', 'sha256'))
+        self.assertDictEqual(
+            self.file_from_pathlib.hashes,
+            {
+                'md5': self.hashes['md5'],
+                'sha384': self.hashes['sha384'],
+                'sha256': self.hashes['sha256'],
+            }
+        )
+
+        self.file_from_str.store_file_hashes(('md5', 'sha384', 'sha256'))
+        self.assertDictEqual(
+            self.file_from_str.hashes,
+            {
+                'md5': self.hashes['md5'],
+                'sha384': self.hashes['sha384'],
+                'sha256': self.hashes['sha256'],
+            }
+        )
+
+    def test_compute_store_hashes(self):
+        # Verifies that file hashes are computed and stored correctly
+        hashes_dict = {
+            'md5': self.hashes['md5'],
+            'sha384': self.hashes['sha384'],
+            'sha256': self.hashes['sha256'],
+        }
+
+        hashes_pathlib = self.file_from_pathlib.compute_file_hashes(
+            ('md5', 'sha384', 'sha256'), store=True)
+        self.assertDictEqual(self.file_from_pathlib.hashes, hashes_dict)
+        self.assertDictEqual(hashes_pathlib, hashes_dict)
+
+        hashes_str = self.file_from_str.compute_file_hashes(
+            ('md5', 'sha384', 'sha256'), store=True)
+        self.assertDictEqual(self.file_from_str.hashes, hashes_dict)
+        self.assertDictEqual(hashes_str, hashes_dict)
+
+    def test_no_store_hashes(self):
+        # Verifies that no file hashes are stored if user does not set the
+        # "store" argument to `True`
+        self.file_from_pathlib.compute_file_hashes(('md5', 'sha384', 'sha256'))
+        self.assertDictEqual(self.file_from_pathlib.hashes, {})
+
+        self.file_from_str.compute_file_hashes(('md5', 'sha384', 'sha256'))
+        self.assertDictEqual(self.file_from_str.hashes, {})
+
+    def test_has_changed_no_stored(self):
+        # Verifies that an error is thrown if attempting to evaluate whether
+        # a file has been changed, but the hashes of the file were not
+        # previously computed
+        with self.assertRaises(UntrackedFileError):
+            self.file_from_pathlib.has_changed
+
+        with self.assertRaises(UntrackedFileError):
+            self.file_from_str.has_changed
+
+    def test_has_changed(self):
+        # Verifies that changes in file are correctly identified
+        with CreateTempTestDir() as TMP_DIR:
+            # Create sample file
+            test_file = TMP_DIR / 'test_file.txt'
+            shutil.copyfile(self.file_str, test_file)
+
+            # Compute hashes of sample file
+            file = File(test_file)
+            file.store_file_hashes()
+            self.assertFalse(file.has_changed)
+
+            # Modify file
+            with open(test_file, 'a', encoding='utf_8') as fileID:
+                fileID.write('abcdefg')
+            self.assertTrue(file.has_changed)
+
+            # Compute hashes again
+            file.store_file_hashes()
+            self.assertFalse(file.has_changed)
