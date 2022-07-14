@@ -4,6 +4,8 @@ This module contains functions for processing and analyzing variables.
 
 from typing import Any, Union
 
+import numpy as np
+
 
 def check_len_equal(item1: Any, item2: Any, *args: Any):
     """Checks whether the lengths of a set of lists or tuples are equal
@@ -83,3 +85,42 @@ def max_list_item_len(input_list: Union[list, tuple]):
         Length of item in list with maximum length
     """
     return max(list(map(len, input_list)))
+
+
+def np_array_equal(array1: np.ndarray, array2: np.ndarray, *args,
+                   tol: float = 1e-16):
+    """Checks that NumPy arrays are equal within a given tolerance
+
+    Returns ``True`` if the NumPy arrays passed as arguments are of the same
+    shape and the maximum difference between their elements is less than or
+    equal to ``tol``, and returns ``False`` otherwise
+
+    Parameters
+    ----------
+    array1 : np.ndarray
+        First array to evaluate
+    array2 : np.ndarray
+        Second item to evaluate
+    *args : np.ndarray, optional
+        Any other arrays to be evaluated
+    tol : float, optional
+        Maximum difference between arrays to consider equivalent
+
+    Returns
+    -------
+    bool
+        Whether ``array1``, ``array2``, ``*args`` have the same shape and
+        are equal within tolerance ``tol``
+    """
+    # Convert all inputs to Numpy arrays and create a list of all arrays
+    # to be compared with `array1`
+    array1 = np.array(array1)
+    arrays = [np.array(array2)] + [np.array(i) for i in args]
+
+    # Check that arrays have equal shape and are equal within tolerance `tol`
+    for array in arrays:
+        if not((array1.shape == array.shape)
+               and (np.max(np.abs(array - array1)) <= tol)):
+            return False
+
+    return True

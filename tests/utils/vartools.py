@@ -1,9 +1,12 @@
 import unittest
 
+import numpy as np
+
 from mahautils.utils.vartools import (
+    check_len_equal,
     convert_to_tuple,
     max_list_item_len,
-    check_len_equal,
+    np_array_equal,
 )
 
 
@@ -180,3 +183,81 @@ class Test_CheckLenEqual(unittest.TestCase):
             check_len_equal(['a', 'b', 'c'], (1, 2), ('cd', 3), (None, None), 'abcdefjkl'),
             (False, [3, 2, 2, 2, 9])
         )
+
+
+class Test_NumPyListEqual(unittest.TestCase):
+    def setUp(self):
+        self.array = np.array([[   3, 6,   -3.213,   0],
+                               [3.23, 1, -1.42e-3, 4e6]])
+
+        self.array_uneq_shape = np.array([[3,    6,   -3.213,   0],
+                                          [3.23, 1, -1.42e-3, 4e6],
+                                          [1,    2,        3,   4]])
+
+        self.array_uneq_val = np.array([[   3, 6,   -3.213,   0],
+                                        [3.23, 1, -1.41e-3, 4e6]])
+
+    def test_equal_2_args(self):
+        # Verifies that 2 arrays of equal shape and values are evaluated as equal
+        self.assertTrue(np_array_equal(self.array, self.array))
+
+    def test_unequal_shape_2_args(self):
+        # Verifies that 2 arrays of different shape are evaluated as not equal
+        self.assertFalse(np_array_equal(self.array, self.array_uneq_shape))
+
+    def test_unequal_values_2_args(self):
+        # Verifies that 2 arrays with different values are evaluated as not equal
+        self.assertFalse(np_array_equal(self.array, self.array_uneq_val))
+
+    def test_equal_3_args(self):
+        # Verifies that 3 arrays of equal shape and values are evaluated as equal
+        self.assertTrue(np_array_equal(self.array, self.array, self.array))
+
+    def test_unequal_shape_3_args(self):
+        # Verifies that 3 arrays of different shape are evaluated as not equal
+        self.assertFalse(np_array_equal(
+            self.array_uneq_shape, self.array, self.array))
+        self.assertFalse(np_array_equal(
+            self.array, self.array_uneq_shape, self.array))
+        self.assertFalse(np_array_equal(
+            self.array, self.array, self.array_uneq_shape))
+
+    def test_unequal_values_3_args(self):
+        # Verifies that 3 arrays with different values are evaluated as not equal
+        self.assertFalse(np_array_equal(
+            self.array_uneq_val, self.array, self.array))
+        self.assertFalse(np_array_equal(
+            self.array, self.array_uneq_val, self.array))
+        self.assertFalse(np_array_equal(
+            self.array, self.array, self.array_uneq_val))
+
+    def test_equal_4_args(self):
+        # Verifies that 4 arrays of equal shape and values are evaluated as equal
+        self.assertTrue(np_array_equal(self.array, self.array, self.array, self.array))
+
+    def test_unequal_shape_4_args(self):
+        # Verifies that 4 arrays of different shape are evaluated as not equal
+        self.assertFalse(np_array_equal(
+            self.array_uneq_shape, self.array, self.array, self.array))
+        self.assertFalse(np_array_equal(
+            self.array, self.array_uneq_shape, self.array, self.array))
+        self.assertFalse(np_array_equal(
+            self.array, self.array, self.array_uneq_shape, self.array))
+        self.assertFalse(np_array_equal(
+            self.array, self.array, self.array, self.array_uneq_shape))
+
+    def test_unequal_values_4_args(self):
+        # Verifies that 4 arrays with different values are evaluated as not equal
+        self.assertFalse(np_array_equal(
+            self.array_uneq_val, self.array, self.array, self.array))
+        self.assertFalse(np_array_equal(
+            self.array, self.array_uneq_val, self.array, self.array))
+        self.assertFalse(np_array_equal(
+            self.array, self.array, self.array_uneq_val, self.array))
+        self.assertFalse(np_array_equal(
+            self.array, self.array, self.array, self.array_uneq_val))
+
+    def test_tolerance(self):
+        # Verifies that setting tolerance for equality functions as expected
+        self.assertTrue(
+            np_array_equal(self.array, self.array_uneq_val, tol=0.000011))
