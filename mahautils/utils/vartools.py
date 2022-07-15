@@ -87,7 +87,7 @@ def max_list_item_len(input_list: Union[list, tuple]):
     return max(list(map(len, input_list)))
 
 
-def np_array_equal(array1: np.ndarray, array2: np.ndarray, *args,
+def np_array_equal(array1: np.ndarray, array2: np.ndarray, *args: np.ndarray,
                    tol: float = 1e-16):
     """Checks that NumPy arrays are equal within a given tolerance
 

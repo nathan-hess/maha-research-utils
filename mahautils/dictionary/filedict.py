@@ -1,6 +1,6 @@
 """
 This module provides a data structure in which a collection of relative
-and/or absolute paths can be stored, each with a unique identifier
+and/or absolute paths can be stored, each with a unique identifier.
 """
 
 import pathlib
@@ -28,16 +28,16 @@ class FileDictionary(Dictionary):
 
     Methods
     -------
-    add():
+    add()
         Adds a file or path to the file dictionary
-    add_batch():
+    add_batch()
         Adds a set of keys and paths to the file dictionary
-    get_abs():
+    get_abs()
         Retrieves a path and/or filename from the dictionary,
         converted to an absolute path
-    get_raw():
+    get_raw()
         Retrieves a path and/or filename from the dictionary
-    validate_paths():
+    validate_paths()
         Checks whether all paths in the dictionary exist
     """
 

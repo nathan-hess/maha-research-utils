@@ -28,9 +28,9 @@ class TextFile(File):
 
     Methods
     -------
-    read():
+    read()
         Read file from disk
-    write():
+    write()
         Write file to disk
     """
 
