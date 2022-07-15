@@ -7,6 +7,7 @@ from typing import Any, Callable, List, Optional, Tuple, Union
 
 import numpy as np
 
+from mahautils.utils.vartools import np_array_equal
 from .unitsystem import UnitSystem, UnitSystemSI
 
 # Disable Pylint's "unused argument" warnings.  In this case, we want to allow
@@ -177,6 +178,30 @@ class Unit:
     def unit_system(self):
         """Returns the system of units to which the unit belongs"""
         return self._unit_system
+
+    def is_convertible(self, unit: 'Unit'):
+        """Checks whether a unit can be converted to another unit
+
+        Checks two units can be converted between each other (i.e., whether
+        they) belong to the same unit system and have the same
+        ``derived_exponents`` relating them to the fundamental units
+
+        Parameters
+        ----------
+        unit : Unit
+            Another unit instance
+
+        Returns
+        -------
+        bool
+            Returns ``True`` if this unit instance and ``unit`` belong to the
+            same unit system and have the same ``derived_exponents``
+            attribute, and ``False`` otherwise
+        """
+        if not(type(self.unit_system) is type(unit.unit_system)):  # noqa: E721
+            return False
+
+        return np_array_equal(self.derived_exponents, unit.derived_exponents)
 
     def from_base(self, value: Union[np.ndarray, list, tuple, float]):
         """Converts a value or array from base units of the unit

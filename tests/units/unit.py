@@ -18,32 +18,28 @@ class Test_Unit(unittest.TestCase):
             derived_exponents=[0, 0, 0, 0, 0, 0, 1],
             to_base_function=lambda x: x,
             from_base_function=lambda x: x,
-            identifier='kg', name='kilogram'
-        )
+            identifier='kg', name='kilogram')
 
         self.unit02 = Unit(
             unit_system=UnitSystem(5),
             derived_exponents=[0, 1, 0, 0, 0],
             to_base_function=lambda x: x / 1000.0,
             from_base_function=lambda x: x * 1000.0,
-            identifier='ms', name='millisecond'
-        )
+            identifier='ms', name='millisecond')
 
         self.unit03 = Unit(
             unit_system=UnitSystemSI(),
             derived_exponents=[0, 0, 0, 0, 0, 0, 1],
             to_base_function=lambda x: x,
             from_base_function=lambda x: x,
-            identifier='kg'
-        )
+            identifier='kg')
 
         self.unit04 = Unit(
             unit_system=UnitSystemSI(),
             derived_exponents=[0, 0, 0, 0, 0, 0, 1],
             to_base_function=lambda x: x,
             from_base_function=lambda x: x,
-            name='kilogram'
-        )
+            name='kilogram')
 
     def test_set_unit_system(self):
         # Verifies that unit system is set correctly
@@ -130,6 +126,49 @@ class Test_Unit(unittest.TestCase):
         # Verifies that representation of unit is formatted correctly
         self.assertEqual(str(self.unit01.__repr__()),
             "<class 'mahautils.units.unit.Unit'> kg - kilogram - [0. 0. 0. 0. 0. 0. 1.]")
+
+    def test_is_convert_valid(self):
+        # Verifies that units that are compatible for conversion are
+        # correctly identified
+        self.assertTrue(self.unit01.is_convertible(self.unit03))
+
+        unit02_convert = Unit(
+            unit_system=UnitSystem(5),
+            derived_exponents=[0, 1, 0, 0, 0],
+            to_base_function=lambda x: x / 1000.0,
+            from_base_function=lambda x: x * 1000.0,
+            identifier='s', name='second')
+        self.assertTrue(self.unit02.is_convertible(unit02_convert))
+
+    def test_is_convert_invalid_type(self):
+        # Verifies that units with different types are identified as
+        # incompatible for conversion
+        unit01_different_type = Unit(
+            unit_system=UnitSystem(7),
+            derived_exponents=[0, 0, 0, 0, 0, 0, 1],
+            to_base_function=lambda x: x,
+            from_base_function=lambda x: x,
+            identifier='kg', name='kilogram')
+        self.assertFalse(self.unit01.is_convertible(unit01_different_type))
+
+    def test_is_convert_invalid_exps(self):
+        # Verifies that units with different `derived_exponents` attributes
+        # are identified as incompatible for conversion
+        unit01_different_exp = Unit(
+            unit_system=UnitSystemSI(),
+            derived_exponents=[0, 1, 0, 0, 0, 0, 1],
+            to_base_function=lambda x: x,
+            from_base_function=lambda x: x,
+            identifier='kg', name='kilogram')
+        self.assertFalse(self.unit01.is_convertible(unit01_different_exp))
+
+        unit02_different_exp = Unit(
+            unit_system=UnitSystem(6),
+            derived_exponents=[0, 1, 0, 0, 0, 1],
+            to_base_function=lambda x: x / 1000.0,
+            from_base_function=lambda x: x * 1000.0,
+            identifier='ms', name='millisecond')
+        self.assertFalse(self.unit02.is_convertible(unit02_different_exp))
 
     def test_to_base_int(self):
         # Verifies that conversion of an integer value from
