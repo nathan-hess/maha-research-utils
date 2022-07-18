@@ -16,30 +16,37 @@ class Test_Unit(unittest.TestCase):
         self.unit01 = Unit(
             unit_system=UnitSystemSI(),
             derived_exponents=[0, 0, 0, 0, 0, 0, 1],
-            to_base_function=lambda x: x,
-            from_base_function=lambda x: x,
+            to_base_function=lambda x, exp: x,
+            from_base_function=lambda x, exp: x,
             identifier='kg', name='kilogram')
 
         self.unit02 = Unit(
             unit_system=UnitSystem(5),
             derived_exponents=[0, 1, 0, 0, 0],
-            to_base_function=lambda x: x / 1000.0,
-            from_base_function=lambda x: x * 1000.0,
+            to_base_function=lambda x, exp: x / 1000.0,
+            from_base_function=lambda x, exp: x * 1000.0,
             identifier='ms', name='millisecond')
 
         self.unit03 = Unit(
             unit_system=UnitSystemSI(),
             derived_exponents=[0, 0, 0, 0, 0, 0, 1],
-            to_base_function=lambda x: x,
-            from_base_function=lambda x: x,
+            to_base_function=lambda x, exp: x,
+            from_base_function=lambda x, exp: x,
             identifier='kg')
 
         self.unit04 = Unit(
             unit_system=UnitSystemSI(),
             derived_exponents=[0, 0, 0, 0, 0, 0, 1],
-            to_base_function=lambda x: x,
-            from_base_function=lambda x: x,
+            to_base_function=lambda x, exp: x,
+            from_base_function=lambda x, exp: x,
             name='kilogram')
+
+        self.unit05_exponent = Unit(
+            unit_system=UnitSystemSI(),
+            derived_exponents=[0, 4, 0, 0, 0, 0, 1],
+            to_base_function=lambda x, exp: (x**exp - (x/2 * exp)),
+            from_base_function=lambda x, exp: (x**(exp+1) + exp*x),
+            identifier='mv', name='millivalue')
 
     def test_set_unit_system(self):
         # Verifies that unit system is set correctly
@@ -248,6 +255,32 @@ class Test_Unit(unittest.TestCase):
             self.unit02.from_base(tuple(inputs)),
             outputs))
 
+    def test_to_base_exponent(self):
+        # Verifies that conversion of an array of values from
+        # base units to the given object's units is performed correctly
+        self.assertAlmostEqual(self.unit05_exponent.to_base(7, 3), 332.5)
+        self.assertAlmostEqual(self.unit05_exponent.to_base(7.4, 0.2), 0.7522663431747895)
+        self.assertAlmostEqual(self.unit05_exponent.to_base(9, -0.5), 2.5833333333333335)
+        self.assertTrue(np.array_equal(
+            self.unit05_exponent.to_base((7, 7.4, 9), 0.2),
+            np.array((0.7757731615945521, 0.7522663431747895, 0.6518455739153598))))
+        self.assertTrue(np.array_equal(
+            self.unit05_exponent.to_base(np.array((7, 7.4, 9)), 0.2),
+            np.array((0.7757731615945521, 0.7522663431747895, 0.6518455739153598))))
+
+    def test_from_base_exponent(self):
+        # Verifies that conversion of an array of values from
+        # base units to the given object's units is performed correctly
+        self.assertAlmostEqual(self.unit05_exponent.from_base(7, 3), 2422)
+        self.assertAlmostEqual(self.unit05_exponent.from_base(7.4, 0.2), 12.522770939493443)
+        self.assertAlmostEqual(self.unit05_exponent.from_base(9, -0.5), -1.5)
+        self.assertTrue(np.array_equal(
+            self.unit05_exponent.from_base((7, 7.4, 9), 0.2),
+            np.array((11.730412131161865, 12.522770939493443, 15.766610165238236))))
+        self.assertTrue(np.array_equal(
+            self.unit05_exponent.from_base(np.array((7, 7.4, 9)), 0.2),
+            np.array((11.730412131161865, 12.522770939493443, 15.766610165238236))))
+
 
 class Test_LinearUnit(unittest.TestCase):
     def setUp(self):
@@ -305,6 +338,34 @@ class Test_LinearUnit(unittest.TestCase):
         diff = self.unit02.from_base([273.15, 273.15+(9.332-32)*(5/9), 263.15, 233.15]) \
             - np.array([32, 9.332, 14, -40])
         self.assertLessEqual(np.max(np.abs(diff)), 1e-12)
+
+    def test_to_base_exponent(self):
+        # Checks conversion of value to base units with user-specified exponent
+        self.assertTrue(np.array_equal(
+            self.unit01.to_base((40, -5), 1),
+            np.array((0.04, -0.005))))
+
+        self.assertTrue(all(np.isclose(
+            self.unit01.to_base((40, -5), 2),
+            np.array((40e-6, -5e-6)))))
+
+        self.assertTrue(np.array_equal(
+            self.unit01.to_base((40, -5), 3),
+            np.array((40e-9, -5e-9))))
+
+    def test_from_base_exponent(self):
+        # Checks conversion of value from base units with user-specified exponent
+        self.assertTrue(np.array_equal(
+            self.unit01.from_base((40, -5), 1),
+            np.array((40000, -5000))))
+
+        self.assertTrue(np.array_equal(
+            self.unit01.from_base((40, -5), 2),
+            np.array((40e6, -5e6))))
+
+        self.assertTrue(np.array_equal(
+            self.unit01.from_base((40, -5), 3),
+            np.array((40e9, -5e9))))
 
 
 class Test_LinearUnitSI(unittest.TestCase):

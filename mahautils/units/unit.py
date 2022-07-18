@@ -65,8 +65,8 @@ class Unit:
     def __init__(self, unit_system: UnitSystem,
                  derived_exponents: Union[List[float], Tuple[float, ...],
                                           np.ndarray],
-                 to_base_function: Callable[[np.ndarray], np.ndarray],
-                 from_base_function: Callable[[np.ndarray], np.ndarray],
+                 to_base_function: Callable[[np.ndarray, float], np.ndarray],
+                 from_base_function: Callable[[np.ndarray, float], np.ndarray],
                  identifier: Optional[str] = None, name: Optional[str] = None,
                  **kwargs: Any):
         """Define an arbitrary unit
@@ -203,19 +203,62 @@ class Unit:
 
         return np_array_equal(self.derived_exponents, unit.derived_exponents)
 
-    def from_base(self, value: Union[np.ndarray, list, tuple, float]):
+    def from_base(self, value: Union[np.ndarray, list, tuple, float],
+                  exponent: float = 1.0):
         """Converts a value or array from base units of the unit
-        system to the given unit"""
+        system to the given unit
+
+        Parameters
+        ----------
+        value : np.ndarray or list or tuple or float
+            Value(s) to convert to base units
+        exponent : float, optional
+            Exponent to which the unit is raised (default is 1.0)
+
+        Returns
+        -------
+        np.ndarray
+            NumPy array with the same shape as ``value`` containing the
+            value(s) in ``value`` expressed in base units
+
+        Notes
+        -----
+        Use the ``exponent`` argument to handle units which are raised to a
+        power.  For instance, to convert square kilometers to base units
+        (square meters), set ``exponent`` to 2
+        """
         inputs = np.array(value)
 
-        return self.from_base_function(inputs)
+        return self.from_base_function(inputs, exponent)
 
-    def to_base(self, value: Union[np.ndarray, list, tuple, float]):
+    def to_base(self, value: Union[np.ndarray, list, tuple, float],
+                exponent: float = 1.0):
         """Converts a value or array from the given unit to the base
-        units of the unit system"""
+        units of the unit system
+
+        Parameters
+        ----------
+        value : np.ndarray or list or tuple or float
+            Value(s) to convert from base units to the given unit
+        exponent : float, optional
+            Exponent to which the unit is raised (default is 1.0)
+
+        Returns
+        -------
+        np.ndarray
+            NumPy array with the same shape as ``value`` containing the
+            value(s) in ``value`` converted from base units to the given
+            unit
+
+        Notes
+        -----
+        Use the ``exponent`` argument to handle units which are raised to a
+        power.  For instance, to convert to cubic kilometers from cubic
+        meters (the base unit), set ``exponent`` to 3
+        """
         inputs = np.array(value)
 
-        return self.to_base_function(inputs)
+        return self.to_base_function(inputs, exponent)
 
 
 class UnitLinear(Unit):
@@ -268,8 +311,8 @@ class UnitLinear(Unit):
         super().__init__(
             unit_system        = unit_system,
             derived_exponents  = derived_exponents,
-            to_base_function   = lambda x: scale * x + offset,
-            from_base_function = lambda x: (x - offset) / scale,
+            to_base_function   = lambda x, exp: (scale**exp) * x + offset,
+            from_base_function = lambda x, exp: (x - offset) / (scale**exp),
             identifier         = identifier,
             name               = name
         )
