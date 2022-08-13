@@ -40,12 +40,16 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 # HTML theme
-html_theme = 'alabaster'
+html_theme = 'sphinx_book_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# Site logo and favicon
+html_logo = '_static/logo.svg'
+html_favicon = '_static/favicon.ico'
 
 # General HTML options
 html_title = f'{project} v{release}'
@@ -53,3 +57,21 @@ html_last_updated_fmt = '%b %d, %Y'
 html_permalinks = False
 html_show_sourcelink = False
 html_show_sphinx = False
+
+# Theme-specific HTML options
+html_theme_options = {
+    'extra_navbar': '',
+    'home_page_in_toc': False,
+    'navigation_with_keys': False,
+    'repository_url': url,
+    'search_bar_text': 'Search site...',
+    'use_repository_button': True,
+}
+
+html_sidebars = {
+    '**': [
+        'sidebar-logo.html',
+        'search-field.html',
+        'sbt-sidebar-nav.html',
+    ]
+}
