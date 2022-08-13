@@ -25,7 +25,9 @@ url = 'https://github.com/nathan-hess/maha-research-utils'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 # Add any Sphinx extension module names here, as strings
-extensions = []
+extensions = [
+    'sphinxcontrib.spelling',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -75,3 +77,16 @@ html_sidebars = {
         'sbt-sidebar-nav.html',
     ]
 }
+
+
+# -- Spell-checking options --------------------------------------------------
+# https://sphinxcontrib-spelling.readthedocs.io/en/latest/
+
+# Spelling language
+spelling_lang = 'en_US'
+tokenizer_lang = 'en_US'
+
+# Whitelisted words
+spelling_word_list_filename = [
+    'spelling_wordlist.txt',
+]
