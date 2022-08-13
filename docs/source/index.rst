@@ -1,20 +1,28 @@
-.. MahaUtils documentation master file, created by
-   sphinx-quickstart on Sat Aug 13 08:42:33 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. include:: ./constants.rst
 
-Welcome to MahaUtils's documentation!
-=====================================
+
+|PackageNameStylized| Documentation
+===================================
+
+**Python Utilities for Research at the Maha Fluid Power Research Center**
+
+|PackageNameStylized| is a collection of Python tools to support research work at the
+`Maha Fluid Power Research Center <https://engineering.purdue.edu/Maha/>`__.  The
+classes, functions, and other objects in this package are intended to assist with
+general-purpose research tasks as well as simplify interaction with the
+`Maha Multics software <https://avaccadev.github.io/Multics/>`__.
+
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+    :caption: Getting Started
+    :hidden:
+
+    getting_started/installation
+    getting_started/about
 
 
+.. toctree::
+    :caption: API Reference
+    :hidden:
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    Overview <api_reference/index>

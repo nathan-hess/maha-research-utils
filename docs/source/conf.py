@@ -27,6 +27,8 @@ url = 'https://github.com/nathan-hess/maha-research-utils'
 # Add any Sphinx extension module names here, as strings
 extensions = [
     'sphinxcontrib.spelling',
+    'sphinx_copybutton',
+    'sphinx_design',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
