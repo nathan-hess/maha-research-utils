@@ -9,12 +9,12 @@
     "python.linting.ignorePatterns": [
         "**/site-packages/**/*.py",
         ".vscode/*.py",
+        "docs/source/conf.py",
         "run_tests.py",
+        "scratch/**",
+        "scratch.py",
         "tests/**",
         "utilities/**",
-        "scratch/**/*.py",
-        "scratch.py",
-        "docs/source/conf.py",
     ],
 
     // Python linting: Pylint
