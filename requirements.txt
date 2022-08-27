@@ -1,8 +1,14 @@
-bandit
-flake8
-mypy
-pylint
-Sphinx
-sphinx_design
-sphinx-book-theme
-sphinx-copybutton
+###################################
+#   MahaUtils Requirements File   #
+###################################
+
+# This file installs the necessary dependencies for the MahaUtils package.
+
+# To install these files, simply open the MahaUtils repository in a terminal
+# and run:
+#    pip install -r requirements.txt
+
+# Note that if you intend to work on MahaUtils code development, it is advised
+# that you use the `.vscode/requirements.txt` file to install dependencies.
+
+##############################################################################

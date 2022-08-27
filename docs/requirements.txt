@@ -1,0 +1,25 @@
+#######################################
+#   Documentation Requirements File   #
+#######################################
+
+# This file installs the necessary dependencies to build the MahaUtils
+# Sphinx HTML documentation.
+
+# To install these files, simply open the MahaUtils repository in a terminal
+# and run:
+#    pip install -r docs/requirements.txt
+
+##############################################################################
+
+# Package dependencies
+-r ../requirements.txt
+
+# Packages required to build documentation
+matplotlib
+numpy
+Sphinx
+sphinx_design
+sphinx-book-theme
+sphinx-copybutton
+sphinx-remove-toctrees
+sphinxcontrib-spelling
