@@ -1,9 +1,5 @@
 [flake8]
 ignore =
-    # Ignore "unexpected spaces around keyword / parameter equals" to
-    # improve code readability
-    E251,
-
     # Ignore "multiple spaces before operator" to improve code readability
     E221,
 
@@ -11,15 +7,22 @@ ignore =
     # code readability
     E226,
 
+    # Ignore "multiple spaces after ','" to improve code readability
+    E241,
+
+    # Ignore "unexpected spaces around keyword / parameter equals" to
+    # improve code readability
+    E251,
+
+    # Allow bare except statements
+    E722,
+
     # Ignore "invalid escape sequence" to prevent flagging false positives
     # in docstrings
     W605,
 
-    # Ignore "multiple spaces after ','" to improve code readability
-    E241,
-
-    # Allow bare except statements
-    E722
+    # Allow line breaks before binary operators (matches PEP 8 style)
+    W503,
 
 exclude =
     __pycache__
