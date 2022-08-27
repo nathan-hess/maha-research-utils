@@ -1,0 +1,26 @@
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mahautils"
+description = "Python tools for research tasks at the Maha Fluid Power Research Center"
+readme = "README.md"
+license = {text = "AGPL-3.0"}
+requires-python = ">=3.8"
+dynamic = [
+    "dependencies",
+    "version",
+    "urls",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "mahautils.__version__"}
+dependencies = {file = "requirements.txt"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mahautils*"]
