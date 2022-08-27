@@ -24,18 +24,18 @@
     "python.linting.pylintCategorySeverity.fatal": "Warning",
     "python.linting.pylintCategorySeverity.refactor": "Warning",
     "python.linting.pylintCategorySeverity.warning": "Warning",
-    
+
     // Python linting: Flake8
     "python.linting.flake8Enabled": true,
     "python.linting.flake8CategorySeverity.E": "Warning",
     "python.linting.flake8CategorySeverity.F": "Warning",
     "python.linting.flake8CategorySeverity.W": "Warning",
-    
+
     // Python linting: Mypy
     "python.linting.mypyEnabled": true,
     "python.linting.mypyCategorySeverity.error": "Warning",
     "python.linting.mypyCategorySeverity.note": "Warning",
-    
+
     // Python linting: Bandit
     "python.linting.banditEnabled": true,
 
