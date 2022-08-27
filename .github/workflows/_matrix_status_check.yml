@@ -1,0 +1,34 @@
+# Set GitHub check status for completed matrix
+#
+# This reusable workflow is intended to be run after `_matrix_output_success.yml`.
+# The output from `_matrix_output_success.yml` should be provided as an input to
+# this workflow -- if this input is 'true', then the workflow will terminate
+# with exit code 0; otherwise, it will terminate with exit code 1.
+#
+# These two reusable workflows provide a convenient way to set up a single
+# job that will pass if all steps in matrix strategy pass and fail if any step
+# in the matrix strategy failed.
+
+name: Report Matrix Status
+
+on:
+  workflow_call:
+    inputs:
+      success:
+        required: true
+        type: string
+
+jobs:
+  report-status:
+    name: Report Matrix Status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report Job Matrix Status
+        run: |
+          if [[ "${{ inputs.success }}" == "true" ]]; then
+            echo "All matrix jobs have passed"
+            exit 0
+          else
+            echo "One or more matrix jobs in preceding matrix failed"
+            exit 1
+          fi

@@ -1,0 +1,46 @@
+name: Check Release Composite Action
+description: Verifies that a GitHub release matches expected formatting and tag guidelines
+
+inputs:
+  package-name:
+    description: Name of package whose version is to be checked
+    required: true
+
+  # The "release-tag" input could theoretically be obtained within this action,
+  # but it is specified as an input to prevent injection attacks
+  # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions
+  release-tag:
+    description: Tag assigned to GitHub release
+    required: true
+
+  src-dir:
+    description: Directory where source files are located
+    required: false
+    default: $GITHUB_WORKSPACE
+
+runs:
+  using: composite
+  steps:
+    - name: Verify that Release Tag Matches Package Version
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        RED='\033[1;31m' ; GREEN='\033[1;32m' ; PLAIN='\033[0m'
+        cd "${{ inputs.src-dir }}"
+        package_version="v$(python3 -c 'import ${{ inputs.package-name }} ; print(${{ inputs.package-name }}.__version__)')"
+        if [[ "${{ inputs.release-tag }}" != "${package_version}" ]]; then
+          echo -e "${RED}GitHub release tag ${{ inputs.release-tag }} does not match ${{ inputs.package-name }}.__version__ ${package_version}${PLAIN}"
+          exit 1
+        else
+          echo -e "${GREEN}GitHub release tag ${{ inputs.release-tag }} matches ${{ inputs.package-name }}.__version__ ${package_version}${PLAIN}"
+        fi
+
+    - name: Display Suggested Next Steps in Event of Failure
+      if: ${{ failure() }}
+      shell: bash
+      run: |
+        RED='\033[1;31m' ; PLAIN='\033[0m'
+        echo -e "${RED}GitHub release tag does not match expected formatting guidelines${PLAIN}"
+        echo
+        echo -e "${RED}It is recommended that you revert the release by running:${PLAIN}"
+        echo -e "${RED}    git push --delete origin ${{ inputs.release-tag }}${PLAIN}"

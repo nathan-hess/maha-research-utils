@@ -1,0 +1,32 @@
+# Report successful matrix strategy checks
+#
+# This reusable workflow is intended to return an output variable to indicate
+# that all combinations in a matrix strategy completed successfully.  It is
+# intended that this reusable workflow is run only if all matrix combinations
+# complete successfully (i.e., by running this reusable workflow with
+# `if: ${{ success() }}`).
+#
+# The output from this workflow should be passed to `_matrix_status_check.yml`.
+# These two reusable workflows provide a convenient way to set up a single
+# job that will pass if all steps in matrix strategy pass and fail if any step
+# in the matrix strategy failed.
+
+name: Report Job Matrix Success
+
+on:
+  workflow_call:
+    outputs:
+      success:
+        description: Whether all jobs in previous matrix were successful
+        value: ${{ jobs.output-success.outputs.success }}
+
+jobs:
+  output-success:
+    name: Report Job Matrix Success
+    runs-on: ubuntu-latest
+    outputs:
+      success: ${{ steps.set-output.outputs.success }}
+    steps:
+      - name: Output Workflow Success
+        id: set-output
+        run: echo "::set-output name=success::true"
