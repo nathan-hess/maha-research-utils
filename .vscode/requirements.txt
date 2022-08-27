@@ -1,0 +1,28 @@
+###################################
+#   Developer Requirements File   #
+###################################
+
+# This file installs the necessary dependencies to perform code development
+# work for the MahaUtils package.
+
+# To install these files, simply open the MahaUtils repository in a terminal
+# and run:
+#    pip install -r .vscode/requirements.txt
+
+##############################################################################
+
+# Package dependencies
+-r ../requirements.txt
+
+# Documentation dependencies
+-r ../docs/requirements.txt
+
+# Linting packages
+bandit
+flake8
+mypy
+pylint
+
+# Deployment tools
+build
+twine

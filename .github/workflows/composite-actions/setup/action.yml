@@ -1,22 +1,41 @@
 name: Setup Composite Action
-description:  Update system, set up Python, and install dependencies
+description: Update system, set up Python, and install dependencies
 
 inputs:
   python-version:
     description: Version of Python to set up
     required: true
+  pip-requirements-file:
+    description: Requirements file from which to install Python dependencies
+    required: false
+    default: .vscode/requirements.txt
+  update-system:
+    description: Whether to run APT system updates
+    required: false
+    default: 'false'
 
 runs:
   using: composite
   steps:
     - name: Update System
+      if: ${{ inputs.update-system == 'true' }}
       shell: bash
       run: sudo apt update && sudo apt -y upgrade
 
+    - name: Load Environment Variables
+      uses: ./.github/workflows/composite-actions/load-workflow-config
+
     - name: Set up Python
       uses: actions/setup-python@v4
+      if: ${{ inputs.python-version != 'release' }}
       with:
         python-version: ${{ inputs.python-version }}
+
+    - name: Set up Python Release Version
+      uses: actions/setup-python@v4
+      if: ${{ inputs.python-version == 'release' }}
+      with:
+        python-version: ${{ env.PYTHON_RELEASE_VERSION }}
 
     - name: Install System Packages
       shell: bash
@@ -28,4 +47,4 @@ runs:
       run: |
         python3 -m pip install --upgrade pip
         python3 -m pip install wheel
-        python3 -m pip install -r ${GITHUB_WORKSPACE}/requirements.txt
+        python3 -m pip install -r "${GITHUB_WORKSPACE}/${{ inputs.pip-requirements-file }}"

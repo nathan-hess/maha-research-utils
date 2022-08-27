@@ -2,6 +2,7 @@
     // File language associations
     "files.associations": {
         "pylintrc": "ini",
+        "pyproject.toml": "ini",
     },
 
     // Python linting: general
@@ -9,12 +10,12 @@
     "python.linting.ignorePatterns": [
         "**/site-packages/**/*.py",
         ".vscode/*.py",
+        "docs/source/conf.py",
         "run_tests.py",
+        "scratch/**",
+        "scratch.py",
         "tests/**",
         "utilities/**",
-        "scratch/**/*.py",
-        "scratch.py",
-        "docs/source/conf.py",
     ],
 
     // Python linting: Pylint
@@ -24,18 +25,27 @@
     "python.linting.pylintCategorySeverity.fatal": "Warning",
     "python.linting.pylintCategorySeverity.refactor": "Warning",
     "python.linting.pylintCategorySeverity.warning": "Warning",
-    
+
     // Python linting: Flake8
     "python.linting.flake8Enabled": true,
     "python.linting.flake8CategorySeverity.E": "Warning",
     "python.linting.flake8CategorySeverity.F": "Warning",
     "python.linting.flake8CategorySeverity.W": "Warning",
-    
+
     // Python linting: Mypy
     "python.linting.mypyEnabled": true,
     "python.linting.mypyCategorySeverity.error": "Warning",
     "python.linting.mypyCategorySeverity.note": "Warning",
-    
+
     // Python linting: Bandit
     "python.linting.banditEnabled": true,
+
+    // Python tests
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s", "./tests",
+        "-p", "test_*.py",
+    ],
 }

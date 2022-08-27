@@ -1,0 +1,185 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, reopened, synchronize]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+
+jobs:
+
+  ## SETUP -------------------------------------------------------------------
+  # Set up the workflow (load environment variables, install dependencies) and
+  # provide data (Python version matrix) for subsequent jobs
+  setup:
+    name: Workflow Setup
+    uses: ./.github/workflows/_get_matrix_config.yml
+
+
+  ## PYTHON TESTS ------------------------------------------------------------
+  # Run Python unit and integration tests
+  test:
+    name: Python Tests (Python ${{ matrix.python-version }})
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
+    steps:
+      - name: Check Out Repository Files
+        uses: actions/checkout@v3
+
+      - name: Run Setup Action
+        uses: ./.github/workflows/composite-actions/setup
+        with:
+          python-version: ${{ matrix.python-version }}
+          pip-requirements-file: requirements.txt
+
+      - name: Run Python Tests
+        run: python3 run_tests.py
+
+  test-success:
+    name: Determine Python Test Success
+    needs: test
+    if: ${{ success() }}
+    uses: ./.github/workflows/_matrix_output_success.yml
+
+  test-status-check:
+    name: Python Tests
+    needs: test-success
+    if: ${{ always() }}
+    uses: ./.github/workflows/_matrix_status_check.yml
+    with:
+      success: ${{ needs.test-success.outputs.success }}
+
+
+  ## LINTING -----------------------------------------------------------------
+  # Run several Python code linters and scans to enforce code style, reduce
+  # the risk of bugs, and check for security vulnerabilities
+  linting:
+    name: Python Code Linting (Python ${{ matrix.python-version }})
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
+    steps:
+      - name: Check Out Repository Files
+        uses: actions/checkout@v3
+
+      - name: Run Setup Action
+        uses: ./.github/workflows/composite-actions/setup
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run Linting with Pylint
+        if: ${{ always() }}
+        run: pylint "${{ env.PACKAGE_NAME }}"
+
+      - name: Run Linting with Flake8
+        if: ${{ always() }}
+        run: flake8 --count "${{ env.PACKAGE_NAME }}"
+
+      - name: Run Static Type Checking with Mypy
+        if: ${{ always() }}
+        run: mypy "${{ env.PACKAGE_NAME }}"
+
+      - name: Run Security Analysis Scan
+        if: ${{ always() }}
+        run: bandit -rv "${{ env.PACKAGE_NAME }}"
+
+  linting-success:
+    name: Determine Python Code Linting Success
+    needs: linting
+    if: ${{ success() }}
+    uses: ./.github/workflows/_matrix_output_success.yml
+
+  linting-status-check:
+    name: Python Code Linting
+    needs: linting-success
+    if: ${{ always() }}
+    uses: ./.github/workflows/_matrix_status_check.yml
+    with:
+      success: ${{ needs.linting-success.outputs.success }}
+
+
+  ## SPHINX DOCUMENTATION TESTS ----------------------------------------------
+  # Checks the project documentation for build and spelling issues
+  doc-tests:
+    name: Documentation Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Repository Files
+        uses: actions/checkout@v3
+
+      - name: Run Setup Action
+        uses: ./.github/workflows/composite-actions/setup
+        with:
+          python-version: release
+          pip-requirements-file: docs/requirements.txt
+
+      - name: Build Documentation
+        if: ${{ always() }}
+        run: |
+          cd $GITHUB_WORKSPACE/docs
+          SPHINXOPTS="-W" make html
+
+      - name: Run Spell-Checking
+        if: ${{ always() }}
+        run: |
+          cd $GITHUB_WORKSPACE/docs
+          SPHINXOPTS="-W" make spelling
+
+
+  # DEPLOYMENT ---------------------------------------------------------------
+  # Build a distributable package, upload as a workflow artifact, and possibly
+  # publish to PyPI
+  deploy:
+    name: Build and Deploy Package
+    needs:
+      - test-status-check
+      - linting-status-check
+      - doc-tests
+    if: ${{ success() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Repository Files
+        uses: actions/checkout@v3
+
+      - name: Run Setup Action
+        uses: ./.github/workflows/composite-actions/setup
+        with:
+          python-version: release
+
+      - name: Build Package
+        run: python3 -m build --sdist --wheel --outdir dist/ .
+
+      - name: Run Twine Check
+        run: twine check --strict dist/*
+
+      - name: Upload Package as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-upload
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Check Release Formatting and Tag
+        if: ${{ github.event_name == 'release' }}
+        uses: ./.github/workflows/composite-actions/check-release
+        with:
+          package-name: ${{ env.PACKAGE_NAME }}
+          release-tag: ${{ github.ref_name }}
+
+      - name: Publish to PyPI
+        if: ${{ success() && github.event_name == 'release' }}
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload --verbose dist/*

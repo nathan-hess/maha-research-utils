@@ -1,4 +1,8 @@
-"""Package for analyzing Maha Multics software files"""
+"""Packages to support research work at the Maha Fluid Power Research Center
+
+This package contains a number of utilities that are useful for performing
+research work and interacting with the Maha Multics software.
+"""
 
 
 # PROGRAM VERSION ------------------------------------------------------------

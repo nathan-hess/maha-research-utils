@@ -1,0 +1,9 @@
+name: Load Environment Variables Composite Action
+description: Loads environment variables from workflow configuration file
+
+runs:
+  using: composite
+  steps:
+    - name: Load Environment Variables
+      shell: bash
+      run: cat $GITHUB_WORKSPACE/.github/workflows/workflow_config >> $GITHUB_ENV
