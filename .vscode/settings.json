@@ -38,4 +38,13 @@
     
     // Python linting: Bandit
     "python.linting.banditEnabled": true,
+
+    // Python tests
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s", "./tests",
+        "-p", "test_*.py",
+    ],
 }
