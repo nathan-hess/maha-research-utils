@@ -17,6 +17,9 @@ dynamic = [
     "urls",
 ]
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.dynamic]
 version = {attr = "mahautils.__version__"}
 dependencies = {file = "requirements.txt"}
