@@ -1,3 +1,10 @@
+.. spelling:word-list::
+
+   mahautils
+   TypedList
+   TypedListWithID
+
+
 {{ fullname | escape | underline}}
 
 .. currentmodule:: {{ module }}
