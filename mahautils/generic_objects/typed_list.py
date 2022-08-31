@@ -4,7 +4,6 @@ requirement that all items in the list are of a specific, user-specified
 type.
 """
 
-import collections
 import collections.abc
 import itertools
 from typing import Any
@@ -12,7 +11,7 @@ from typing import Any
 from pyxx.arrays import max_list_item_len
 
 
-class TypedList(collections.MutableSequence):
+class TypedList(collections.abc.MutableSequence):
     """A list whose elements must be of a specific type
 
     This class defines a custom version of Python's ``list`` object.  When
