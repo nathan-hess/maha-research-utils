@@ -184,3 +184,42 @@ class TypedList(collections.MutableSequence):
             raise TypeError(
                 'Argument "multiline_padding" must be of type "int"')
         self._multiline_padding = multiline_padding
+
+
+class TypedListWithID(TypedList):
+    """A list whose elements must be of a specific type, where each class
+    instance is given a unique identifier
+
+    This class modifies the :py:class:`TypedList` class, assigning a unique
+    identification number to each class instance.  This can be useful in
+    tasks such as creating unique class names.
+
+    Notes
+    -----
+    The identification number is shared by all instances of the
+    :py:class:`TypedListWithID` class *and inherited classes*.  To reset
+    the identifier for an inherited class, simply override the ``_id``
+    iterator by defining ``_id = itertools.count(0)`` as a class variable
+    for the subclass.
+    """
+
+    # Iterator that assigns a unique identification number to each
+    # class instance
+    _id = itertools.count(0)
+
+    def __init__(self, *values, list_type: type,
+                 print_multiline: bool = True, multiline_padding: int = 1):
+        super().__init__(
+            *values,
+            list_type=list_type,
+            print_multiline=print_multiline,
+            multiline_padding=multiline_padding
+        )
+
+        # Set class instance identifier
+        self.__id = next(self._id)
+
+    @property
+    def id(self):
+        """A unique class instance identification number"""
+        return self.__id

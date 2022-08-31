@@ -1,7 +1,8 @@
 import copy
+import itertools
 import unittest
 
-from mahautils.generic_objects import TypedList
+from mahautils.generic_objects import TypedList, TypedListWithID
 
 
 class Test_TypedList(unittest.TestCase):
@@ -414,3 +415,62 @@ class Test_TypedList(unittest.TestCase):
             with self.subTest(type=str(dtype)):
                 with self.assertRaises(TypeError):
                     self.test_lists[dtype].insert(0, {'key': 1234})
+
+
+class Test_TypedListWithID(unittest.TestCase):
+    def setUp(self):
+        self.idx0 = TypedListWithID(list_type=float).id + 1
+
+    def test_class_id(self):
+        # Verifies that class instance ID is incremented correctly
+        for i in range(100):
+            with self.subTest(instance=i):
+                self.assertEqual(TypedListWithID(list_type=float).id - self.idx0, i)
+
+    def test_subclass_id_shared(self):
+        # Verifies that class instance ID is incremented correctly for
+        # class and subclass with shared counter
+        class SubclassShared(TypedListWithID):
+            pass
+
+        with self.subTest(class_name='TypedListWithID', id=0):
+            self.assertEqual(TypedListWithID(list_type=float).id - self.idx0, 0)
+
+        with self.subTest(class_name='TypedListWithID', id=1):
+            self.assertEqual(TypedListWithID(list_type=float).id - self.idx0, 1)
+
+        with self.subTest(class_name='SubclassShared', id=2):
+            self.assertEqual(SubclassShared(list_type=float).id - self.idx0, 2)
+
+        with self.subTest(class_name='TypedListWithID', id=3):
+            self.assertEqual(TypedListWithID(list_type=float).id - self.idx0, 3)
+
+        with self.subTest(class_name='SubclassShared', id=4):
+            self.assertEqual(SubclassShared(list_type=float).id - self.idx0, 4)
+
+        with self.subTest(class_name='TypedListWithID', id=5):
+            self.assertEqual(TypedListWithID(list_type=float).id - self.idx0, 5)
+
+    def test_subclass_id_independent(self):
+        # Verifies that class instance ID is incremented correctly for
+        # class and subclass, where subclass has its own counter
+        class SubclassIndependent(TypedListWithID):
+            _id = itertools.count(0)
+
+        with self.subTest(class_name='TypedListWithID', id=0):
+            self.assertEqual(TypedListWithID(list_type=float).id - self.idx0, 0)
+
+        with self.subTest(class_name='TypedListWithID', id=1):
+            self.assertEqual(TypedListWithID(list_type=float).id - self.idx0, 1)
+
+        with self.subTest(class_name='SubclassIndependent', id=0):
+            self.assertEqual(SubclassIndependent(list_type=float).id, 0)
+
+        with self.subTest(class_name='TypedListWithID', id=2):
+            self.assertEqual(TypedListWithID(list_type=float).id - self.idx0, 2)
+
+        with self.subTest(class_name='SubclassIndependent', id=1):
+            self.assertEqual(SubclassIndependent(list_type=float).id, 1)
+
+        with self.subTest(class_name='TypedListWithID', id=3):
+            self.assertEqual(TypedListWithID(list_type=float).id - self.idx0, 3)
