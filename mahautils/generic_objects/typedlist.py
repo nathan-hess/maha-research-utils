@@ -8,7 +8,7 @@ import collections.abc
 import itertools
 from typing import Any
 
-from pyxx.arrays import max_list_item_len
+import pyxx
 
 
 class TypedList(collections.abc.MutableSequence):
@@ -113,7 +113,7 @@ class TypedList(collections.abc.MutableSequence):
                 output += ((('\n ' if i > 0 else '')
                            + f'{padding}{str(item_formatted)},'))
 
-            end_padding = max_list_item_len(output.split('\n')) \
+            end_padding = pyxx.arrays.max_list_item_len(output.split('\n')) \
                 - len(output.split('\n')[-1]) + self.multiline_padding
             return output + f'{" " * end_padding}]'
         else:
