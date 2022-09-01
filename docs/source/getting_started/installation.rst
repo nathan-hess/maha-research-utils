@@ -46,4 +46,4 @@ Finally, make sure to install required dependencies through pip:
 
 .. code-block:: shell
 
-    pip install -r python-utilities/requirements.txt
+    pip install -r maha-research-utils/requirements.txt

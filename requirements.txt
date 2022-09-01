@@ -12,3 +12,5 @@
 # that you use the `.vscode/requirements.txt` file to install dependencies.
 
 ##############################################################################
+
+pyxx
