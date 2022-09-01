@@ -1,6 +1,6 @@
 .. spelling:word-list::
 
-   mahautils
+   str
    TypedList
    TypedListWithID
 
