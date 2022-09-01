@@ -14,7 +14,7 @@ built-in ``list`` object, with the added requirement that all items in the
 list are of a specific, user-specified type.
 
 .. inheritance-diagram:: TypedList TypedListWithID
-    :top-classes: mahautils.generic_objects.typed_list.TypedList
+    :top-classes: mahautils.generic_objects.typedlist.TypedList
     :parts: 1
 
 |
