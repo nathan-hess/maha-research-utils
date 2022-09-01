@@ -4,6 +4,7 @@ This package contains a number of utilities that are useful for performing
 research work and interacting with the Maha Multics software.
 """
 
+from . import dictionaries
 from . import generic_objects
 
 
