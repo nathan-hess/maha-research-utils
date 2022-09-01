@@ -1,1 +1,1 @@
-from .test_typed_list import *
+from .test_typedlist import *
