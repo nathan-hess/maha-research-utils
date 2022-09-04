@@ -46,6 +46,17 @@ class Test_Dictionary(unittest.TestCase):
                  'key24 :  6.28')
             )
 
+    def test_dictionary_str_empty(self):
+        # Verify that dictionary can be converted to a string
+        # representation correctly when dictionary contains no content
+        dictionary = Dictionary()
+
+        with self.subTest(format='str'):
+            self.assertEqual(str(dictionary), '')
+
+        with self.subTest(format='__repr__'):
+            self.assertEqual(dictionary.__repr__(), '')
+
     def test_dictionary_indent(self):
         # Verify that dictionary can be converted to a string
         # representation correctly with non-default indentation
