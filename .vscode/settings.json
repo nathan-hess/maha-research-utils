@@ -1,8 +1,10 @@
 {
     // File language associations
     "files.associations": {
+        ".coveragerc": "ini",
         "pylintrc": "ini",
         "pyproject.toml": "ini",
+        "workflow_config": "ini",
     },
 
     // Python linting: general

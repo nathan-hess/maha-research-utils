@@ -135,7 +135,6 @@ class Test_TypedList(unittest.TestCase):
             list4._data = [1, 92, 3, 4, 5]
 
             self.assertNotEqual(list3, list4)
-
         
         with self.subTest(type='different_values'):
             list5 = TypedList(list_type=int)
@@ -145,6 +144,10 @@ class Test_TypedList(unittest.TestCase):
             list6._data = [1, 92, 2, 4, 5, -30]
 
             self.assertNotEqual(list5, list6)
+
+        with self.subTest(type='not_typed_list'):
+            list7 = TypedList(3, 4, 5, list_type=int)
+            self.assertNotEqual(list7, [3, 4, 5])
 
     def test_getitem_single(self):
         # Verifies that individual items can be retrieved correctly
