@@ -1,0 +1,22 @@
+[run]
+# Whether to run branch coverage
+branch = True
+
+# Command to run test program
+command_line = run_tests.py
+
+# Set location of source files
+source = mahautils
+
+# Don't include Python test code in code coverage report
+omit = tests/*
+
+
+[report]
+# Number of decimal places to show in report
+precision = 3
+
+
+[html]
+# HTML report title
+title = MahaUtils Code Coverage Report
