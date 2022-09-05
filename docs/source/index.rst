@@ -19,6 +19,7 @@ general-purpose research tasks as well as simplify interaction with the
 
     getting_started/installation
     getting_started/about
+    getting_started/file_formats/index
 
 
 .. toctree::
