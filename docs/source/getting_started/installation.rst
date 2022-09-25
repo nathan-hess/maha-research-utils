@@ -1,6 +1,8 @@
 .. include:: ../constants.rst
 
 
+.. _section-installation:
+
 Installation
 ============
 

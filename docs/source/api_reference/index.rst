@@ -1,6 +1,8 @@
 .. include:: ../constants.rst
 
 
+.. _section-api_reference:
+
 API Reference
 =============
 

@@ -28,3 +28,39 @@ general-purpose research tasks as well as simplify interaction with the
 
     Overview <api_reference/index>
     api_reference/dictionaries
+
+
+Quick Links
+-----------
+
+.. grid:: 3
+
+    .. grid-item-card:: Installation
+        :link: section-installation
+        :link-type: ref
+
+        .. figure:: ./_static/icon_download.svg
+            :align: center
+            :width: 200px
+        
+        Instructions for installing and running |PackageNameStylized|
+
+    .. grid-item-card:: API Reference
+        :link: section-api_reference
+        :link-type: ref
+
+        .. figure:: ./_static/icon_python_shell.svg
+            :align: center
+            :width: 200px
+
+        Detailed documentation of all members in the |PackageNameStylized| package
+
+    .. grid-item-card:: File Formats
+        :link: section-file_formats
+        :link-type: ref
+
+        .. figure:: ./_static/icon_folder.svg
+            :align: center
+            :width: 200px
+
+        Explanation of the format of files commonly used by the Maha Multics software
