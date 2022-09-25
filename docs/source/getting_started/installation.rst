@@ -19,7 +19,10 @@ Source Code
 -----------
 
 Alternatively, if you prefer to download the source code directly, you can do
-so using Git.  First, clone the source repository to a location of your choice:
+so using Git.  Note that some functionality, such as command-line utilities,
+will not be available if setting up |PackageNameStylized| using this method.
+
+First, clone the source repository to a location of your choice:
 
 .. code-block:: shell
 
