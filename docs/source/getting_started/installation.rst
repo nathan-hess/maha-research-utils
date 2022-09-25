@@ -7,12 +7,26 @@ Installation
 pip
 ---
 
+Stable Version
+^^^^^^^^^^^^^^
+
 |PackageNameStylized| has been packaged through PyPI, so the easiest way to
-install the package is through pip:
+install the latest package release is through pip:
 
 .. code-block:: shell
 
     pip install mahautils
+
+
+Development Version
+^^^^^^^^^^^^^^^^^^^
+
+To use the latest |PackageNameStylized| features prior to their release on PyPI,
+you can install the package directly from the project's GitHub page using:
+
+.. code-block:: shell
+
+    pip install git+https://github.com/nathan-hess/maha-research-utils.git@main
 
 
 Source Code
