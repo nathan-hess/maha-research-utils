@@ -5,7 +5,6 @@ research work and interacting with the Maha Multics software.
 """
 
 from . import dictionaries
-from . import generic_objects
 
 
 # PROGRAM VERSION ------------------------------------------------------------
