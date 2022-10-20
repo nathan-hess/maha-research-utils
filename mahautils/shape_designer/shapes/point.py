@@ -46,7 +46,7 @@ class Point:
 
     @coordinates.setter
     def coordinates(self):
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
 
 class CartesianPoint2D(Point):
