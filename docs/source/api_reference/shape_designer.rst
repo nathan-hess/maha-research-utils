@@ -1,3 +1,10 @@
+.. spelling:word-list::
+
+   args
+   backend
+   kwargs
+
+
 mahautils.shape_designer
 ========================
 

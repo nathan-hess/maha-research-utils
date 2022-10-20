@@ -1,9 +1,11 @@
 .. spelling:word-list::
 
    args
+   CartesianPoint
    DataFrame
    exps
    FluidPropertyFile
+   kwargs
    maha
    MahaMulticsConfigFile
    MahaMulticsUnit
