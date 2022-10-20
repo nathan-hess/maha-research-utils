@@ -128,5 +128,5 @@ autodoc_default_options = {
 # inside a `.. doctest::` block but start with `>>>` are tested)
 doctest_test_doctest_blocks = 'default'
 
-# Code executed before running test code sections for all documentation files
+# Code executed before running test code snippets for all documentation files
 doctest_global_setup = 'import mahautils'

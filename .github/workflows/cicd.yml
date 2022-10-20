@@ -135,6 +135,12 @@ jobs:
           cd $GITHUB_WORKSPACE/docs
           SPHINXOPTS="-W" make spelling
 
+      - name: Test Documentation Code Snippets
+        if: ${{ always() }}
+        run: |
+          cd $GITHUB_WORKSPACE/docs
+          SPHINXOPTS="-W" make doctest
+
 
   # DEPLOYMENT ---------------------------------------------------------------
   # Build a distributable package, upload as a workflow artifact, and possibly
