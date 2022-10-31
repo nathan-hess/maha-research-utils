@@ -79,19 +79,12 @@ confidence=
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
 disable=anomalous-backslash-in-string,
-        arguments-differ,
-        attribute-defined-outside-init,
-        bad-inline-option,
         deprecated-pragma,
         duplicate-code,
         file-ignored,
         invalid-name,
         locally-disabled,
-        no-else-raise,
-        no-else-return,
         no-member,
-        not-callable,
-        raise-missing-from,
         raw-checker-failed,
         superfluous-parens,
         suppressed-message,
@@ -104,7 +97,6 @@ disable=anomalous-backslash-in-string,
         too-many-return-statements,
         too-many-statements,
         use-symbolic-message-instead,
-        useless-suppression,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -290,7 +282,7 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=100
+max-line-length=85
 
 # Maximum number of lines in a module.
 max-module-lines=1000
