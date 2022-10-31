@@ -86,6 +86,13 @@ html_sidebars = {
 }
 
 
+# -- Other general Sphinx configuration options ------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html
+
+# Show parentheses after function and method names
+add_function_parentheses = True
+
+
 # -- Spell-checking options --------------------------------------------------
 # https://sphinxcontrib-spelling.readthedocs.io/en/latest/
 

@@ -14,9 +14,6 @@ ignore =
     # improve code readability
     E251,
 
-    # Allow bare except statements
-    E722,
-
     # Ignore "invalid escape sequence" to prevent flagging false positives
     # in docstrings
     W605,
