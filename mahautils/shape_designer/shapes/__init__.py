@@ -8,3 +8,4 @@ to allow greater freedom in building complex geometry.
 """
 
 from .point import CartesianPoint2D, Point
+from .shape import ClosedShape2D, OpenShape2D, Shape2D
