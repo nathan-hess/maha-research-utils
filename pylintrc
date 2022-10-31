@@ -79,6 +79,7 @@ confidence=
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
 disable=anomalous-backslash-in-string,
+        arguments-differ,
         deprecated-pragma,
         duplicate-code,
         file-ignored,
