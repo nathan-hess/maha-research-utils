@@ -49,9 +49,6 @@
    {%- endfor %}
 
 
-   .. automethod:: __init__
-
-
    {% if attributes_non_inherited %}
    .. rubric:: {{ _('Attributes') }}
 
