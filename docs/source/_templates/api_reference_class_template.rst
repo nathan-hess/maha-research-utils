@@ -2,6 +2,7 @@
 
    args
    CartesianPoint
+   ClosedShape
    DataFrame
    exps
    FluidPropertyFile

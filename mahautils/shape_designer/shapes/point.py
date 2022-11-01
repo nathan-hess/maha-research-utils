@@ -57,6 +57,30 @@ class CartesianPoint2D(Point):
     arbitrary (:math:`xy`-coordinates, :math:`xz`-coordinates, etc.) in this
     documentation the axes are always referred to as :math:`x` and :math:`y`
     for simplicity and clarity.
+
+    Examples
+    --------
+    Create a :py:class:`CartesianPoint2D` with no location initialized:
+
+    >>> print(mahautils.shape_designer.shapes.CartesianPoint2D())
+    ()
+
+    Create a :py:class:`CartesianPoint2D` with location specified by
+    positional arguments:
+
+    >>> print(mahautils.shape_designer.shapes.CartesianPoint2D(1, 2.3))
+    (1.0, 2.3)
+    >>> print(mahautils.shape_designer.shapes.CartesianPoint2D([4, 5]))
+    (4.0, 5.0)
+    >>> pnt = mahautils.shape_designer.shapes.CartesianPoint2D([6, 7])
+    >>> print(mahautils.shape_designer.shapes.CartesianPoint2D(pnt))
+    (6.0, 7.0)
+
+    Create a :py:class:`CartesianPoint2D` with location specified by
+    keyword arguments:
+
+    >>> print(mahautils.shape_designer.shapes.CartesianPoint2D(x=1, y=2))
+    (1.0, 2.0)
     """
 
     def __init__(self, *args: Union[Array_Float2, 'CartesianPoint2D', float],
@@ -93,30 +117,6 @@ class CartesianPoint2D(Point):
         If providing the location using keyword arguments, then *two* keyword
         arguments *must* be specified: ``x`` and ``y``.  Both arguments must
         be numeric types (integer or floating-point values).
-
-        Examples
-        --------
-        Create a :py:class:`CartesianPoint2D` with no location initialized:
-
-        >>> print(mahautils.shape_designer.shapes.CartesianPoint2D())
-        ()
-
-        Create a :py:class:`CartesianPoint2D` with location specified by
-        positional arguments:
-
-        >>> print(mahautils.shape_designer.shapes.CartesianPoint2D(1, 2.3))
-        (1.0, 2.3)
-        >>> print(mahautils.shape_designer.shapes.CartesianPoint2D([4, 5]))
-        (4.0, 5.0)
-        >>> pnt = mahautils.shape_designer.shapes.CartesianPoint2D([6, 7])
-        >>> print(mahautils.shape_designer.shapes.CartesianPoint2D(pnt))
-        (6.0, 7.0)
-
-        Create a :py:class:`CartesianPoint2D` with location specified by
-        keyword arguments:
-
-        >>> print(mahautils.shape_designer.shapes.CartesianPoint2D(x=1, y=2))
-        (1.0, 2.0)
         """
         super().__init__()
 
