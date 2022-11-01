@@ -7,5 +7,6 @@ shapes in this module is intended to be as generic and flexible as possible
 to allow greater freedom in building complex geometry.
 """
 
+from .circle import Circle
 from .point import CartesianPoint2D, Point
 from .shape import ClosedShape2D, OpenShape2D, Shape2D

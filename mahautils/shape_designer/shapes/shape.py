@@ -112,13 +112,13 @@ class Shape2D:
         points :
             Returns the same coordinates as :py:meth:`points` except
             that points are returned with all the x-coordinates aggregated and
-            all the y-coordinates aggreated (essentially the transpose of
+            all the y-coordinates aggregated (essentially the transpose of
             :py:meth:`points`)
-            """
+        """
         x_coordinates, y_coordinates = self.xy_coordinates(**kwargs)
         return tuple(np.transpose(np.array([x_coordinates, y_coordinates])))
 
-    def xy_coordinates(self, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
+    def xy_coordinates(self) -> Tuple[np.ndarray, np.ndarray]:
         """Generates Cartesian coordinates of the shape
 
         This method generates a set of discretized points around the perimeter

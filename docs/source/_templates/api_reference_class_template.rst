@@ -15,6 +15,8 @@
    multics
    ndarray
    np
+   num
+   OpenShape
    printDict
    SimResults
    str
