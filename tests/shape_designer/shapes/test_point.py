@@ -22,6 +22,24 @@ class Test_Point(unittest.TestCase):
         # Verifies that `Point` class is initialized with empty coordinates
         self.assertTupleEqual(self.point._coordinates, ())
 
+    def test_eq(self):
+        # Verify that equality between `Point` objects functions as expected
+        with self.subTest(case='same_point'):
+            self.assertEqual(self.point, self.point)
+            self.assertEqual(self.point2D, self.point2D)
+            self.assertEqual(self.point3D, self.point3D)
+
+        with self.subTest(case='same_point_different_type'):
+            (pnt := Point())._coordinates = (3.0, 4, 5.0)
+            self.assertEqual(pnt, self.point3D)
+
+        with self.subTest(case='different_length'):
+            self.assertNotEqual(self.point2D, self.point3D)
+
+        with self.subTest(case='different_values'):
+            (pnt := Point())._coordinates = (3, 4.001, 5)
+            self.assertNotEqual(pnt, self.point3D)
+
     def test_len(self):
         # Verifies that the "length" attribute of points is returned correctly
         with self.subTest(len=0):
@@ -78,6 +96,19 @@ class Test_CartesianPoint2D(unittest.TestCase):
 
         self.pnt2 = CartesianPoint2D(83.3, 494.82)
         self.pnt1_pnt2_distance = 505.2277075735257
+
+    def test_eq(self):
+        # Verify that equality between `CartesianPoint2D` objects functions as expected
+        with self.subTest(case='same_point'):
+            self.assertEqual(self.pnt1, self.pnt1)
+            self.assertEqual(self.pnt2, self.pnt2)
+
+        with self.subTest(case='different_values'):
+            self.assertNotEqual(CartesianPoint2D(-1.23, 45), CartesianPoint2D(-1.24, 45))
+
+        with self.subTest(case='different_type'):
+            (point := Point())._coordinates = (1, 2)
+            self.assertNotEqual(point, CartesianPoint2D(1, 2))
 
     def test_get_coordinates(self):
         # Verifies that point coordinates are retrieved correctly

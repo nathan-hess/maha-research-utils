@@ -23,12 +23,35 @@ class Point:
     other classes and customizations added (for instance, checking that
     the number of point coordinates match the dimension of the coordinate
     system).
+
+    Notes
+    -----
+    The equality operator (``==``) is defined for points.  Points are
+    considered equal if they are of the same type (:py:class:`Point`,
+    :py:class:`CartesianPoint2D`, etc.) and if the points' have
+    :py:attr:`coordinates` attributes of the same shape and values.
     """
 
     def __init__(self):
         """Creates an instance of a :py:class:`Point` class and sets the point
         coordinates to an empty tuple"""
         self._coordinates = ()
+
+    def __eq__(self, value) -> bool:
+        # Verify that `value` is of the same type of point
+        if not isinstance(value, self.__class__):
+            return False
+
+        # If points don't have the same number of coordinates, they aren't equal
+        if len(self.coordinates) != len(value.coordinates):
+            return False
+
+        # If coordinate values differ, the points aren't equal
+        for i, item in enumerate(self.coordinates):
+            if item != value.coordinates[i]:
+                return False
+
+        return True
 
     def __len__(self):
         return len(self._coordinates)
@@ -40,7 +63,7 @@ class Point:
         return str(self._coordinates)
 
     @property
-    def coordinates(self) -> tuple:
+    def coordinates(self) -> Tuple[float, ...]:
         """The coordinates of the point"""
         return self._coordinates
 
@@ -57,6 +80,13 @@ class CartesianPoint2D(Point):
     arbitrary (:math:`xy`-coordinates, :math:`xz`-coordinates, etc.) in this
     documentation the axes are always referred to as :math:`x` and :math:`y`
     for simplicity and clarity.
+
+    Notes
+    -----
+    The equality operator (``==``) is defined for points.  Points are
+    considered equal if they are of the same type (:py:class:`Point`,
+    :py:class:`CartesianPoint2D`, etc.) and if the points' have
+    :py:attr:`coordinates` attributes of the same shape and values.
 
     Examples
     --------
