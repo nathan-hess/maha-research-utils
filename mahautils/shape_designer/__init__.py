@@ -7,3 +7,4 @@ and locations for pumps and motors.
 """
 
 from . import shapes
+from .layer import Layer

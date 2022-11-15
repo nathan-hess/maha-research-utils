@@ -52,3 +52,22 @@ Points
     shapes.ClosedShape2D
     shapes.OpenShape2D
     shapes.Circle
+
+
+Layers and Canvases
+-------------------
+
+Layers and canvases are "collections" that store shapes and allow more complex,
+multi-shape geometries to be constructed.  A layer is a group of shapes, and a
+canvas is a group of layers.
+
+For instance, in an axial piston pump, all of the high-pressure ports might be
+grouped in a layer, all the low-pressure ports might be grouped in another
+layer, and these two layers might be grouped into a single canvas (and different
+canvases could be created for different simulation time steps).
+
+.. autosummary::
+    :toctree: ./api
+    :template: ../_templates/api_reference_class_template.rst
+
+    Layer
