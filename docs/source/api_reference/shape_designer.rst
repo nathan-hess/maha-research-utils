@@ -71,3 +71,4 @@ canvases could be created for different simulation time steps).
     :template: ../_templates/api_reference_class_template.rst
 
     Layer
+    Canvas
