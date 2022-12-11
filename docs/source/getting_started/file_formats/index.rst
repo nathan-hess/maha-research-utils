@@ -27,3 +27,6 @@ in the documentation.
 
 .. toctree::
     :caption: File Format Specifications
+    :maxdepth: 1
+
+    lookuptable
