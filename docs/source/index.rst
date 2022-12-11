@@ -18,8 +18,9 @@ general-purpose research tasks as well as simplify interaction with the
     :hidden:
 
     getting_started/installation
-    getting_started/about
+    getting_started/examples/index
     getting_started/file_formats/index
+    getting_started/about
 
 
 .. toctree::
@@ -45,6 +46,16 @@ Quick Links
         
         Instructions for installing and running |PackageNameStylized|
 
+    .. grid-item-card:: Examples
+        :link: section-examples
+        :link-type: ref
+
+        .. figure:: ./_static/icon_examples.svg
+            :align: center
+            :width: 200px
+
+        Code samples illustrating how to use |PackageNameStylized|
+
     .. grid-item-card:: API Reference
         :link: section-api_reference
         :link-type: ref
@@ -53,14 +64,4 @@ Quick Links
             :align: center
             :width: 200px
 
-        Detailed documentation of all members in the |PackageNameStylized| package
-
-    .. grid-item-card:: File Formats
-        :link: section-file_formats
-        :link-type: ref
-
-        .. figure:: ./_static/icon_folder.svg
-            :align: center
-            :width: 200px
-
-        Explanation of the format of files commonly used by the Maha Multics software
+        Detailed API reference documentation
