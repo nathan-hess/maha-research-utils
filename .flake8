@@ -14,6 +14,10 @@ ignore =
     # improve code readability
     E251,
 
+    # Allow block comments with multiple leading '#' characters to improve
+    # code readability by making it easier to identify comment section headers
+    E266,
+
     # Ignore "invalid escape sequence" to prevent flagging false positives
     # in docstrings
     W605,
@@ -28,5 +32,11 @@ per-file-ignores =
     # Prevent "imported but unused" and "unable to detect undefined names"
     # errors for __init__.py files
     __init__.py: F401, F403
+
+    # Prevents "expected 2 blank lines, found 1" warnings before class
+    # definitions in files containing exclusively a list of customized
+    # exceptions.  In these files, the objective is to list a classes, so
+    # allowing tighter spacing reduces file length and improves readability
+    exceptions.py: E302
 
 max-line-length = 85
