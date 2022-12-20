@@ -29,6 +29,11 @@ class VTKFile(pyxx.files.BinaryFile):
     file, and plotting scalar property distributions.
     """
 
+    # Regular expression describing expected format for identifiers that
+    # follow the naming convention used at the Maha Fluid Power Research
+    # Center
+    __maha_name_convention_regex = r'^([^\s]+)\[([^\s]+)\]$'
+
     def __init__(self, path: Optional[Union[str, pathlib.Path]] = None,
                  **kwargs) -> None:
         """Creates an object that can parse data from a VTK file
@@ -113,14 +118,35 @@ class VTKFile(pyxx.files.BinaryFile):
                 'VTK identifier naming convenction is not defined; VTK file '
                 'has not yet been read') from exception
 
-    def _check_vtk_id_name(self, name: str):
+    def _check_name_convention_compliance_id(self, name: str) -> None:
         if not isinstance(name, str):
             raise TypeError(
                 f'VTK data name {name} is not of type "str"')
 
         if self.use_maha_name_convention:
-            if not re.match(r'^[^\s]+\[[^\s]+\]$', name):
-                raise VTKIdentifierNameError(f'Invalid VTK data name: "{name}"')
+            if not re.match(self.__maha_name_convention_regex, name):
+                raise VTKIdentifierNameError(
+                    f'Invalid VTK data identifier: "{name}"')
+
+    def _parse_column_id(self, identifier: str, target: str) -> str:
+        if not self.use_maha_name_convention:
+            raise AttributeError(
+                'Parsing VTK data identifier is not a valid action when VTK '
+                'file does not use the Maha naming convention')
+
+        matches = re.search(self.__maha_name_convention_regex, str(identifier))
+
+        if matches is None:
+            raise VTKIdentifierNameError(
+                f'Invalid VTK data identifier: "{identifier}"')
+
+        if target == 'name':
+            return matches.group(1)
+        if target == 'unit':
+            return matches.group(2)
+
+        raise ValueError('Argument "target" must be one of: ["name", "unit"]')
+
 
     def read(self,
              path: Optional[Union[str, pathlib.Path]] = None,
@@ -192,13 +218,38 @@ class VTKFile(pyxx.files.BinaryFile):
             y_points.append(float(y))
             z_points.append(float(z))
 
-        df_data = {'x': x_points, 'y': y_points, 'z': z_points}
+        if use_maha_name_convention:
+            df_data = {
+                f'x[{self.coordinate_units}]': x_points,
+                f'y[{self.coordinate_units}]': y_points,
+                f'z[{self.coordinate_units}]': z_points,
+            }
+        else:
+            df_data = {'x': x_points, 'y': y_points, 'z': z_points}
+
+        self.__xyz_coordinate_columns = tuple(df_data.keys())
 
         # Read all arrays from VTK file
         point_data = output.GetPointData()
+        data_id_names = list(self.__xyz_coordinate_columns)
         for i in range(point_data.GetNumberOfArrays()):
-            name = str(point_data.GetArray(i).GetName())
-            self._check_vtk_id_name(name)
+            identifier = str(point_data.GetArray(i).GetName())
+
+            if identifier in self.__xyz_coordinate_columns:
+                raise VTKIdentifierNameError(
+                    f'Invalid VTK data identifier "{identifier}" (matches '
+                    'name of one of the point coordinate columns)')
+
+            self._check_name_convention_compliance_id(identifier)
+            if self.use_maha_name_convention:
+                name = self._parse_column_id(identifier, 'name')
+
+                if name in data_id_names:
+                    raise VTKIdentifierNameError(
+                        f'Invalid VTK data identifier "{identifier}" (multiple '
+                        f'identifiers use the same name "{name}")')
+
+                data_id_names.append(name)
 
             try:
                 array = np.array(
@@ -206,15 +257,15 @@ class VTKFile(pyxx.files.BinaryFile):
                     dtype=np.float64)
             except ValueError as exception:
                 raise VTKFormatError(
-                    f'VTK point data "{name}" does not appear to be a valid '
-                    'array of numbers') from exception
+                    f'VTK point data "{identifier}" does not appear to be a '
+                    'valid array of numbers') from exception
 
             # Validate data format and perform pre-processing
             if array.shape[0] != self.num_points:
                 raise VTKFormatError(
-                    f'VTK point data "{name}" has {len(array)} elements, '
-                    'which does not match number of VTK grid points '
-                    f'({self.num_points})')
+                    f'VTK point data "{identifier}" has {len(array)} '
+                    'elements, which does not match number of VTK grid '
+                    f'points ({self.num_points})')
 
             # Modify data to match expected format for Pandas
             if array.ndim == 1:  # Array contains a scalar for each grid point
@@ -223,19 +274,19 @@ class VTKFile(pyxx.files.BinaryFile):
                 if not array.shape[1] == 3:
                     raise VTKFormatError(
                         'VTK vector data should have 3 components (x, y, z), '
-                        f'but data specified by "{name}" has {array.shape[1]} '
-                        'components')
+                        f'but data specified by "{identifier}" has '
+                        f'{array.shape[1]} components')
 
                 pd_array = [(v[0], v[1], v[2]) for v in array]
             else:
                 raise VTKFormatError(
-                    f'VTK point data specified by "{name}" has invalid '
+                    f'VTK point data specified by "{identifier}" has invalid '
                     f'dimensions {array.shape}. Valid dimensions are:\n'
                     f'-- Scalar data: ({self.num_points},)\n'
                     f'-- Vector data: ({self.num_points}, 3)')
 
             # Store data
-            df_data[name] = pd_array
+            df_data[identifier] = pd_array
 
         # CREATE PANDAS DATAFRAME --------------------------------------------
         self._df = pd.DataFrame(df_data)
