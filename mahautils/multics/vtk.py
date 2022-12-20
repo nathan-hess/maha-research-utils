@@ -18,6 +18,7 @@ from .exceptions import (
     VTKIdentifierNameError,
     VTKFormatError,
 )
+from .units import MahaMulticsUnitConverter
 
 
 class VTKFile(pyxx.files.BinaryFile):
@@ -36,6 +37,7 @@ class VTKFile(pyxx.files.BinaryFile):
     __maha_name_convention_regex = r'^([^\s]+)\[([^\s]+)\]$'
 
     def __init__(self, path: Optional[Union[str, pathlib.Path]] = None,
+                 unit_converter: Optional[pyxx.units.UnitConverter] = None,
                  **kwargs) -> None:
         """Creates an object that can parse data from a VTK file
 
@@ -47,6 +49,12 @@ class VTKFile(pyxx.files.BinaryFile):
         path : str or pathlib.Path, optional
             The path and filename of the VTK file to read and parse (default
             is ``None``).  If set to ``None``, no VTK file is read
+        unit_converter : pyxx.units.UnitConverter, optional
+            A :py:class:`pyxx.units.UnitConverter` instance which will be
+            used to convert units of quantities stored in the VTK file
+            (default is ``None``).  If set to ``None``, the
+            :py:class:`MahaMulticsUnitConverter` unit converter will be used
+            to perform unit conversions
         **kwargs
             Any valid arguments (other than ``path``) for the :py:meth:`read`
             method can be passed to this constructor as keyword arguments
@@ -55,6 +63,11 @@ class VTKFile(pyxx.files.BinaryFile):
 
         # Initialize variables
         self._coordinate_units: Union[str, None] = None
+
+        if unit_converter is None:
+            self.unit_converter = MahaMulticsUnitConverter()
+        else:
+            self.unit_converter = unit_converter
 
         # If file is specified, read the file
         if path is not None:
@@ -96,6 +109,27 @@ class VTKFile(pyxx.files.BinaryFile):
             raise FileNotParsedError(
                 'Point data DataFrame is not defined; VTK file has not yet '
                 'been read') from exception
+
+    @property
+    def unit_converter(self) -> pyxx.units.UnitConverter:
+        """The unit converter used to perform unit conversions for quantities
+        stored in the VTK file
+
+        This attribute must be an instance or subclass of a
+        :py:class:`pyxx.units.UnitConverter` object.
+        """
+        return self._unit_converter
+
+    @unit_converter.setter
+    def unit_converter(self,
+                       unit_converter: Optional[pyxx.units.UnitConverter]
+                       ) -> None:
+        if not isinstance(unit_converter, pyxx.units.UnitConverter):
+            raise TypeError(
+                'Argument "unit_converter" must be an instance or subclass '
+                'of "pyxx.units.UnitConverter"')
+
+        self._unit_converter = unit_converter
 
     @property
     def use_maha_name_convention(self) -> bool:
