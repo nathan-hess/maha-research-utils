@@ -416,6 +416,11 @@ class VTKFile(pyxx.files.BinaryFile):
                     f'Invalid VTK data identifier "{identifier}" (matches '
                     'name of one of the point coordinate columns)')
 
+            if identifier in df_data:
+                raise VTKIdentifierNameError(
+                    f'Invalid VTK data identifier "{identifier}" (multiple '
+                    'VTK data use the same identifier)')
+
             self._check_name_convention_compliance_id(identifier)
             if self.use_maha_name_convention:
                 name = self._parse_column_id(identifier, 'name')
