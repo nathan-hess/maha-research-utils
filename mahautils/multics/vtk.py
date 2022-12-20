@@ -32,10 +32,9 @@ class VTKFile(pyxx.files.BinaryFile):
     file, and plotting scalar property distributions.
     """
 
-    # Regular expression describing expected format for identifiers that
-    # follow the naming convention used at the Maha Fluid Power Research
-    # Center
-    __maha_name_convention_regex = r'^([^\s]+)\[([^\s]+)\]$'
+    # Regular expression describing expected format for VTK data identifiers
+    # to facilitate unit conversions
+    __unit_conversion_regex = r'^([^\s]+)\[([^\s]+)\]$'
 
     def __init__(self, path: Optional[Union[str, pathlib.Path]] = None,
                  unit_converter: Optional[pyxx.units.UnitConverter] = None,
@@ -112,12 +111,43 @@ class VTKFile(pyxx.files.BinaryFile):
                 'been read') from exception
 
     @property
+    def unit_conversion_enabled(self) -> bool:
+        """Whether the :py:class:`VTKFile` instance is capable of performing
+        unit conversions on VTK data
+
+        VTK files don't inherently store data.  However, it can be useful to
+        perform unit conversions and extract data from VTK files in different
+        units than the data were stored.  The :py:class:`VTKFile` provides
+        such unit conversion capability, but in order to do so, the user must
+        appropriately name the data identifiers in the VTK file such that they
+        include the unit in which the data are stored.
+
+        The naming convention adopted in this package to faciliate unit
+        conversions for VTK data requires that VTK data identifiers (for both
+        scalar and vector data) are formatted in two parts: (1) a descriptive
+        name, (2) the unit in square brackets.  There should be no whitespace
+        in any part of the identifier.
+
+        For instance, one potential identifier that could denote VTK data
+        storing pressure in units of Pascal might be: ``pressure[Pa]``.
+        Similarly, an identifier for VTK data storing the velocity of a
+        tractor might be ``tractorVelocity[m/s]``.
+        """
+        try:
+            return self._unit_conversion_enabled
+        except AttributeError as exception:
+            raise FileNotParsedError(
+                'VTK identifier naming convenction is not defined; VTK file '
+                'has not yet been read') from exception
+
+    @property
     def unit_converter(self) -> pyxx.units.UnitConverter:
         """The unit converter used to perform unit conversions for quantities
         stored in the VTK file
 
         This attribute must be an instance or subclass of a
-        :py:class:`pyxx.units.UnitConverter` object.
+        :py:class:`pyxx.units.UnitConverter` object.  Unit conversions are
+        only performed if :py:attr:`unit_conversion_enabled` is ``True``.
         """
         return self._unit_converter
 
@@ -132,67 +162,95 @@ class VTKFile(pyxx.files.BinaryFile):
 
         self._unit_converter = unit_converter
 
-    @property
-    def use_maha_name_convention(self) -> bool:
-        """Whether the data identifiers in the VTK file follow the naming
-        convention adopted by the Maha Fluid Power Research Center
+    def _check_unit_conversion_compliance_id(self, identifier: str) -> None:
+        """Verifies that a given VTK data identifier matches the naming
+        convention required by :py:attr:`unit_conversion_enabled`
 
-        At the Maha Fluid Power Research Center, the convention for naming
-        VTK data identifiers (for both scalar and vector data) is to first
-        specify a descriptive name, followed by the unit in square brackets.
-        There should be no whitespace in the entire identifier.
+        VTK data identifiers must be strings, and if unit conversions are
+        enabled (:py:attr:`unit_conversion_enabled` is ``True``), then the
+        VTK data identifiers must follow a specific format including the unit.
+        This method confirms that these requirements are met, and throws a
+        descriptive error if they are not.
 
-        For instance, one potential identifier that could denote VTK data
-        storing pressure in units of Pascal might be: ``pressure[Pa]``.
-        Similarly, an identifier for VTK data storing the velocity of a
-        tractor might be ``tractorVelocity[m/s]``.
+        Parameters
+        ----------
+        identifier : str
+            The VTK data identifier (i.e., the column name of the VTK data
+            DataFrame stored in :py:attr:`pointdata_df`) to be checked
+
+        Raises
+        ------
+        TypeError
+            If ``identifier`` is not of type ``str``
+        VTKIdentifierNameError
+            If :py:attr:`unit_conversion_enabled` is ``True`` and
+            ``identifier`` does not match the required format (described for
+            the :py:attr:`unit_conversion_enabled` attribute)
         """
-        try:
-            return self._use_maha_name_convention
-        except AttributeError as exception:
-            raise FileNotParsedError(
-                'VTK identifier naming convenction is not defined; VTK file '
-                'has not yet been read') from exception
-
-    def _check_name_convention_compliance_id(self, name: str) -> None:
-        if not isinstance(name, str):
+        if not isinstance(identifier, str):
             raise TypeError(
-                f'VTK data name {name} is not of type "str"')
+                f'VTK data name {identifier} is not of type "str"')
 
-        if self.use_maha_name_convention:
-            if not re.match(self.__maha_name_convention_regex, name):
+        if self.unit_conversion_enabled:
+            if not re.match(self.__unit_conversion_regex, identifier):
                 raise VTKIdentifierNameError(
-                    f'Invalid VTK data identifier: "{name}"')
+                    f'Invalid VTK data identifier: "{identifier}"')
 
-    def _check_name_convention_compliance_unit(self, unit: Union[Any, None]
-                                               ) -> None:
-        if self.use_maha_name_convention:
+    def _check_unit_conversion_compliance_args(self, unit: Any) -> None:
+        """Verifies that, when retrieving VTK data, the user specified or
+        omitted a unit in agreement with the unit conversion settings
+        specified by :py:attr:`unit_conversion_enabled`
+
+        Several methods in the :py:class:`VTKFile` class retrieve VTK data
+        and perform unit conversions if :py:attr:`unit_conversion_enabled`
+        is ``True``.  These methods need to verify that a unit was provided
+        when unit conversions are enabled, and to avoid user confusion and
+        potential bugs (i.e., a user thinks a unit conversion is being
+        performed but it is not), the method should verify that a unit was not
+        provided if unit conversions are disabled.  Rather than repeating the
+        code to perform this check throughout the :py:class:`VTKFile` class
+        source code, this method can be called and will throw a descriptive
+        error if any of the aforementioned conditions are not satisfied.
+
+        Parameters
+        ----------
+        unit : Any
+            The argument passed by the user specifying the unit to which VTK
+            data should be converted (or ``None`` if no unit was specified)
+
+        Raises
+        ------
+        TypeError
+            If unit conversions are disabled but the user specified a unit, or
+            if unit conversions are enabled but the user omitted a unit
+        """
+        if self.unit_conversion_enabled:
             if unit is None:
                 raise TypeError(
-                    'VTK file uses the Maha naming convention, so '
-                    'argument "unit" cannot be `None`')
+                    'VTK unit conversions are enabled, so argument "unit" '
+                    'cannot be `None`')
 
         elif unit is not None:
             raise TypeError(
-                'VTK file does not use Maha naming convention, so '
-                'argument "unit" must be `None`')
+                'VTK unit conversions are not enabled, so argument "unit" '
+                'must be `None`')
 
     def _find_column_id(self, identifier: str) -> str:
         # Validate inputs
         if not isinstance(identifier, str):
             raise TypeError('Argument "identifier" must be of type "str"')
 
-        # If not using the Maha name convention, simply check that the
+        # If unit conversions are disabled, simply check that the
         # identifier exists as one of the DataFrame columns
-        if not self.use_maha_name_convention:
+        if not self.unit_conversion_enabled:
             if identifier not in self._df:
                 raise VTKInvalidIdentifier(
                     f'Data specified by identifier "{identifier}" not found '
                     'in VTK file')
 
-        # If using the Maha name convention, users can either specify the
-        # identifier with or without the unit (e.g., 'pFilm[bar]' or 'pFilm'),
-        # so determine which of these is a valid column name (and if neither,
+        # If unit conversions are enabled, users can specify the identifier
+        # with or without the unit (e.g., 'pFilm[bar]' or 'pFilm'), so
+        # determine which of these is a valid column name (and if neither,
         # throw an error)
         else:
             if identifier not in self._df:
@@ -216,12 +274,12 @@ class VTKFile(pyxx.files.BinaryFile):
         return identifier
 
     def _parse_column_id(self, identifier: str, target: str) -> str:
-        if not self.use_maha_name_convention:
+        if not self.unit_conversion_enabled:
             raise AttributeError(
                 'Parsing VTK data identifier is not a valid action when VTK '
-                'file does not use the Maha naming convention')
+                'unit conversions are disabled')
 
-        matches = re.search(self.__maha_name_convention_regex, str(identifier))
+        matches = re.search(self.__unit_conversion_regex, str(identifier))
 
         if matches is None:
             raise VTKIdentifierNameError(
@@ -251,8 +309,8 @@ class VTKFile(pyxx.files.BinaryFile):
             exactly one of: ``'x'``, ``'y'``, ``'z'``
         unit : str, optional
             The unit in which the VTK points should be returned (default is
-            ``None``).  Must be provided if :py:attr:`use_maha_name_convention`
-            is ``True`` and omitted if :py:attr:`use_maha_name_convention` is
+            ``None``).  Must be provided if :py:attr:`unit_conversion_enabled`
+            is ``True`` and omitted if :py:attr:`unit_conversion_enabled` is
             ``False``
 
         Returns
@@ -296,15 +354,15 @@ class VTKFile(pyxx.files.BinaryFile):
         # Check that identifier matches a single column in the DataFrame
         identifier = self._find_column_id(identifier)
 
-        # Verify that unit was provided if and only if using Maha naming
-        # convention
-        self._check_name_convention_compliance_unit(unit)
+        # Verify that unit was provided if and only if unit conversions
+        # are enabled
+        self._check_unit_conversion_compliance_args(unit)
 
-        # CASE 1: Not using Maha naming convention ---------------------------
-        if not self.use_maha_name_convention:
+        # CASE 1: Unit conversions disabled ----------------------------------
+        if not self.unit_conversion_enabled:
             return self._df[identifier].to_numpy()
 
-        # CASE 2: Using Maha naming convention -------------------------------
+        # CASE 2: Unit conversions enabled -----------------------------------
         # Extract raw data from DataFrame
         from_unit = self._parse_column_id(identifier, 'unit')
         raw_data = self._df[identifier].to_numpy()
@@ -316,22 +374,22 @@ class VTKFile(pyxx.files.BinaryFile):
     def extract_dataframe(self, identifiers: List[str],
                           units: Optional[List[str]] = None) -> pd.DataFrame:
         # SETUP --------------------------------------------------------------
-        # Verify that unit was provided if and only if using Maha naming
-        # convention
-        self._check_name_convention_compliance_unit(units)
+        # Verify that unit was provided if and only if unit conversions
+        # are enabled
+        self._check_unit_conversion_compliance_args(units)
 
-        # CASE 1: Not using Maha naming convention ---------------------------
-        if not self.use_maha_name_convention:
+        # CASE 1: Unit conversions disabled ----------------------------------
+        if not self.unit_conversion_enabled:
             df_data = {
                 identifier: self.extract_data_series(identifier)
                     for identifier in identifiers  # noqa: E131
             }
 
-        # CASE 2: Using Maha naming convention -------------------------------
+        # CASE 2: Unit conversions enabled -----------------------------------
         else:
             # Ensure that units are a list of strings
             #   Add Mypy exclusion because if "units" is `None`, an error
-            #   would have been thrown by name convention compliance check
+            #   would have been thrown by unit conversion compliance check
             units = [str(unit) for unit in units]  # type: ignore
 
             # Validate inputs
@@ -364,8 +422,8 @@ class VTKFile(pyxx.files.BinaryFile):
         ----------
         unit : str, optional
             The unit in which the VTK points should be returned (default is
-            ``None``).  Must be provided if :py:attr:`use_maha_name_convention`
-            is ``True`` and omitted if :py:attr:`use_maha_name_convention` is
+            ``None``).  Must be provided if :py:attr:`unit_conversion_enabled`
+            is ``True`` and omitted if :py:attr:`unit_conversion_enabled` is
             ``False``
 
         Returns
@@ -413,13 +471,13 @@ class VTKFile(pyxx.files.BinaryFile):
 
     def read(self,
              path: Optional[Union[str, pathlib.Path]] = None,
-             use_maha_name_convention: bool = False,
+             unit_conversion_enabled: bool = False,
              coordinate_units: Optional[str] = None
              ) -> None:
         """Reads a VTK file from the disk
 
         This method reads a VTK file from the disk, parsing its content and
-        storing the data as a Pandas DataFrame in the :py:attr:`pointdata`
+        storing the data as a Pandas DataFrame in the :py:attr:`pointdata_df`
         attribute.
 
         Parameters
@@ -428,16 +486,15 @@ class VTKFile(pyxx.files.BinaryFile):
             The path and filename from which to read the VTK file (default is
             ``None``).  If not provided or ``None``, the file will be read
             from the location specified by the :py:attr:`path` attribute
-        use_maha_name_convention : bool, optional
-            Whether the attribute names in the VTK file follow the naming
-            convention adopted by the Maha Fluid Power Research Center (see
-            the :py:attr:`use_maha_name_convention` attribute for additional
-            details).  Must be ``True`` to perform unit conversions on VTK
-            array data (default is ``True``)
+        unit_conversion_enabled : bool, optional
+            Whether to enable unit conversions for the VTK file data (see
+            the :py:attr:`unit_conversion_enabled` attribute for additional
+            details) (default is ``False``)
         coordinate_units : str, optional
             The units used by the coordinate system in the VTK file (default
-            is ``None``).  If set to ``None``, no unit conversions can be
-            performed for the VTK point locations
+            is ``None``).  Must be provided if :py:attr:`unit_conversion_enabled`
+            is ``True`` and omitted if :py:attr:`unit_conversion_enabled` is
+            ``False``
         """
         # SETUP --------------------------------------------------------------
         # Set "path" attribute, verify file exists, and store file hashes
@@ -447,13 +504,13 @@ class VTKFile(pyxx.files.BinaryFile):
         self.set_read_metadata(path)
         self.path: pathlib.Path
 
-        # Store naming convention and verify that "coordinate_units"
-        # is provided if and only if using the Maha naming convention
-        self._use_maha_name_convention = bool(use_maha_name_convention)
-        self._check_name_convention_compliance_unit(coordinate_units)
+        # Enable/disable unit conversion and verify that "coordinate_units"
+        # is provided if and only if unit conversions are enabled
+        self._unit_conversion_enabled = bool(unit_conversion_enabled)
+        self._check_unit_conversion_compliance_args(coordinate_units)
 
         # Store units of VTK grid points
-        if self.use_maha_name_convention:
+        if self.unit_conversion_enabled:
             # Verify that unit doesn't have spaces or other invalid characters
             permissible_chars \
                 = string.ascii_letters + string.digits + '()[]{}*/+-^'
@@ -496,7 +553,7 @@ class VTKFile(pyxx.files.BinaryFile):
             y_points.append(float(y))
             z_points.append(float(z))
 
-        if use_maha_name_convention:
+        if unit_conversion_enabled:
             df_data = {
                 f'x[{self.coordinate_units}]': x_points,
                 f'y[{self.coordinate_units}]': y_points,
@@ -523,8 +580,8 @@ class VTKFile(pyxx.files.BinaryFile):
                     f'Invalid VTK data identifier "{identifier}" (multiple '
                     'VTK data use the same identifier)')
 
-            self._check_name_convention_compliance_id(identifier)
-            if self.use_maha_name_convention:
+            self._check_unit_conversion_compliance_id(identifier)
+            if self.unit_conversion_enabled:
                 name = self._parse_column_id(identifier, 'name')
 
                 if name in data_id_names:
