@@ -261,6 +261,44 @@ class VTKFile(pyxx.files.BinaryFile):
         return self.unit_converter.convert(
             raw_data, from_unit=from_unit, to_unit=str(unit))
 
+    def extract_dataframe(self, identifiers: List[str],
+                          units: Optional[List[str]] = None) -> pd.DataFrame:
+        # SETUP --------------------------------------------------------------
+        # Verify that unit was provided if and only if using Maha naming
+        # convention
+        self._check_name_convention_compliance_unit(units)
+
+        # CASE 1: Not using Maha naming convention ---------------------------
+        if not self.use_maha_name_convention:
+            df_data = {
+                identifier: self.extract_data_series(identifier)
+                    for identifier in identifiers  # noqa: E131
+            }
+
+        # CASE 2: Using Maha naming convention -------------------------------
+        else:
+            # Ensure that units are a list of strings
+            #   Add Mypy exclusion because if "units" is `None`, an error
+            #   would have been thrown by name convention compliance check
+            units = [str(unit) for unit in units]  # type: ignore
+
+            # Validate inputs
+            if len(identifiers) != len(units):
+                raise ValueError(
+                    'Arguments "identifiers" and "units" must be lists of '
+                    'strings with the same number of items')
+
+            # Extract and convert units of data from VTK file
+            df_data = {}
+            for i, identifier in enumerate(identifiers):
+                name = self._parse_column_id(self._find_column_id(identifier),
+                                             target='name')
+                unit = units[i]
+
+                df_data[f'{name}[{unit}]'] \
+                    = self.extract_data_series(identifier, unit)
+
+        return pd.DataFrame(df_data)
 
     def read(self,
              path: Optional[Union[str, pathlib.Path]] = None,
