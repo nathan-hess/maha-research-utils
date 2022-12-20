@@ -4,8 +4,8 @@ used by the Maha Multics software.
 
 import pathlib
 import re
-from typing import List, Union, Optional
 import string
+from typing import Any, List, Union, Optional
 
 import numpy as np
 import pandas as pd            # type: ignore
@@ -16,6 +16,7 @@ import vtk.util.numpy_support  # type: ignore  # pylint: disable=E0401,E0611
 from .exceptions import (
     FileNotParsedError,
     VTKIdentifierNameError,
+    VTKInvalidIdentifier,
     VTKFormatError,
 )
 from .units import MahaMulticsUnitConverter
@@ -163,6 +164,57 @@ class VTKFile(pyxx.files.BinaryFile):
                 raise VTKIdentifierNameError(
                     f'Invalid VTK data identifier: "{name}"')
 
+    def _check_name_convention_compliance_unit(self, unit: Union[Any, None]
+                                               ) -> None:
+        if self.use_maha_name_convention:
+            if unit is None:
+                raise TypeError(
+                    'VTK file uses the Maha naming convention, so '
+                    'argument "unit" cannot be `None`')
+
+        elif unit is not None:
+            raise TypeError(
+                'VTK file does not use Maha naming convention, so '
+                'argument "unit" must be `None`')
+
+    def _find_column_id(self, identifier: str) -> str:
+        # Validate inputs
+        if not isinstance(identifier, str):
+            raise TypeError('Argument "identifier" must be of type "st"')
+
+        # If not using the Maha name convention, simply check that the
+        # identifier exists as one of the DataFrame columns
+        if not self.use_maha_name_convention:
+            if identifier not in self._df:
+                raise VTKInvalidIdentifier(
+                    f'Data specified by identifier "{identifier}" not found '
+                    'in VTK file')
+
+        # If using the Maha name convention, users can either specify the
+        # identifier with or without the unit (e.g., 'pFilm[bar]' or 'pFilm'),
+        # so determine which of these is a valid column name (and if neither,
+        # throw an error)
+        else:
+            if identifier not in self._df:
+                matches = []
+                for column in self._df.columns:
+                    if identifier == self._parse_column_id(column, 'name'):
+                        matches.append(column)
+
+                if len(matches) == 0:
+                    raise VTKInvalidIdentifier(
+                        f'Data specified by identifier "{identifier}" not found '
+                        'in VTK file')
+
+                if len(matches) > 1:
+                    raise VTKInvalidIdentifier(
+                        f'Identifier "{identifier}" matches multiple data '
+                        f'fields in the VTK file: {matches}')
+
+                identifier = matches[0]
+
+        return identifier
+
     def _parse_column_id(self, identifier: str, target: str) -> str:
         if not self.use_maha_name_convention:
             raise AttributeError(
@@ -181,6 +233,33 @@ class VTKFile(pyxx.files.BinaryFile):
             return matches.group(2)
 
         raise ValueError('Argument "target" must be one of: ["name", "unit"]')
+
+    def extract_data_series(self, identifier: str, unit: Optional[str] = None
+                            ) -> np.ndarray:
+        # SETUP --------------------------------------------------------------
+        # Validate inputs
+        if not isinstance(identifier, str):
+            raise TypeError('Argument "identifier" must be of type "st"')
+
+        # Check that identifier matches a single column in the DataFrame
+        identifier = self._find_column_id(identifier)
+
+        # Verify that unit was provided if and only if using Maha naming
+        # convention
+        self._check_name_convention_compliance_unit(unit)
+
+        # CASE 1: Not using Maha naming convention ---------------------------
+        if not self.use_maha_name_convention:
+            return self._df[identifier].to_numpy()
+
+        # CASE 2: Using Maha naming convention -------------------------------
+        # Extract raw data from DataFrame
+        from_unit = self._parse_column_id(identifier, 'unit')
+        raw_data = self._df[identifier].to_numpy()
+
+        # Convert raw data units
+        return self.unit_converter.convert(
+            raw_data, from_unit=from_unit, to_unit=str(unit))
 
 
     def read(self,
