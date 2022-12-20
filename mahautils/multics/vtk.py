@@ -341,28 +341,24 @@ class VTKFile(pyxx.files.BinaryFile):
         self.set_read_metadata(path)
         self.path: pathlib.Path
 
-        # Store inputs
+        # Store naming convention and verify that "coordinate_units"
+        # is provided if and only if using the Maha naming convention
         self._use_maha_name_convention = bool(use_maha_name_convention)
+        self._check_name_convention_compliance_unit(coordinate_units)
 
+        # Store units of VTK grid points
         if self.use_maha_name_convention:
-            if coordinate_units is None:
-                raise ValueError(
-                    'If using the Maha VTK identifier naming convention, '
-                    'then argument "coordinate_units" cannot be `None`')
-
+            # Verify that unit doesn't have spaces or other invalid characters
             permissible_chars \
                 = string.ascii_letters + string.digits + '()[]{}*/+-^'
-            if not pyxx.strings.str_includes_only(coordinate_units,
+
+            if not pyxx.strings.str_includes_only(str(coordinate_units),
                                                   permissible_chars):
                 raise ValueError(
                     f'Unit "{coordinate_units}" contains invalid characters')
 
             self._coordinate_units = str(coordinate_units)
         else:
-            if coordinate_units is not None:
-                raise ValueError(
-                    'If not using the Maha VTK identifier naming convention, '
-                    'then argument "coordinate_units" must be `None`')
             self._coordinate_units = None
 
         # READ VTK FILE ------------------------------------------------------

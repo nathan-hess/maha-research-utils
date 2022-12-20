@@ -10,11 +10,13 @@ from tests import SAMPLE_FILES_DIR
 
 class Test_VTKFile(unittest.TestCase):
     def setUp(self) -> None:
+        self.sample_vtk_001 = SAMPLE_FILES_DIR / 'sample_vtk.001.vtk'
+
         self.vtk = VTKFile()
         self.vtk_read = VTKFile(
-            path                     = SAMPLE_FILES_DIR / 'sample_vtk.001.vtk',
-            coordinate_units         = 'mm',
-            use_maha_name_convention = True
+            path                     = self.sample_vtk_001,
+            use_maha_name_convention = True,
+            coordinate_units         = 'mm'
         )
 
     def test_uninitialized_attr(self):
@@ -40,7 +42,7 @@ class Test_VTKFile(unittest.TestCase):
         # convention
         with self.subTest(issue='incorrect_type'):
             with self.assertRaises(TypeError):
-                self.vtk._check_vtk_id_name(10)
+                self.vtk._check_name_convention_compliance_id(10)
 
         maha_naming_convention = [
             'pFilm[bar]',
@@ -64,23 +66,23 @@ class Test_VTKFile(unittest.TestCase):
 
             for identifier in maha_naming_convention:
                 with self.subTest(id=identifier):
-                    self.vtk._check_vtk_id_name(identifier)
+                    self.vtk._check_name_convention_compliance_id(identifier)
 
             for identifier in not_maha_naming_convention:
                 with self.subTest(id=identifier):
                     with self.assertRaises(VTKIdentifierNameError):
-                        self.vtk._check_vtk_id_name(identifier)
+                        self.vtk._check_name_convention_compliance_id(identifier)
 
         with self.subTest(use_maha_name_convention=False):
             self.vtk._use_maha_name_convention = False
 
             for identifier in maha_naming_convention + not_maha_naming_convention:
                 with self.subTest(id=identifier):
-                    self.vtk._check_vtk_id_name(identifier)
+                    self.vtk._check_name_convention_compliance_id(identifier)
 
     def test_read_set_attributes(self):
         # Verifies that reading a VTK file sets attributes correctly
-        with self.subTest(coordinate_units='mm', use_maha_name_convention=True):
+        with self.subTest(iteration=1):
             with self.subTest(attribute='coordinate_units'):
                 self.assertEqual(self.vtk_read.coordinate_units, 'mm')
 
@@ -90,24 +92,40 @@ class Test_VTKFile(unittest.TestCase):
             with self.subTest(attribute='num_points'):
                 self.assertEqual(self.vtk_read.num_points, 36)
 
-        with self.subTest(coordinate_units='G', use_maha_name_convention=False):
+        with self.subTest(iteration=2):
             self.vtk_read.read(
-                path                     = SAMPLE_FILES_DIR / 'sample_vtk.001.vtk',
-                coordinate_units         = 'G',
+                path                     = self.sample_vtk_001,
                 use_maha_name_convention = False
             )
 
             with self.subTest(attribute='coordinate_units'):
-                self.assertEqual(self.vtk_read.coordinate_units, 'G')
+                self.assertIsNone(self.vtk_read.coordinate_units)
 
             with self.subTest(attribute='use_maha_name_convention'):
                 self.assertFalse(self.vtk_read.use_maha_name_convention)
 
-        with self.subTest(coordinate_units=None, use_maha_name_convention=True):
-            self.vtk_read.read(
-                path                     = SAMPLE_FILES_DIR / 'sample_vtk.001.vtk',
-                use_maha_name_convention = True
-            )
+            with self.subTest(attribute='num_points'):
+                self.assertEqual(self.vtk_read.num_points, 36)
 
-            with self.subTest(attribute='coordinate_units'):
-                self.assertIsNone(self.vtk_read.coordinate_units)
+    def test_read_invalid(self):
+        # Verifies that attempting to read a VTK file with invalid input
+        # arguments results in an appropriate error being thrown
+        with self.subTest(issue='provided_unit'):
+            with self.assertRaises(TypeError):
+                self.vtk.read(
+                    path                     = self.sample_vtk_001,
+                    coordinate_units         = 'km',
+                    use_maha_name_convention = False)
+
+        with self.subTest(issue='missing_unit'):
+            with self.assertRaises(TypeError):
+                self.vtk.read(
+                    path                     = self.sample_vtk_001,
+                    use_maha_name_convention = True)
+
+        with self.subTest(issue='invalid_unit'):
+            with self.assertRaises(ValueError):
+                self.vtk.read(
+                    path                     = self.sample_vtk_001,
+                    use_maha_name_convention = True,
+                    coordinate_units         = 'mm * N')
