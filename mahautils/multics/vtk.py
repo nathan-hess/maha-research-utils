@@ -300,6 +300,11 @@ class VTKFile(pyxx.files.BinaryFile):
 
         return pd.DataFrame(df_data)
 
+    def points(self, unit: Optional[str] = None) -> np.ndarray:
+        return np.array([self.extract_data_series(name, unit)
+                         for name in self.__xyz_coordinate_columns]
+                        ).transpose()
+
     def read(self,
              path: Optional[Union[str, pathlib.Path]] = None,
              use_maha_name_convention: bool = False,
@@ -461,3 +466,12 @@ class VTKFile(pyxx.files.BinaryFile):
 
         # CREATE PANDAS DATAFRAME --------------------------------------------
         self._df = pd.DataFrame(df_data)
+
+    def x_coordinates(self, unit: Optional[str] = None) -> np.ndarray:
+        return self.extract_data_series(self.__xyz_coordinate_columns[0], unit)
+
+    def y_coordinates(self, unit: Optional[str] = None) -> np.ndarray:
+        return self.extract_data_series(self.__xyz_coordinate_columns[1], unit)
+
+    def z_coordinates(self, unit: Optional[str] = None) -> np.ndarray:
+        return self.extract_data_series(self.__xyz_coordinate_columns[2], unit)
