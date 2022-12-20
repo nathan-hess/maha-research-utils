@@ -180,7 +180,7 @@ class VTKFile(pyxx.files.BinaryFile):
     def _find_column_id(self, identifier: str) -> str:
         # Validate inputs
         if not isinstance(identifier, str):
-            raise TypeError('Argument "identifier" must be of type "st"')
+            raise TypeError('Argument "identifier" must be of type "str"')
 
         # If not using the Maha name convention, simply check that the
         # identifier exists as one of the DataFrame columns
@@ -234,12 +234,64 @@ class VTKFile(pyxx.files.BinaryFile):
 
         raise ValueError('Argument "target" must be one of: ["name", "unit"]')
 
+    def coordinates(self, axis: str, unit: Optional[str] = None) -> np.ndarray:
+        """Returns a NumPy array containing the coordinates of all grid points
+        in the VTK file along a particular coordinate axis
+
+        VTK files store data (scalars, vectors, etc.) at a set of defined grid
+        points in 3D.  This method returns a 1D NumPy array containing the
+        coordinates of the coordinates of such points along an axis specified
+        by ``axis``.  Point coordinates are returned in the order in which
+        they were defined in the VTK file.
+
+        Parameters
+        ----------
+        axis : str
+            The coordinate axis for which to retrieve coordinates.  Must be
+            exactly one of: ``'x'``, ``'y'``, ``'z'``
+        unit : str, optional
+            The unit in which the VTK points should be returned (default is
+            ``None``).  Must be provided if :py:attr:`use_maha_name_convention`
+            is ``True`` and omitted if :py:attr:`use_maha_name_convention` is
+            ``False``
+
+        Returns
+        -------
+        np.ndarray
+            A 1D NumPy array containing the coordinates of all VTK grid points
+            along the axis specified by ``axis``
+
+        Raises
+        ------
+        FileNotParsedError
+            If attempting to call this method before calling :py:meth:`read`
+            to read and parse a VTK file
+        """
+        try:
+            if axis.lower() == 'x':
+                column = self.__xyz_coordinate_columns[0]
+            elif axis.lower() == 'y':
+                column = self.__xyz_coordinate_columns[1]
+            elif axis.lower() == 'z':
+                column = self.__xyz_coordinate_columns[2]
+            else:
+                raise ValueError(
+                    'Argument "axis" must be exactly one of: ["x", "y", "z"]')
+        except AttributeError as exception:
+            raise FileNotParsedError(
+                'Cannot retrieve VTK x-coordinates; VTK file has not yet '
+                'been read') from exception
+
+        return self.extract_data_series(column, unit)
+
     def extract_data_series(self, identifier: str, unit: Optional[str] = None
                             ) -> np.ndarray:
         # SETUP --------------------------------------------------------------
-        # Validate inputs
-        if not isinstance(identifier, str):
-            raise TypeError('Argument "identifier" must be of type "st"')
+        # Verify that file has been read
+        if not hasattr(self, '_df'):
+            raise FileNotParsedError(
+                'Unable to retrieve VTK data; VTK file has not yet '
+                'been read')
 
         # Check that identifier matches a single column in the DataFrame
         identifier = self._find_column_id(identifier)
@@ -301,9 +353,63 @@ class VTKFile(pyxx.files.BinaryFile):
         return pd.DataFrame(df_data)
 
     def points(self, unit: Optional[str] = None) -> np.ndarray:
-        return np.array([self.extract_data_series(name, unit)
-                         for name in self.__xyz_coordinate_columns]
-                        ).transpose()
+        """Returns a list of all grid points in the VTK file
+
+        VTK files store data (scalars, vectors, etc.) at a set of defined grid
+        points in 3D.  This method returns a list containing the coordinates
+        of all such points.  Refer to the "Notes" section for details about
+        the format of the returned points.
+
+        Parameters
+        ----------
+        unit : str, optional
+            The unit in which the VTK points should be returned (default is
+            ``None``).  Must be provided if :py:attr:`use_maha_name_convention`
+            is ``True`` and omitted if :py:attr:`use_maha_name_convention` is
+            ``False``
+
+        Returns
+        -------
+        np.ndarray
+            A NumPy array containing a list of all VTK grid points.  Refer to
+            the "Notes" section for details about the format of the array
+
+        Raises
+        ------
+        FileNotParsedError
+            If attempting to call this method before calling :py:meth:`read`
+            to read and parse a VTK file
+
+        Notes
+        -----
+        The VTK grid points are returned as a 2D array, where the first index
+        specifies a particular point (out of the :py:attr:`num_points` points)
+        and the second index specifies the coordinate axis (:math:`x`,
+        :math:`y`, or :math:`z`).
+
+        For example, suppose that the VTK file stored data for five points:
+        ``(x1, y1, z1)``, ``(x2, y2, z2)``, ..., ``(x5, y5, z5)``.  In this
+        case, the :py:meth:`points` method would return:
+
+        .. code-block:: python
+
+            array([[x1, y1, z1],
+                   [x2, y2, z2],
+                   [x3, y3, z3],
+                   [x4, y4, z4],
+                   [x5, y5, z5]])
+
+        Point coordinates are returned in the order in which they were defined
+        in the VTK file.
+        """
+        try:
+            return np.array([self.extract_data_series(name, unit)
+                             for name in self.__xyz_coordinate_columns]
+                            ).transpose()
+        except AttributeError as exception:
+            raise FileNotParsedError(
+                'Cannot retrieve VTK grid points; VTK file has not yet '
+                'been read') from exception
 
     def read(self,
              path: Optional[Union[str, pathlib.Path]] = None,
@@ -467,12 +573,3 @@ class VTKFile(pyxx.files.BinaryFile):
 
         # CREATE PANDAS DATAFRAME --------------------------------------------
         self._df = pd.DataFrame(df_data)
-
-    def x_coordinates(self, unit: Optional[str] = None) -> np.ndarray:
-        return self.extract_data_series(self.__xyz_coordinate_columns[0], unit)
-
-    def y_coordinates(self, unit: Optional[str] = None) -> np.ndarray:
-        return self.extract_data_series(self.__xyz_coordinate_columns[1], unit)
-
-    def z_coordinates(self, unit: Optional[str] = None) -> np.ndarray:
-        return self.extract_data_series(self.__xyz_coordinate_columns[2], unit)
