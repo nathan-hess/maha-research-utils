@@ -118,6 +118,34 @@ class MahaMulticsUnit(pyxx.units.UnitLinear):
             name           = name
         )
 
+    def convert(self, value: Union[np.ndarray, list, tuple, float],
+                convert_type: str, unit: pyxx.units.Unit) -> np.ndarray:
+        """Converts a quantity from one unit to another
+
+        This method performs a unit conversion, converting one or more values
+        from this object's units to another unit.  This conversion can be
+        performed in "either direction" -- either from this object's units to
+        another unit, or from another unit to this object's units.
+
+        Parameters
+        ----------
+        value : np.ndarray or list or tuple or float
+            Quantities to convert to a different unit
+        convert_type : str
+            Must be either ``'to'`` or ``'from'``.  Describes whether to
+            convert ``value`` from this object's units to the units specified
+            by ``unit``, or vice versa
+        unit : Unit
+            The unit to convert ``value`` to or from
+
+        Returns
+        -------
+        np.ndarray
+            NumPy array of the same shape as ``value`` containing the
+            quantities after performing the specified unit conversion
+        """
+        return super().convert(value, convert_type, unit)
+
 
 _MAHA_MULTICS_DEFAULT_UNITS: Dict[str, Dict[str, Any]] = {
     ## BASE UNITS ------------------------------------------------------------
@@ -483,9 +511,6 @@ class MahaMulticsUnitConverter(pyxx.units.UnitConverter):
     5. Amount of substance: mole [:math:`mol`]
     6. Electric current: ampere [:math:`A`]
     7. Luminous intensity: candela [:math:`cd`]
-
-    For a list of units available in this unit converter, refer to the
-    :ref:`section-unitconverter_units` page.
     """
 
     def __init__(self):
@@ -495,8 +520,7 @@ class MahaMulticsUnitConverter(pyxx.units.UnitConverter):
         Creates an new :py:class:`UnitConverterSI` instance.  This unit
         converter uses the SI system (specifically, the system of units
         referenced by :py:class:`UnitSystemSI`) and is pre-filled with a
-        set of commonly-used units, listed on the
-        :ref:`section-unitconverter_units` page.
+        set of commonly-used units.
         """
         super().__init__(unit_system=MahaMulticsUnitSystem())
 
