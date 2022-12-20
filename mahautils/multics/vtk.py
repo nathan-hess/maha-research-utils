@@ -5,6 +5,7 @@ used by the Maha Multics software.
 import pathlib
 import re
 from typing import List, Union, Optional
+import string
 
 import numpy as np
 import pandas as pd            # type: ignore
@@ -150,8 +151,8 @@ class VTKFile(pyxx.files.BinaryFile):
 
     def read(self,
              path: Optional[Union[str, pathlib.Path]] = None,
-             coordinate_units: Optional[str] = None,
-             use_maha_name_convention: bool = True
+             use_maha_name_convention: bool = False,
+             coordinate_units: Optional[str] = None
              ) -> None:
         """Reads a VTK file from the disk
 
@@ -165,16 +166,16 @@ class VTKFile(pyxx.files.BinaryFile):
             The path and filename from which to read the VTK file (default is
             ``None``).  If not provided or ``None``, the file will be read
             from the location specified by the :py:attr:`path` attribute
-        coordinate_units : str, optional
-            The units used by the coordinate system in the VTK file (default
-            is ``None``).  If set to ``None``, no unit conversions can be
-            performed for the VTK point locations
         use_maha_name_convention : bool, optional
             Whether the attribute names in the VTK file follow the naming
             convention adopted by the Maha Fluid Power Research Center (see
             the :py:attr:`use_maha_name_convention` attribute for additional
             details).  Must be ``True`` to perform unit conversions on VTK
             array data (default is ``True``)
+        coordinate_units : str, optional
+            The units used by the coordinate system in the VTK file (default
+            is ``None``).  If set to ``None``, no unit conversions can be
+            performed for the VTK point locations
         """
         # SETUP --------------------------------------------------------------
         # Set "path" attribute, verify file exists, and store file hashes
@@ -185,9 +186,28 @@ class VTKFile(pyxx.files.BinaryFile):
         self.path: pathlib.Path
 
         # Store inputs
-        self._coordinate_units = None if coordinate_units is None \
-            else str(coordinate_units)
         self._use_maha_name_convention = bool(use_maha_name_convention)
+
+        if self.use_maha_name_convention:
+            if coordinate_units is None:
+                raise ValueError(
+                    'If using the Maha VTK identifier naming convention, '
+                    'then argument "coordinate_units" cannot be `None`')
+
+            permissible_chars \
+                = string.ascii_letters + string.digits + '()[]{}*/+-^'
+            if not pyxx.strings.str_includes_only(coordinate_units,
+                                                  permissible_chars):
+                raise ValueError(
+                    f'Unit "{coordinate_units}" contains invalid characters')
+
+            self._coordinate_units = str(coordinate_units)
+        else:
+            if coordinate_units is not None:
+                raise ValueError(
+                    'If not using the Maha VTK identifier naming convention, '
+                    'then argument "coordinate_units" must be `None`')
+            self._coordinate_units = None
 
         # READ VTK FILE ------------------------------------------------------
         # Set up VTK reader
