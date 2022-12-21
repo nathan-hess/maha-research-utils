@@ -423,6 +423,36 @@ class Test_VTKFile(unittest.TestCase):
         self.assertTrue(df.equals(df_expected))
         self.assertFalse(df.equals(df_not_expected))
 
+    def test_is_scalar(self):
+        # Verifies that scalar data can be identified correctly
+        with self.subTest(unit_conversion_enabled='True'):
+            self.assertTrue(self.vtk_read_unit_convert.is_scalar('x'))
+            self.assertTrue(self.vtk_read_unit_convert.is_scalar('x[mm]'))
+            self.assertTrue(self.vtk_read_unit_convert.is_scalar('pFilm'))
+            self.assertTrue(self.vtk_read_unit_convert.is_scalar('pFilm[bar]'))
+            self.assertFalse(self.vtk_read_unit_convert.is_scalar('UbarSurface'))
+            self.assertFalse(self.vtk_read_unit_convert.is_scalar('UbarSurface[m/s]'))
+
+        with self.subTest(unit_conversion_enabled='False'):
+            self.assertTrue(self.vtk_read_no_unit_convert.is_scalar('x'))
+            self.assertTrue(self.vtk_read_no_unit_convert.is_scalar('pFilm[bar]'))
+            self.assertFalse(self.vtk_read_no_unit_convert.is_scalar('UbarSurface[m/s]'))
+
+    def test_is_vector(self):
+        # Verifies that vector data can be identified correctly
+        with self.subTest(unit_conversion_enabled='True'):
+            self.assertFalse(self.vtk_read_unit_convert.is_vector('x'))
+            self.assertFalse(self.vtk_read_unit_convert.is_vector('x[mm]'))
+            self.assertFalse(self.vtk_read_unit_convert.is_vector('pFilm'))
+            self.assertFalse(self.vtk_read_unit_convert.is_vector('pFilm[bar]'))
+            self.assertTrue(self.vtk_read_unit_convert.is_vector('UbarSurface'))
+            self.assertTrue(self.vtk_read_unit_convert.is_vector('UbarSurface[m/s]'))
+
+        with self.subTest(unit_conversion_enabled='False'):
+            self.assertFalse(self.vtk_read_no_unit_convert.is_vector('x'))
+            self.assertFalse(self.vtk_read_no_unit_convert.is_vector('pFilm[bar]'))
+            self.assertTrue(self.vtk_read_no_unit_convert.is_vector('UbarSurface[m/s]'))
+
     def test_points_unit_conversion(self):
         # Verifies that VTK grid points can be retrieved correctly
         points = np.array([

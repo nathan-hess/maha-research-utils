@@ -2,10 +2,11 @@
 used by the Maha Multics software.
 """
 
+import enum
 import pathlib
 import re
 import string
-from typing import Any, List, Union, Optional
+from typing import Any, Dict, List, Union, Optional
 
 import numpy as np
 import pandas as pd            # type: ignore
@@ -20,6 +21,11 @@ from .exceptions import (
     VTKFormatError,
 )
 from .units import MahaMulticsUnitConverter
+
+
+class VTKDataType(enum.Enum):
+    scalar = enum.auto()
+    vector = enum.auto()
 
 
 class VTKFile(pyxx.files.BinaryFile):
@@ -63,6 +69,7 @@ class VTKFile(pyxx.files.BinaryFile):
 
         # Initialize variables
         self._coordinate_units: Union[str, None] = None
+        self._vtk_data_types: Dict[str, VTKDataType] = {}
 
         if unit_converter is None:
             self.unit_converter = MahaMulticsUnitConverter()
@@ -351,6 +358,13 @@ class VTKFile(pyxx.files.BinaryFile):
 
     def extract_data_series(self, identifier: str, unit: Optional[str] = None
                             ) -> np.ndarray:
+        """Returns a NumPy array containing a single VTK data field
+
+        VTK files store data (scalars, vectors, etc.) at a set of defined grid
+        points in 3D.  This method retrieves a single such field of data (i.e.,
+        it retrieves one column in :py:attr:`pointdata_df`), and returns the
+        resulting values in a NumPy array.
+        """
         # SETUP --------------------------------------------------------------
         # Verify that file has been read
         if not hasattr(self, '_df'):
@@ -422,6 +436,14 @@ class VTKFile(pyxx.files.BinaryFile):
                     = self.extract_data_series(identifier, unit)
 
         return pd.DataFrame(df_data)
+
+    def is_scalar(self, identifier: str) -> bool:
+        column = self._find_column_id(identifier)
+        return self._vtk_data_types[column] == VTKDataType.scalar
+
+    def is_vector(self, identifier: str) -> bool:
+        column = self._find_column_id(identifier)
+        return self._vtk_data_types[column] == VTKDataType.vector
 
     def points(self, unit: Optional[str] = None) -> np.ndarray:
         """Returns a list of all grid points in the VTK file
@@ -622,6 +644,7 @@ class VTKFile(pyxx.files.BinaryFile):
 
             # Modify data to match expected format for Pandas
             if array.ndim == 1:  # Array contains a scalar for each grid point
+                self._vtk_data_types[identifier] = VTKDataType.scalar
                 pd_array = list(array)
             elif array.ndim == 2:  # Array contains a vector for each grid point
                 if not array.shape[1] == 3:
@@ -630,7 +653,8 @@ class VTKFile(pyxx.files.BinaryFile):
                         f'but data specified by "{identifier}" has '
                         f'{array.shape[1]} components')
 
-                pd_array = [(v[0], v[1], v[2]) for v in array]
+                self._vtk_data_types[identifier] = VTKDataType.vector
+                pd_array = [np.array([v[0], v[1], v[2]]) for v in array]
             else:
                 raise VTKFormatError(
                     f'VTK point data specified by "{identifier}" has invalid '
