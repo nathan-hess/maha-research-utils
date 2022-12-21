@@ -16,7 +16,7 @@ import vtk.util.numpy_support  # type: ignore  # pylint: disable=E0401,E0611
 from .exceptions import (
     FileNotParsedError,
     VTKIdentifierNameError,
-    VTKInvalidIdentifier,
+    VTKInvalidIdentifierError,
     VTKFormatError,
 )
 from .units import MahaMulticsUnitConverter
@@ -244,7 +244,7 @@ class VTKFile(pyxx.files.BinaryFile):
         # identifier exists as one of the DataFrame columns
         if not self.unit_conversion_enabled:
             if identifier not in self._df:
-                raise VTKInvalidIdentifier(
+                raise VTKInvalidIdentifierError(
                     f'Data specified by identifier "{identifier}" not found '
                     'in VTK file')
 
@@ -260,15 +260,22 @@ class VTKFile(pyxx.files.BinaryFile):
                         matches.append(column)
 
                 if len(matches) == 0:
-                    raise VTKInvalidIdentifier(
+                    raise VTKInvalidIdentifierError(
                         f'Data specified by identifier "{identifier}" not found '
                         'in VTK file')
 
                 if len(matches) > 1:
-                    raise VTKInvalidIdentifier(
+                    # Ideally, it should never be possible to reach this
+                    # statement because an error would have been thrown while
+                    # reading the VTK file.  However, this check is still
+                    # implemented as a backup precaution
+
+                    raise VTKInvalidIdentifierError(  # pragma: no cover
                         f'Identifier "{identifier}" matches multiple data '
                         f'fields in the VTK file: {matches}')
 
+                # At this point, there must be only a single item in `matches`,
+                # corresponding to the column name of the VTK data identifier
                 identifier = matches[0]
 
         return identifier
@@ -374,6 +381,12 @@ class VTKFile(pyxx.files.BinaryFile):
     def extract_dataframe(self, identifiers: List[str],
                           units: Optional[List[str]] = None) -> pd.DataFrame:
         # SETUP --------------------------------------------------------------
+        # Verify that file has been read
+        if not hasattr(self, '_df'):
+            raise FileNotParsedError(
+                'Unable to retrieve VTK data; VTK file has not yet '
+                'been read')
+
         # Verify that unit was provided if and only if unit conversions
         # are enabled
         self._check_unit_conversion_compliance_args(units)

@@ -27,7 +27,7 @@ class VTKFormatError(MahaMulticsFileFormatError):
 class VTKIdentifierNameError(VTKFormatError, ValueError):
     """Error thrown if VTK file data identifier name has an invalid format"""
 
-class VTKInvalidIdentifier(IndexError):
+class VTKInvalidIdentifierError(IndexError):
     """Error thrown if attempting to retrieve data from a VTK file, but the
     identifier provided by the user does not correspond to a single column
     in the VTK data DataFrame"""
