@@ -162,40 +162,6 @@ class VTKFile(pyxx.files.BinaryFile):
 
         self._unit_converter = unit_converter
 
-    def _check_unit_conversion_compliance_id(self, identifier: str) -> None:
-        """Verifies that a given VTK data identifier matches the naming
-        convention required by :py:attr:`unit_conversion_enabled`
-
-        VTK data identifiers must be strings, and if unit conversions are
-        enabled (:py:attr:`unit_conversion_enabled` is ``True``), then the
-        VTK data identifiers must follow a specific format including the unit.
-        This method confirms that these requirements are met, and throws a
-        descriptive error if they are not.
-
-        Parameters
-        ----------
-        identifier : str
-            The VTK data identifier (i.e., the column name of the VTK data
-            DataFrame stored in :py:attr:`pointdata_df`) to be checked
-
-        Raises
-        ------
-        TypeError
-            If ``identifier`` is not of type ``str``
-        VTKIdentifierNameError
-            If :py:attr:`unit_conversion_enabled` is ``True`` and
-            ``identifier`` does not match the required format (described for
-            the :py:attr:`unit_conversion_enabled` attribute)
-        """
-        if not isinstance(identifier, str):
-            raise TypeError(
-                f'VTK data name {identifier} is not of type "str"')
-
-        if self.unit_conversion_enabled:
-            if not re.match(self.__unit_conversion_regex, identifier):
-                raise VTKIdentifierNameError(
-                    f'Invalid VTK data identifier: "{identifier}"')
-
     def _check_unit_conversion_compliance_args(self, unit: Any) -> None:
         """Verifies that, when retrieving VTK data, the user specified or
         omitted a unit in agreement with the unit conversion settings
@@ -234,6 +200,40 @@ class VTKFile(pyxx.files.BinaryFile):
             raise TypeError(
                 'VTK unit conversions are not enabled, so argument "unit" '
                 'must be `None`')
+
+    def _check_unit_conversion_compliance_id(self, identifier: str) -> None:
+        """Verifies that a given VTK data identifier matches the naming
+        convention required by :py:attr:`unit_conversion_enabled`
+
+        VTK data identifiers must be strings, and if unit conversions are
+        enabled (:py:attr:`unit_conversion_enabled` is ``True``), then the
+        VTK data identifiers must follow a specific format including the unit.
+        This method confirms that these requirements are met, and throws a
+        descriptive error if they are not.
+
+        Parameters
+        ----------
+        identifier : str
+            The VTK data identifier (i.e., the column name of the VTK data
+            DataFrame stored in :py:attr:`pointdata_df`) to be checked
+
+        Raises
+        ------
+        TypeError
+            If ``identifier`` is not of type ``str``
+        VTKIdentifierNameError
+            If :py:attr:`unit_conversion_enabled` is ``True`` and
+            ``identifier`` does not match the required format (described for
+            the :py:attr:`unit_conversion_enabled` attribute)
+        """
+        if not isinstance(identifier, str):
+            raise TypeError(
+                f'VTK data name {identifier} is not of type "str"')
+
+        if self.unit_conversion_enabled:
+            if not re.match(self.__unit_conversion_regex, identifier):
+                raise VTKIdentifierNameError(
+                    f'Invalid VTK data identifier: "{identifier}"')
 
     def _find_column_id(self, identifier: str) -> str:
         # Validate inputs
