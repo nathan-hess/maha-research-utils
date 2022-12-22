@@ -1,5 +1,13 @@
 .. spelling:word-list::
 
+   args
+   exps
+   MahaMulticsUnit
+   MahaMulticsUnitConverter
+   MahaMulticsUnitSystem
+   multics
+   ndarray
+   np
    str
    TypedList
    TypedListWithID
