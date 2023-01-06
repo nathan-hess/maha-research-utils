@@ -59,7 +59,8 @@ html_theme = 'furo'
 html_static_path = ['_static']
 
 # Site logo and favicon
-html_logo = '_static/logo.svg'
+# Logo is not as visually appealing with "furo" theme, but can be enabled with:
+#   html_logo = '_static/logo.svg'
 html_favicon = '_static/favicon.ico'
 
 # General HTML options
