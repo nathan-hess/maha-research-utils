@@ -129,6 +129,3 @@ Finally, make sure to install required dependencies through pip:
         .. code-block:: powershell
 
             C:\>pip install -r maha-research-utils\requirements.txt
-
-        Note that it is not recommended that you download the source code to
-        your ``C:\`` directory; this is merely shown as a general example.
