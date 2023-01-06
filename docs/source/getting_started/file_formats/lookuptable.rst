@@ -228,7 +228,7 @@ Examples
 One potential application of a 1D lookup table is to approximate a function of one
 variable.  For instance, suppose we want to create a Maha Multics lookup table that
 approximates :math:`f(x) = x^2` at :math:`x = 4, 5, 6, 7, 8, 9`.  For this example,
-we'll assume that :math:`x` has units of ``mm`` and :math:`f(x)` has units of ``N``.
+we'll assume that :math:`x` has units of ``mm`` and :math:`f(x)` has units of ``kg``.
 
 In this case, we have one dimension, and the independent variable is defined at 6
 values.  Therefore, ``DIM_SIZE_1 = 6``, ``DIM_1_MIN = 4``, and ``DIM_1_STEP = 1``.
@@ -246,7 +246,7 @@ the beginning of each line are line numbers, not part of the file):
 
     6
     mm:  4  1  2
-    N:  16  25  36  49  64  81
+    kg:  16  25  36  49  64  81
 
 
 2D Lookup Table
