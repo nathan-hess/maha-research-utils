@@ -146,20 +146,21 @@ estimate :math:`f(x)` for any other :math:`x`.  The following approximation
 methods are valid:
 
 .. list-table::
+    :align: left
     :header-rows: 1
     :widths: auto
 
-    - * ``DIM_#_APPROX_METHOD``
-        * Description
-    - * **0** (nearest neighbor)
-        * Nearest neighbor interpolation and extrapolation
-    - * **1** (linear)
-        * Linear interpolation and extrapolation
-    - * **2** (saturation)
-        * Linear interpolation; no extrapolation (:math:`f(x) = f(x_{min})` for
+    * - ``DIM_#_APPROX_METHOD``
+      - Description
+    * - **0** (nearest neighbor)
+      - Nearest neighbor interpolation and extrapolation
+    * - **1** (linear)
+      - Linear interpolation and extrapolation
+    * - **2** (saturation)
+      - Linear interpolation; no extrapolation (:math:`f(x) = f(x_{min})` for
         :math:`x \le x_{min}` and :math:`f(x) = f(x_{max})` for :math:`x \ge x_{max}`)
-    - * **3** (periodic)
-        * Linear interpolation; to extrapolate, it is assumed that the dependent
+    * - **3** (periodic)
+      - Linear interpolation; to extrapolate, it is assumed that the dependent
         variable is periodic with period :math:`x_{max} - x_{min}` such that
         :math:`f(x) = f(((x - x_{min}) \% (x_{max} - x_{min})) + x_{min})`,
         where :math:`\%` denotes the modulo operator
@@ -188,16 +189,16 @@ as resulting from fixing the independent variables "from right to left."  To be
 exact:
 
 - Consider the order in which the independent variables are specified on the
-    first line of the lookup table file (which is the same order they are listed
-    in Section 2 of the file).  First fix all dimensions ``2``, ``3``, ..., ``N``
-    at their minimum values.
+  first line of the lookup table file (which is the same order they are listed
+  in Section 2 of the file).  First fix all dimensions ``2``, ``3``, ..., ``N``
+  at their minimum values.
 - On each row (after the unit), provide dependent variable values ``DEPENDENT_VAR_DATA_1``
-    for every value of the dimension 1 **as whitespace-separated numbers**; that
-    is, each row of this section should have ``DIM_SIZE_1`` values.
+  for every value of the dimension 1 **as whitespace-separated numbers**; that
+  is, each row of this section should have ``DIM_SIZE_1`` values.
 - Then, increment dimension 2 and add subsequent rows (``DIM_SIZE_1`` rows
-    total) for each value of the second independent variable.
+  total) for each value of the second independent variable.
 - Then, work "rightward" and increment dimension 3, and add rows for each value
-    of dimension 2, and repeat for all ``DIM_SIZE_3`` values of dimension 3.
+  of dimension 2, and repeat for all ``DIM_SIZE_3`` values of dimension 3.
 - Repeat this process until all ``N`` dimensions have been incremented.
 
 For an example of how to implement this order, refer to the
