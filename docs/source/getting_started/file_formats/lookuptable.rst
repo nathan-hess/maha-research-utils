@@ -85,124 +85,123 @@ a lookup table file has the following format:
 A lookup table can be divided into three primary sections, each of which will be
 discussed in detail below.
 
-.. dropdown:: Section 1: Lookup Table Dimensions
-    :animate: fade-in
-    :open:
+Section 1: Lookup Table Dimensions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    .. code-block:: text
+.. code-block:: text
 
-        [DIM_SIZE_1] [DIM_SIZE_2] ... [DIM_SIZE_N]
+    [DIM_SIZE_1] [DIM_SIZE_2] ... [DIM_SIZE_N]
 
-    The first section of the lookup table file defines the number ``N`` of dimensions
-    (independent variables) in the lookup table, as well as the number of points
-    in each dimension.
+The first section of the lookup table file defines the number ``N`` of dimensions
+(independent variables) in the lookup table, as well as the number of points
+in each dimension.
 
-    The "size" of each dimension refers to the number of values of the independent
-    variable at which the dependent variable is explicitly defined.
+The "size" of each dimension refers to the number of values of the independent
+variable at which the dependent variable is explicitly defined.
 
-    The sizes ``DIM_SIZE_1``, ``DIM_SIZE_2``, ..., ``DIM_SIZE_N`` of each of the ``N``
-    dimensions should be listed as **whitespace-separated** integers on a single line.
+The sizes ``DIM_SIZE_1``, ``DIM_SIZE_2``, ..., ``DIM_SIZE_N`` of each of the ``N``
+dimensions should be listed as **whitespace-separated** integers on a single line.
 
-.. dropdown:: Section 2: Independent Variable Spacing and Approximation Method
-    :animate: fade-in
-    :open:
 
-    .. code-block:: text
+Section 2: Independent Variable Spacing and Approximation Method
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-        [DIM_1_UNIT]: [DIM_1_MIN] [DIM_1_STEP] [DIM_1_APPROX_METHOD]
-        [DIM_2_UNIT]: [DIM_2_MIN] [DIM_2_STEP] [DIM_2_APPROX_METHOD]
-        ...
-        [DIM_N_UNIT]: [DIM_N_MIN] [DIM_N_STEP] [DIM_N_APPROX_METHOD]
+.. code-block:: text
 
-    The next section of the lookup table file provides the points (values of each
-    independent variable) at which the dependent variable is explicitly defined,
-    as well as the method for interpolating and/or extrapolating values along each
-    dimension of the lookup table.
+    [DIM_1_UNIT]: [DIM_1_MIN] [DIM_1_STEP] [DIM_1_APPROX_METHOD]
+    [DIM_2_UNIT]: [DIM_2_MIN] [DIM_2_STEP] [DIM_2_APPROX_METHOD]
+    ...
+    [DIM_N_UNIT]: [DIM_N_MIN] [DIM_N_STEP] [DIM_N_APPROX_METHOD]
 
-    There are several important pieces of information defined for each independent
-    variable dimension.  First, the independent variable can be assigned a unit,
-    specified by ``DIM_1_UNIT``, ``DIM_2_UNIT``, ..., ``DIM_N_UNIT`` for each of
-    the ``N`` independent variables.  Any valid unit defined in the simulation
-    ``inputDict.txt`` can be provided.
+The next section of the lookup table file provides the points (values of each
+independent variable) at which the dependent variable is explicitly defined,
+as well as the method for interpolating and/or extrapolating values along each
+dimension of the lookup table.
 
-    Next, the independent variable spacing is defined similar to a combination of NumPy's
-    `arange <https://numpy.org/doc/stable/reference/generated/numpy.arange.html>`__ and
-    `linspace <https://numpy.org/doc/stable/reference/generated/numpy.linspace.html>`__
-    functions.  The minimum value of each independent variable is given by ``DIM_1_MIN``,
-    ``DIM_2_MIN``, ..., ``DIM_N_MIN``, and the corresponding step (the difference between
-    adjacent values of the independent variable) is given by ``DIM_1_STEP``,
-    ``DIM_2_STEP``, ..., ``DIM_N_STEP``.  **Maha Multics requires a constant "step size"
-    between values of all independent variables.**  Notice that these parameters,
-    combined with ``DIM_SIZE_1``, ``DIM_SIZE_2``, ..., ``DIM_SIZE_N`` from Section 1,
-    allow the independent variable values to be fully specified.
+There are several important pieces of information defined for each independent
+variable dimension.  First, the independent variable can be assigned a unit,
+specified by ``DIM_1_UNIT``, ``DIM_2_UNIT``, ..., ``DIM_N_UNIT`` for each of
+the ``N`` independent variables.  Any valid unit defined in the simulation
+``inputDict.txt`` can be provided.
 
-    Finally, the last value provided on each line (``DIM_1_APPROX_METHOD``,
-    ``DIM_2_APPROX_METHOD``, ..., ``DIM_N_APPROX_METHOD``) is the approximation
-    method used to interpolate and extrapolate values along the given dimension in
-    the lookup table.  That is, along each dimension, the lookup table contains a
-    discrete approximation of a function :math:`f(x)`.  Discrete values are
-    provided in the range :math:`x \in [x_{min}, x_{max}]` in the lookup table,
-    and the objective of the lookup table is to interpolate or extrapolate to
-    estimate :math:`f(x)` for any other :math:`x`.  The following approximation
-    methods are valid:
+Next, the independent variable spacing is defined similar to a combination of NumPy's
+`arange <https://numpy.org/doc/stable/reference/generated/numpy.arange.html>`__ and
+`linspace <https://numpy.org/doc/stable/reference/generated/numpy.linspace.html>`__
+functions.  The minimum value of each independent variable is given by ``DIM_1_MIN``,
+``DIM_2_MIN``, ..., ``DIM_N_MIN``, and the corresponding step (the difference between
+adjacent values of the independent variable) is given by ``DIM_1_STEP``,
+``DIM_2_STEP``, ..., ``DIM_N_STEP``.  **Maha Multics requires a constant "step size"
+between values of all independent variables.**  Notice that these parameters,
+combined with ``DIM_SIZE_1``, ``DIM_SIZE_2``, ..., ``DIM_SIZE_N`` from Section 1,
+allow the independent variable values to be fully specified.
 
-    .. list-table::
-        :header-rows: 1
-        :widths: auto
+Finally, the last value provided on each line (``DIM_1_APPROX_METHOD``,
+``DIM_2_APPROX_METHOD``, ..., ``DIM_N_APPROX_METHOD``) is the approximation
+method used to interpolate and extrapolate values along the given dimension in
+the lookup table.  That is, along each dimension, the lookup table contains a
+discrete approximation of a function :math:`f(x)`.  Discrete values are
+provided in the range :math:`x \in [x_{min}, x_{max}]` in the lookup table,
+and the objective of the lookup table is to interpolate or extrapolate to
+estimate :math:`f(x)` for any other :math:`x`.  The following approximation
+methods are valid:
 
-        - * ``DIM_#_APPROX_METHOD``
-          * Description
-        - * **0** (nearest neighbor)
-          * Nearest neighbor interpolation and extrapolation
-        - * **1** (linear)
-          * Linear interpolation and extrapolation
-        - * **2** (saturation)
-          * Linear interpolation; no extrapolation (:math:`f(x) = f(x_{min})` for
-            :math:`x \le x_{min}` and :math:`f(x) = f(x_{max})` for :math:`x \ge x_{max}`)
-        - * **3** (periodic)
-          * Linear interpolation; to extrapolate, it is assumed that the dependent
-            variable is periodic with period :math:`x_{max} - x_{min}` such that
-            :math:`f(x) = f(((x - x_{min}) \% (x_{max} - x_{min})) + x_{min})`,
-            where :math:`\%` denotes the modulo operator
+.. list-table::
+    :header-rows: 1
+    :widths: auto
 
-    All values should be **whitespace-separated**.
+    - * ``DIM_#_APPROX_METHOD``
+        * Description
+    - * **0** (nearest neighbor)
+        * Nearest neighbor interpolation and extrapolation
+    - * **1** (linear)
+        * Linear interpolation and extrapolation
+    - * **2** (saturation)
+        * Linear interpolation; no extrapolation (:math:`f(x) = f(x_{min})` for
+        :math:`x \le x_{min}` and :math:`f(x) = f(x_{max})` for :math:`x \ge x_{max}`)
+    - * **3** (periodic)
+        * Linear interpolation; to extrapolate, it is assumed that the dependent
+        variable is periodic with period :math:`x_{max} - x_{min}` such that
+        :math:`f(x) = f(((x - x_{min}) \% (x_{max} - x_{min})) + x_{min})`,
+        where :math:`\%` denotes the modulo operator
 
-.. dropdown:: Section 3: Dependent Variable Data
-    :animate: fade-in
-    :open:
+All values should be **whitespace-separated**.
 
-    .. code-block:: text
 
-        [DEPENDENT_VAR_UNIT_1]: [DEPENDENT_VAR_DATA_1] ...
-        ...
-        [DEPENDENT_VAR_UNIT_M]: [DEPENDENT_VAR_DATA_M] ...
+Section 3: Dependent Variable Data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    The final section of a lookup table file contains the values of the dependent
-    variable.  The values of the dependent variable for *every possible combination
-    of the independent variables* must be specified.
+.. code-block:: text
 
-    Each line must begin with a unit ``DEPENDENT_VAR_UNIT_1``, ..., ``DEPENDENT_VAR_UNIT_M``
-    specifying the units in which the data *on that line* are stored.
+    [DEPENDENT_VAR_UNIT_1]: [DEPENDENT_VAR_DATA_1] ...
+    ...
+    [DEPENDENT_VAR_UNIT_M]: [DEPENDENT_VAR_DATA_M] ...
 
-    The order in which the dependent variable values are given can be thought of
-    as resulting from fixing the independent variables "from right to left."  To be
-    exact:
+The final section of a lookup table file contains the values of the dependent
+variable.  The values of the dependent variable for *every possible combination
+of the independent variables* must be specified.
 
-    - Consider the order in which the independent variables are specified on the
-      first line of the lookup table file (which is the same order they are listed
-      in Section 2 of the file).  First fix all dimensions ``2``, ``3``, ..., ``N``
-      at their minimum values.
-    - On each row (after the unit), provide dependent variable values ``DEPENDENT_VAR_DATA_1``
-      for every value of the dimension 1 **as whitespace-separated numbers**; that
-      is, each row of this section should have ``DIM_SIZE_1`` values.
-    - Then, increment dimension 2 and add subsequent rows (``DIM_SIZE_1`` rows
-      total) for each value of the second independent variable.
-    - Then, work "rightward" and increment dimension 3, and add rows for each value
-      of dimension 2, and repeat for all ``DIM_SIZE_3`` values of dimension 3.
-    - Repeat this process until all ``N`` dimensions have been incremented.
+Each line must begin with a unit ``DEPENDENT_VAR_UNIT_1``, ..., ``DEPENDENT_VAR_UNIT_M``
+specifying the units in which the data *on that line* are stored.
 
-    For an example of how to implement this order, refer to the
-    :ref:`paragraph_fileformat_lookuptable_example3D` below.
+The order in which the dependent variable values are given can be thought of
+as resulting from fixing the independent variables "from right to left."  To be
+exact:
+
+- Consider the order in which the independent variables are specified on the
+    first line of the lookup table file (which is the same order they are listed
+    in Section 2 of the file).  First fix all dimensions ``2``, ``3``, ..., ``N``
+    at their minimum values.
+- On each row (after the unit), provide dependent variable values ``DEPENDENT_VAR_DATA_1``
+    for every value of the dimension 1 **as whitespace-separated numbers**; that
+    is, each row of this section should have ``DIM_SIZE_1`` values.
+- Then, increment dimension 2 and add subsequent rows (``DIM_SIZE_1`` rows
+    total) for each value of the second independent variable.
+- Then, work "rightward" and increment dimension 3, and add rows for each value
+    of dimension 2, and repeat for all ``DIM_SIZE_3`` values of dimension 3.
+- Repeat this process until all ``N`` dimensions have been incremented.
+
+For an example of how to implement this order, refer to the
+:ref:`paragraph_fileformat_lookuptable_example3D` below.
 
 
 Comments, Whitespace, and Line Endings
