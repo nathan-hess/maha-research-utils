@@ -19,7 +19,7 @@ matplotlib
 numpy
 Sphinx
 sphinx_design
-sphinx-book-theme
+sphinx-book-theme == 0.3.3
 sphinx-copybutton
 sphinx-remove-toctrees
 sphinxcontrib-spelling
