@@ -15,11 +15,11 @@
 -r ../requirements.txt
 
 # Packages required to build documentation
+furo
 matplotlib
 numpy
 Sphinx
 sphinx_design
-sphinx-book-theme == 0.3.3
 sphinx-copybutton
 sphinx-remove-toctrees
 sphinxcontrib-spelling
