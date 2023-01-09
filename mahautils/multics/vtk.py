@@ -635,9 +635,19 @@ class VTKFile(pyxx.files.BinaryFile):
 
         self.__xyz_coordinate_columns = tuple(df_data.keys())
 
+        self._vtk_data_types \
+            = dict(zip(self.__xyz_coordinate_columns,
+                       [VTKDataType.scalar] * len(self.__xyz_coordinate_columns)))
+
         # Read all arrays from VTK file
         point_data = output.GetPointData()
-        data_id_names = list(self.__xyz_coordinate_columns)
+
+        if self.unit_conversion_enabled:
+            data_id_names = [self._parse_column_id(x, 'name')
+                             for x in self.__xyz_coordinate_columns]
+        else:
+            data_id_names = list(self.__xyz_coordinate_columns)
+
         for i in range(point_data.GetNumberOfArrays()):
             identifier = str(point_data.GetArray(i).GetName())
 
