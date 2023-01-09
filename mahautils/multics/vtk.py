@@ -3,6 +3,7 @@ used by the Maha Multics software.
 """
 
 import enum
+import io
 import pathlib
 import re
 import string
@@ -14,6 +15,7 @@ import pyxx
 import vtk                     # type: ignore
 import vtk.util.numpy_support  # type: ignore  # pylint: disable=E0401,E0611
 
+from mahautils.utils.capture_printing import CaptureStderr
 from .exceptions import (
     FileNotParsedError,
     VTKIdentifierNameError,
@@ -549,7 +551,8 @@ class VTKFile(pyxx.files.BinaryFile):
     def read(self,
              path: Optional[Union[str, pathlib.Path]] = None,
              unit_conversion_enabled: bool = False,
-             coordinate_units: Optional[str] = None
+             coordinate_units: Optional[str] = None,
+             strict: bool = False
              ) -> None:
         """Reads a VTK file from the disk
 
@@ -572,6 +575,16 @@ class VTKFile(pyxx.files.BinaryFile):
             is ``None``).  Must be provided if :py:attr:`unit_conversion_enabled`
             is ``True`` and omitted if :py:attr:`unit_conversion_enabled` is
             ``False``
+        strict : bool, optional
+            Whether to throw an exception if the data in the VTK file being
+            read are not formatted in a valid way
+
+        Warnings
+        --------
+        Setting ``strict`` to ``True`` modifies the ``stderr`` file descriptor,
+        including redirecting ``stderr`` to a temporary file, so it can cause
+        problems for other code that relies on streams (for instance, it may
+        cause ``unittest`` tests to fail in some cases).
         """
         # SETUP --------------------------------------------------------------
         # Set "path" attribute, verify file exists, and store file hashes
@@ -613,7 +626,20 @@ class VTKFile(pyxx.files.BinaryFile):
         reader.ReadAllTensorsOn()
 
         # Read data from VTK file
-        reader.Update()
+        if strict:
+            stderr_stream = io.BytesIO()
+            with CaptureStderr(stderr_stream):
+                reader.Update()
+
+            if len(stderr_stream.getvalue()) > 0:
+                error_message = stderr_stream.getvalue().decode("utf_8")
+
+                raise VTKFormatError(
+                    f'VTK file "{self.path}" could not be read successfully. '
+                    f'The following error was encountered: {error_message}')
+        else:
+            reader.Update()
+
         output = reader.GetOutput()
 
         # PARSE VTK FILE -----------------------------------------------------
