@@ -616,19 +616,49 @@ class Test_VTKFile(unittest.TestCase):
         with self.subTest(issue='provided_unit'):
             with self.assertRaises(TypeError):
                 self.vtk.read(
-                    path                     = self.sample_vtk_001,
-                    coordinate_units         = 'km',
+                    path                    = self.sample_vtk_001,
+                    coordinate_units        = 'km',
                     unit_conversion_enabled = False)
 
         with self.subTest(issue='missing_unit'):
             with self.assertRaises(TypeError):
                 self.vtk.read(
-                    path                     = self.sample_vtk_001,
+                    path                    = self.sample_vtk_001,
                     unit_conversion_enabled = True)
 
         with self.subTest(issue='invalid_unit'):
             with self.assertRaises(ValueError):
                 self.vtk.read(
-                    path                     = self.sample_vtk_001,
+                    path                    = self.sample_vtk_001,
                     unit_conversion_enabled = True,
-                    coordinate_units         = 'mm * N')
+                    coordinate_units        = 'mm * N')
+
+    def test_read_invalid_file(self):
+        # Verifies that attempting to read a VTK file with invalid file
+        # format results in an appropriate error being thrown
+        with self.subTest(unit_conversion_enabled=True):
+            problematic_files = [
+                'sample_vtk.002.vtk',
+                'sample_vtk.003.vtk',
+                'sample_vtk.004.vtk',
+                'sample_vtk.006.vtk',
+                'sample_vtk.007.vtk',
+            ]
+
+            for file in problematic_files:
+                with self.subTest(file=file):
+                    with self.assertRaises(VTKIdentifierNameError):
+                        self.vtk.read(
+                            path                    = SAMPLE_FILES_DIR / file,
+                            unit_conversion_enabled = True,
+                            coordinate_units        = 'mm')
+
+        with self.subTest(unit_conversion_enabled=False):
+            file = 'sample_vtk.003.vtk'
+
+            with self.subTest(file=file):
+                with self.assertRaises(VTKIdentifierNameError):
+                    self.vtk.read(
+                        path                    = SAMPLE_FILES_DIR / file,
+                        unit_conversion_enabled = True,
+                        coordinate_units        = 'mm')
