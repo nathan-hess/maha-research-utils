@@ -581,6 +581,10 @@ class VTKFile(pyxx.files.BinaryFile):
 
         Warnings
         --------
+        If there are two point data fields in the VTK file with exactly the
+        same identifier, only one of the fields (the last one with the
+        identifier) will be read.
+
         Setting ``strict`` to ``True`` modifies the ``stderr`` file descriptor,
         including redirecting ``stderr`` to a temporary file, so it can cause
         problems for other code that relies on streams (for instance, it may
@@ -687,11 +691,6 @@ class VTKFile(pyxx.files.BinaryFile):
                 raise VTKIdentifierNameError(
                     f'Invalid VTK data identifier "{identifier}" (matches '
                     'name of one of the point coordinate columns)')
-
-            if identifier in df_data:
-                raise VTKIdentifierNameError(
-                    f'Invalid VTK data identifier "{identifier}" (multiple '
-                    'VTK data use the same identifier)')
 
             self._check_unit_conversion_compliance_id(identifier)
             if self.unit_conversion_enabled:

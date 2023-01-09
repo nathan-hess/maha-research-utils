@@ -13,10 +13,6 @@ sample_vtk_004
   Contains a field "z[cm]" that is a duplicate when reading with unit
   conversions enabled
 
-sample_vtk_005
-  Contains a field "rho[kg/m^3]" that is a duplicate when reading with unit
-  conversions enabled or disabled
-
 sample_vtk_006
   Contains a field "rho[lbf]" that is a duplicate when reading with unit
   conversions enabled
