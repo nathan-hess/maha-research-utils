@@ -389,16 +389,22 @@ class VTKFile(pyxx.files.BinaryFile):
         # are enabled
         self._check_unit_conversion_compliance_args(unit)
 
-        # CASE 1: Unit conversions disabled ----------------------------------
-        if not self.unit_conversion_enabled:
-            return self._df[identifier].to_numpy()
-
-        # CASE 2: Unit conversions enabled -----------------------------------
         # Extract raw data from DataFrame
-        from_unit = self._parse_column_id(identifier, 'unit')
         raw_data = self._df[identifier].to_numpy()
 
+        if raw_data.dtype != np.float64:
+            # For vector data, the Pandas `.to_numpy()` method returns a
+            # NumPy array with `dtype=object`.  Vector data should be an array
+            # of floating-point numbers, which is performed here
+            raw_data = np.array([x.astype(np.float64) for x in raw_data])
+
+        # CASE 1: Unit conversions disabled ----------------------------------
+        if not self.unit_conversion_enabled:
+            return raw_data
+
+        # CASE 2: Unit conversions enabled -----------------------------------
         # Convert raw data units
+        from_unit = self._parse_column_id(identifier, 'unit')
         return self.unit_converter.convert(
             raw_data, from_unit=from_unit, to_unit=str(unit))
 
@@ -418,7 +424,7 @@ class VTKFile(pyxx.files.BinaryFile):
         # CASE 1: Unit conversions disabled ----------------------------------
         if not self.unit_conversion_enabled:
             df_data = {
-                identifier: self.extract_data_series(identifier)
+                identifier: list(self.extract_data_series(identifier))
                     for identifier in identifiers  # noqa: E131
             }
 
@@ -443,7 +449,7 @@ class VTKFile(pyxx.files.BinaryFile):
                 unit = units[i]
 
                 df_data[f'{name}[{unit}]'] \
-                    = self.extract_data_series(identifier, unit)
+                    = list(self.extract_data_series(identifier, unit))
 
         return pd.DataFrame(df_data)
 

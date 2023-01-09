@@ -95,6 +95,50 @@ class Test_VTKFile(unittest.TestCase):
             ],
         }
 
+        self.sample_vtk_001_UbarSurface = {
+            'm/s': [
+                [0, -0.052359879016876220703, 0], [0.026179939508438110352, -0.045344982296228408813, 0],
+                [0.045344982296228408813, -0.026179939508438110352, 0], [0.052359879016876220703, -3.2061177262601143172e-18, 0],
+                [0.045344982296228408813, 0.026179939508438110352, 0], [0.026179939508438110352, 0.045344982296228408813, 0],
+                [6.4122354525202286343e-18, 0.052359879016876220703, 0], [-0.026179939508438110352, 0.045344982296228408813, 0],
+                [-0.045344982296228408813, 0.026179939508438110352, 0], [-0.052359879016876220703, 9.618353592370649228e-18, 0],
+                [-0.045344982296228408813, -0.026179939508438110352, 0], [-0.026179939508438110352, -0.045344982296228408813, 0],
+                [0, -0.10471975803375244141, 0], [0.052359879016876220703, -0.090689964592456817627, 0],
+                [0.090689964592456817627, -0.052359879016876220703, 0], [0.10471975803375244141, -6.4122354525202286343e-18, 0],
+                [0.090689964592456817627, 0.052359879016876220703, 0], [0.052359879016876220703, 0.090689964592456817627, 0],
+                [1.2824470905040457269e-17, 0.10471975803375244141, 0], [-0.052359879016876220703, 0.090689964592456817627, 0],
+                [-0.090689964592456817627, 0.052359879016876220703, 0], [-0.10471975803375244141, 1.9236707184741298456e-17, 0],
+                [-0.090689964592456817627, -0.052359879016876220703, 0], [-0.052359879016876220703, -0.090689964592456817627, 0],
+                [0, -0.15707963705062866211, 0], [0.078539818525314331055, -0.1360349506139755249, 0],
+                [0.1360349506139755249, -0.078539818525314331055, 0], [0.15707963705062866211, -9.618353592370649228e-18, 0],
+                [0.1360349506139755249, 0.078539818525314331055, 0], [0.078539818525314331055, 0.1360349506139755249, 0],
+                [1.9236707184741298456e-17, 0.15707963705062866211, 0], [-0.078539818525314331055, 0.1360349506139755249, 0],
+                [-0.1360349506139755249, 0.078539818525314331055, 0], [-0.15707963705062866211, 2.8855060777111947684e-17, 0],
+                [-0.1360349506139755249, -0.078539818525314331055, 0], [-0.078539818525314331055, -0.1360349506139755249, 0],
+            ],
+            'mm/s': [
+                [0, -52.359879016876220703, 0], [26.179939508438110352, -45.344982296228408813, 0],
+                [45.344982296228408813, -26.179939508438110352, 0], [52.359879016876220703, -3.2061177262601143172e-15, 0],
+                [45.344982296228408813, 26.179939508438110352, 0], [26.179939508438110352, 45.344982296228408813, 0],
+                [6.4122354525202286343e-15, 52.359879016876220703, 0], [-26.179939508438110352, 45.344982296228408813, 0],
+                [-45.344982296228408813, 26.179939508438110352, 0], [-52.359879016876220703, 9.618353592370649228e-15, 0],
+                [-45.344982296228408813, -26.179939508438110352, 0], [-26.179939508438110352, -45.344982296228408813, 0],
+                [0, -104.71975803375244141, 0], [52.359879016876220703, -90.689964592456817627, 0],
+                [90.689964592456817627, -52.359879016876220703, 0], [104.71975803375244141, -6.4122354525202286343e-15, 0],
+                [90.689964592456817627, 52.359879016876220703, 0], [52.359879016876220703, 90.689964592456817627, 0],
+                [1.2824470905040457269e-14, 104.71975803375244141, 0], [-52.359879016876220703, 90.689964592456817627, 0],
+                [-90.689964592456817627, 52.359879016876220703, 0], [-104.71975803375244141, 1.9236707184741298456e-14, 0],
+                [-90.689964592456817627, -52.359879016876220703, 0], [-52.359879016876220703, -90.689964592456817627, 0],
+                [0, -157.07963705062866211, 0], [78.539818525314331055, -136.0349506139755249, 0],
+                [136.0349506139755249, -78.539818525314331055, 0], [157.07963705062866211, -9.618353592370649228e-15, 0],
+                [136.0349506139755249, 78.539818525314331055, 0], [78.539818525314331055, 136.0349506139755249, 0],
+                [1.9236707184741298456e-14, 157.07963705062866211, 0], [-78.539818525314331055, 136.0349506139755249, 0],
+                [-136.0349506139755249, 78.539818525314331055, 0], [-157.07963705062866211, 2.8855060777111947684e-14, 0],
+                [-136.0349506139755249, -78.539818525314331055, 0], [-78.539818525314331055, -136.0349506139755249, 0],
+            ],
+        }
+
+
         # Create `VTKFile` objects to represent files
         self.vtk = VTKFile()
 
@@ -327,42 +371,64 @@ class Test_VTKFile(unittest.TestCase):
 
     def test_extract_data_series_unit_conversion(self):
         # Verifies that a single column of VTK data can be retrieved correctly
-        for unit, data in self.sample_vtk_001_pFilm.items():
-            with self.subTest(id='pFilm', unit=unit):
-                self.assertLessEqual(
-                    max_array_diff(
-                        self.vtk_read_unit_convert.extract_data_series('pFilm', unit),
-                        data
-                    ),
-                    TEST_FLOAT_TOLERANCE
-                )
+        with self.subTest(data_type='scalar'):
+            for unit, data in self.sample_vtk_001_pFilm.items():
+                with self.subTest(id='pFilm', unit=unit):
+                    self.assertLessEqual(
+                        max_array_diff(
+                            self.vtk_read_unit_convert.extract_data_series('pFilm', unit),
+                            data
+                        ),
+                        TEST_FLOAT_TOLERANCE
+                    )
 
-        for unit, data in self.sample_vtk_001_hRigid.items():
-            with self.subTest(id='hRigid', unit=unit):
-                self.assertLessEqual(
-                    max_array_diff(
-                        self.vtk_read_unit_convert.extract_data_series('hRigid', unit),
-                        data
-                    ),
-                    TEST_FLOAT_TOLERANCE
-                )
+            for unit, data in self.sample_vtk_001_hRigid.items():
+                with self.subTest(id='hRigid', unit=unit):
+                    self.assertLessEqual(
+                        max_array_diff(
+                            self.vtk_read_unit_convert.extract_data_series('hRigid', unit),
+                            data
+                        ),
+                        TEST_FLOAT_TOLERANCE
+                    )
+
+        with self.subTest(data_type='vector'):
+            for unit, data in self.sample_vtk_001_UbarSurface.items():
+                with self.subTest(id='UbarSurface', unit=unit):
+                    self.assertLessEqual(
+                        max_array_diff(
+                            self.vtk_read_unit_convert.extract_data_series('UbarSurface', unit),
+                            data
+                        ),
+                        TEST_FLOAT_TOLERANCE
+                    )
 
     def test_extract_data_series_no_unit_conversion(self):
         # Verifies that a single column of VTK data can be retrieved correctly
-        with self.subTest(id='pFilm[bar]'):
-            self.assertLessEqual(
-                max_array_diff(
-                    self.vtk_read_no_unit_convert.extract_data_series('pFilm[bar]'),
-                    self.sample_vtk_001_pFilm['bar']
-                ),
-                TEST_FLOAT_TOLERANCE
-            )
+        with self.subTest(data_type='scalar'):
+            with self.subTest(id='pFilm[bar]'):
+                self.assertLessEqual(
+                    max_array_diff(
+                        self.vtk_read_no_unit_convert.extract_data_series('pFilm[bar]'),
+                        self.sample_vtk_001_pFilm['bar']
+                    ),
+                    TEST_FLOAT_TOLERANCE
+                )
 
-        with self.subTest(id='hRigid[micron]'):
+            with self.subTest(id='hRigid[micron]'):
+                self.assertLessEqual(
+                    max_array_diff(
+                        self.vtk_read_no_unit_convert.extract_data_series('hRigid[micron]'),
+                        self.sample_vtk_001_hRigid['micron']
+                    ),
+                    TEST_FLOAT_TOLERANCE
+                )
+
+        with self.subTest(data_type='vector'):
             self.assertLessEqual(
                 max_array_diff(
-                    self.vtk_read_no_unit_convert.extract_data_series('hRigid[micron]'),
-                    self.sample_vtk_001_hRigid['micron']
+                    self.vtk_read_no_unit_convert.extract_data_series('UbarSurface[m/s]'),
+                    self.sample_vtk_001_UbarSurface['m/s']
                 ),
                 TEST_FLOAT_TOLERANCE
             )
@@ -402,26 +468,51 @@ class Test_VTKFile(unittest.TestCase):
 
             self.assertTrue(df.equals(df_expected))
 
+        with self.subTest(case='scalar_and_vector'):
+            df = self.vtk_read_unit_convert.extract_dataframe(['pFilm', 'hRigid', 'UbarSurface'],
+                                                              ['Pa_a',  'micron', 'mm/s'])
+
+            df_expected = pd.DataFrame({
+                'pFilm[Pa_a]': self.sample_vtk_001_pFilm['Pa_a'],
+                'hRigid[micron]': self.sample_vtk_001_hRigid['micron'],
+                'UbarSurface[mm/s]': [np.array(x) for x in self.sample_vtk_001_UbarSurface['mm/s']],
+            })
+
+            self.assertTrue(df.equals(df_expected))
+
         with self.subTest(case='invalid_inputs'):
             with self.assertRaises(ValueError):
                 df = self.vtk_read_unit_convert.extract_dataframe(['pFilm', 'pFilm'], ['bar'])
 
     def test_extract_dataframe_no_unit_conversion(self):
         # Verifies that a multiple columns of VTK data can be retrieved correctly
-        df = self.vtk_read_no_unit_convert.extract_dataframe(['pFilm[bar]', 'hRigid[micron]'])
+        with self.subTest(case='scalar'):
+            df = self.vtk_read_no_unit_convert.extract_dataframe(['pFilm[bar]', 'hRigid[micron]'])
 
-        df_expected = pd.DataFrame({
-            'pFilm[bar]': self.sample_vtk_001_pFilm['bar'],
-            'hRigid[micron]': self.sample_vtk_001_hRigid['micron'],
-        })
+            df_expected = pd.DataFrame({
+                'pFilm[bar]': self.sample_vtk_001_pFilm['bar'],
+                'hRigid[micron]': self.sample_vtk_001_hRigid['micron'],
+            })
 
-        df_not_expected = pd.DataFrame({
-            'pFilm[bar]': self.sample_vtk_001_pFilm['bar'],
-            'hRigid[micron]': self.sample_vtk_001_hRigid['in'],
-        })
+            df_not_expected = pd.DataFrame({
+                'pFilm[bar]': self.sample_vtk_001_pFilm['bar'],
+                'hRigid[micron]': self.sample_vtk_001_hRigid['in'],
+            })
 
-        self.assertTrue(df.equals(df_expected))
-        self.assertFalse(df.equals(df_not_expected))
+            self.assertTrue(df.equals(df_expected))
+            self.assertFalse(df.equals(df_not_expected))
+
+        with self.subTest(case='scalar_and_vector'):
+            df = self.vtk_read_no_unit_convert.extract_dataframe(
+                ['pFilm[bar]', 'hRigid[micron]', 'UbarSurface[m/s]'])
+
+            df_expected = pd.DataFrame({
+                'pFilm[bar]': self.sample_vtk_001_pFilm['bar'],
+                'hRigid[micron]': self.sample_vtk_001_hRigid['micron'],
+                'UbarSurface[m/s]': [np.array(x) for x in self.sample_vtk_001_UbarSurface['m/s']],
+            })
+
+            self.assertTrue(df.equals(df_expected))
 
     def test_is_scalar(self):
         # Verifies that scalar data can be identified correctly
