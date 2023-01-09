@@ -24,7 +24,17 @@ from .units import MahaMulticsUnitConverter
 
 
 class VTKDataType(enum.Enum):
+    """The type of point data stored in a VTK file
+
+    VTK files can store a variety of types of data (scalars, vectors, tensors,
+    etc.).  This :py:class:`enum.Enum` specifies the different types that can
+    be read by the MahaUtils package.
+    """
+
+    #: Scalar data series
     scalar = enum.auto()
+
+    #: Vector data series
     vector = enum.auto()
 
 
@@ -129,7 +139,7 @@ class VTKFile(pyxx.files.BinaryFile):
         appropriately name the data identifiers in the VTK file such that they
         include the unit in which the data are stored.
 
-        The naming convention adopted in this package to faciliate unit
+        The naming convention adopted in this package to facilitate unit
         conversions for VTK data requires that VTK data identifiers (for both
         scalar and vector data) are formatted in two parts: (1) a descriptive
         name, (2) the unit in square brackets.  There should be no whitespace
@@ -438,10 +448,36 @@ class VTKFile(pyxx.files.BinaryFile):
         return pd.DataFrame(df_data)
 
     def is_scalar(self, identifier: str) -> bool:
+        """Whether a given VTK data identifier stores scalar point data
+
+        Parameters
+        ----------
+        identifier : str
+            The VTK data identifier to analyze
+
+        Returns
+        -------
+        bool
+            Returns ``True`` if the VTK data identifier given by ``identifier``
+            stores scalar data, and ``False`` otherwise
+        """
         column = self._find_column_id(identifier)
         return self._vtk_data_types[column] == VTKDataType.scalar
 
     def is_vector(self, identifier: str) -> bool:
+        """Whether a given VTK data identifier stores vector point data
+
+        Parameters
+        ----------
+        identifier : str
+            The VTK data identifier to analyze
+
+        Returns
+        -------
+        bool
+            Returns ``True`` if the VTK data identifier given by ``identifier``
+            stores vector data, and ``False`` otherwise
+        """
         column = self._find_column_id(identifier)
         return self._vtk_data_types[column] == VTKDataType.vector
 
