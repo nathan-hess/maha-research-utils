@@ -1,7 +1,9 @@
 .. spelling:word-list::
 
    args
+   DataFrame
    exps
+   maha
    MahaMulticsUnit
    MahaMulticsUnitConverter
    MahaMulticsUnitSystem
@@ -11,6 +13,7 @@
    str
    TypedList
    TypedListWithID
+   VTKFile
 
 
 {{ fullname | escape | underline}}

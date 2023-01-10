@@ -1,0 +1,22 @@
+sample_vtk_001
+  Correctly-formatted VTK file that should be permissible to read
+
+sample_vtk_002
+  Contains a field "y[mm]" that is a duplicate when reading with unit
+  conversions enabled
+
+sample_vtk_003
+  Contains a field "x" that is a duplicate when reading with unit
+  conversions enabled or disabled
+
+sample_vtk_004
+  Contains a field "z[cm]" that is a duplicate when reading with unit
+  conversions enabled
+
+sample_vtk_006
+  Contains a field "rho[lbf]" that is a duplicate when reading with unit
+  conversions enabled
+
+sample_vtk_007
+  Contains a field "rho" that does not match identifier name standards with
+  unit conversions enabled
