@@ -1,6 +1,7 @@
 .. spelling:word-list::
 
    args
+   DataFrame
    exps
    maha
    MahaMulticsUnit

@@ -376,6 +376,21 @@ class VTKFile(pyxx.files.BinaryFile):
         points in 3D.  This method retrieves a single such field of data (i.e.,
         it retrieves one column in :py:attr:`pointdata_df`), and returns the
         resulting values in a NumPy array.
+
+        Parameters
+        ----------
+        identifier : str
+            The identifier specifying the data in the VTK file to return
+        unit : str, optional
+            The units in which the data should be returned (only applicable if
+            :py:attr:`unit_conversion_enabled` is ``True``; otherwise, must
+            not be specified)
+
+        Returns
+        -------
+        np.ndarray
+            A NumPy array containing the data corresponding to ``identifier``
+            in the VTK file
         """
         # SETUP --------------------------------------------------------------
         # Verify that file has been read
@@ -412,6 +427,30 @@ class VTKFile(pyxx.files.BinaryFile):
 
     def extract_dataframe(self, identifiers: List[str],
                           units: Optional[List[str]] = None) -> pd.DataFrame:
+        """Returns a Pandas DataFrame containing one or more VTK data fields
+
+        VTK files store data (scalars, vectors, etc.) at a set of defined grid
+        points in 3D.  This method retrieves one or more such fields of data
+        (i.e., it retrieves one or more columns in :py:attr:`pointdata_df`),
+        and returns the resulting values in a Pandas DataFrame.
+
+        Parameters
+        ----------
+        identifiers : list of str
+            The (one or more) identifiers specifying the data in the VTK file
+            to return
+        units : list of str, optional
+            The units in which the data should be returned (only applicable if
+            :py:attr:`unit_conversion_enabled` is ``True``; otherwise, must
+            not be specified).  If supplied, ``units`` should be a list of
+            strings of equal length as ``identifiers``
+
+        Returns
+        -------
+        pd.DataFrame
+            A Pandas DataFrame containing the columns of :py:attr:`pointdata_df`
+            corresponding to ``identifiers`` in the VTK file
+        """
         # SETUP --------------------------------------------------------------
         # Verify that file has been read
         if not hasattr(self, '_df'):
