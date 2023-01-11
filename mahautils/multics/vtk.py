@@ -7,11 +7,12 @@ import io
 import pathlib
 import re
 import string
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Tuple, Union, Optional
 
 import numpy as np
 import pandas as pd            # type: ignore
 import pyxx
+import scipy.interpolate
 import vtk                     # type: ignore
 import vtk.util.numpy_support  # type: ignore  # pylint: disable=E0401,E0611
 
@@ -23,6 +24,13 @@ from .exceptions import (
     VTKFormatError,
 )
 from .units import MahaMulticsUnitConverter
+
+# Type definitions
+ListOf3DPoints = Union[
+    List[Union[List[float], Tuple[float, float, float]]],
+    Tuple[Union[List[float], Tuple[float, float, float]]],
+    np.ndarray
+]
 
 
 class VTKDataType(enum.Enum):
@@ -493,6 +501,57 @@ class VTKFile(pyxx.files.BinaryFile):
                     = list(self.extract_data_series(identifier, unit))
 
         return pd.DataFrame(df_data)
+
+    def interpolate_scalar(self, identifier: str,
+                           query_points: ListOf3DPoints,
+                           interpolator_type: str,
+                           output_units: Optional[str] = None,
+                           query_point_units: Optional[str] = None,
+                           **kwargs
+                           ) -> float:
+        # Validate inputs
+        self._check_unit_conversion_compliance_args(output_units)
+        self._check_unit_conversion_compliance_args(query_point_units)
+
+        try:
+            query_points_ndarray = np.array(query_points, dtype=np.float64)
+
+            if not query_points_ndarray.ndim == 2:
+                raise ValueError('Query points must be provided as a 2D array')
+
+            if not query_points_ndarray.shape[1] == 3:
+                raise ValueError(
+                    'Query points must each have 3 coordinates (x, y, z)')
+
+        except ValueError as exception:
+            raise ValueError(
+                'Invalid format of "query_points" argument. This argument '
+                'should be provided as a shape (N,3) NumPy array of N points'
+            ) from exception
+
+        # Extract point coordinates and scalar data
+        points = self.points(query_point_units)
+        scalar_data = self.extract_data_series(identifier, output_units)
+
+        # Perform interpolation
+        if (interpolator_type == 'griddata'):
+            return scipy.interpolate.griddata(
+                points = points,
+                values = scalar_data,
+                xi     = query_points_ndarray,
+                **kwargs
+            )
+
+        if (interpolator_type == 'RBFInterpolator'):
+            interpolator = scipy.interpolate.RBFInterpolator(
+                y = points,
+                d = scalar_data,
+                **kwargs
+            )
+
+            return interpolator(query_points_ndarray)
+
+        raise ValueError(f'Interpolator "{interpolator_type}" is not supported')
 
     def is_scalar(self, identifier: str) -> bool:
         """Whether a given VTK data identifier stores scalar point data
