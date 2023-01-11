@@ -9,10 +9,12 @@ import re
 import string
 from typing import Any, Dict, List, Set, Tuple, Union, Optional
 
+# Mypy type checking is disabled for several packages because they are not
+# PEP 561-compliant
 import numpy as np
 import pandas as pd            # type: ignore
 import pyxx
-import scipy.interpolate
+import scipy.interpolate       # type: ignore
 import vtk                     # type: ignore
 import vtk.util.numpy_support  # type: ignore  # pylint: disable=E0401,E0611
 
