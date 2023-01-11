@@ -28,9 +28,10 @@ from .exceptions import (
 from .units import MahaMulticsUnitConverter
 
 # Type definitions
+PointCoordinates = Union[List[float], Tuple[float, ...], np.ndarray]
 ListOfPoints = Union[
-    List[Union[List[float], Tuple[float, ...]]],
-    Tuple[Union[List[float], Tuple[float, ...]]],
+    List[PointCoordinates],
+    Tuple[PointCoordinates, ...],
     np.ndarray
 ]
 
@@ -526,7 +527,7 @@ class VTKFile(pyxx.files.BinaryFile):
         identifier : str
             The identifier specifying the data in the VTK file to return
         query_points : tuple or list or np.ndarray
-            The points at which to return possibly interpolated value(s) of
+            The point(s) at which to return possibly interpolated value(s) of
             the VTK data corresponding to ``identifier``
         interpolator_type : str
             The SciPy interpolation function to use to perform interpolation.
@@ -556,6 +557,8 @@ class VTKFile(pyxx.files.BinaryFile):
 
         Notes
         -----
+        **Interpolation Functions**
+
         The following interpolation functions are available (set the
         ``interpolator_type`` argument to the given string to use each):
 
@@ -580,6 +583,14 @@ class VTKFile(pyxx.files.BinaryFile):
         to ``('x', 'y', 'z')``) using ``griddata`` with ``method='linear'``, an
         error will be thrown.  In this case, you need to reduce the problem to
         a 2D interpolation by setting ``interpolation_axes`` to ``('x', 'y')``.
+
+        **Point Coordinates**
+
+        The order in which the ``interpolate_axes`` is provided does not
+        matter.  It is always expected that point coordinates are provided in
+        the following sequence: ``(x, y, z)``.  Even if
+        ``interpolate_axes=('y', 'x', 'z')``, it is still expected that the
+        query points are provided as ``(x, y, z)``.
         """
         # Validate inputs
         axes = set(interpolate_axes)
@@ -599,8 +610,14 @@ class VTKFile(pyxx.files.BinaryFile):
         self._check_unit_conversion_compliance_args(query_point_units)
 
         try:
+            # Convert query points to NumPy array
             query_points_ndarray = np.array(query_points, dtype=np.float64)
 
+            if query_points_ndarray.ndim == 1:
+                query_points_ndarray = np.expand_dims(query_points_ndarray,
+                                                      axis=0)
+
+            # Check that query points have expected shape
             if not query_points_ndarray.ndim == 2:
                 raise ValueError('Query points must be provided as a 2D array')
 
