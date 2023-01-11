@@ -7,7 +7,7 @@ import io
 import pathlib
 import re
 import string
-from typing import Any, Dict, List, Tuple, Union, Optional
+from typing import Any, Dict, List, Set, Tuple, Union, Optional
 
 import numpy as np
 import pandas as pd            # type: ignore
@@ -26,9 +26,9 @@ from .exceptions import (
 from .units import MahaMulticsUnitConverter
 
 # Type definitions
-ListOf3DPoints = Union[
-    List[Union[List[float], Tuple[float, float, float]]],
-    Tuple[Union[List[float], Tuple[float, float, float]]],
+ListOfPoints = Union[
+    List[Union[List[float], Tuple[float, ...]]],
+    Tuple[Union[List[float], Tuple[float, ...]]],
     np.ndarray
 ]
 
@@ -502,14 +502,97 @@ class VTKFile(pyxx.files.BinaryFile):
 
         return pd.DataFrame(df_data)
 
-    def interpolate_scalar(self, identifier: str,
-                           query_points: ListOf3DPoints,
-                           interpolator_type: str,
-                           output_units: Optional[str] = None,
-                           query_point_units: Optional[str] = None,
-                           **kwargs
-                           ) -> float:
+    def interpolate(self, identifier: str,
+                    query_points: ListOfPoints,
+                    interpolator_type: str,
+                    output_units: Optional[str] = None,
+                    query_point_units: Optional[str] = None,
+                    interpolate_axes:
+                        Union[List[str], Tuple[str, ...], Set[str], str]
+                        = ('x', 'y', 'z'),
+                    **kwargs
+                    ) -> np.ndarray:
+        """Interpolates data from the VTK file
+
+        Retrieves the value of a given data field stored in the VTK file,
+        interpolating between VTK grid points if necessary.  Interpolation is
+        performed using the :py:mod:`scipy.interpolate` package
+        (https://docs.scipy.org/doc/scipy/reference/interpolate.html).
+
+        Parameters
+        ----------
+        identifier : str
+            The identifier specifying the data in the VTK file to return
+        query_points : tuple or list or np.ndarray
+            The points at which to return possibly interpolated value(s) of
+            the VTK data corresponding to ``identifier``
+        interpolator_type : str
+            The SciPy interpolation function to use to perform interpolation.
+            Can be selected from any of the options in the "Notes" section
+        output_units : str, optional
+            The units in which the data should be returned (only applicable if
+            :py:attr:`unit_conversion_enabled` is ``True``; otherwise, must
+            not be specified)
+        query_point_units : str, optional
+            The units of the ``query_points`` argument (only applicable if
+            :py:attr:`unit_conversion_enabled` is ``True``; otherwise, must
+            not be specified)
+        interpolate_axes : list or tuple or set or str, optional
+            The coordinate axes on which interpolation should be performed.
+            Must be selected from any combination of ``'x'``, ``'y'``, and
+            ``'z'`` (default is ``('x', 'y', 'z')``)
+        **kwargs
+            Any keyword arguments to be supplied to the SciPy interpolation
+            function specified by ``interpolator_type``.  See the "Notes"
+            section for more information
+
+        Returns
+        -------
+        np.ndarray
+            The interpolated value(s) of the VTK data given by ``identifier``
+            at the query points ``query_points``
+
+        Notes
+        -----
+        The following interpolation functions are available (set the
+        ``interpolator_type`` argument to the given string to use each):
+
+        - ``'griddata'``: The :py:class:`scipy.interpolate.griddata`
+          interpolation function for unstructured, multivariate interpolation
+          (`reference <https://docs.scipy.org/doc/scipy/reference/generated
+          /scipy.interpolate.griddata.html>`__)
+        - ``'RBFInterpolator'``: The :py:class:`scipy.interpolate.RBFInterpolator`
+          function for unstructured, multivariate interpolation using a radial
+          basis function (`reference <https://docs.scipy.org/doc/scipy/reference
+          /generated/scipy.interpolate.RBFInterpolator.html>`__)
+
+        Review the SciPy documentation for questions about parameters for the
+        interpolation functions.  **These interpolation functions require data
+        and interpolation parameters to meet specific mathematical requirements,
+        and errors may be encountered if such requirements are not met.**  This
+        may require using non-default parameters of the :py:meth:`interpolate`
+        method.
+
+        For instance, if your VTK file is defined on a 2D ``xy``-plane and you
+        attempt to perform 3D interpolation (i.e., you set ``interpolation_axes``
+        to ``('x', 'y', 'z')``) using ``griddata`` with ``method='linear'``, an
+        error will be thrown.  In this case, you need to reduce the problem to
+        a 2D interpolation by setting ``interpolation_axes`` to ``('x', 'y')``.
+        """
         # Validate inputs
+        axes = set(interpolate_axes)
+        num_axes = len(axes)
+
+        allowed_axes = {'x', 'y', 'z'}
+        if not axes.issubset(allowed_axes):
+            raise ValueError(
+                'Argument "interpolate_axes" contains invalid items: '
+                f'{axes - allowed_axes}')
+
+        if not (1 <= num_axes <= 3):
+            raise ValueError('Number of interpolation dimensions must be '
+                             'between 1 and 3 (inclusive)')
+
         self._check_unit_conversion_compliance_args(output_units)
         self._check_unit_conversion_compliance_args(query_point_units)
 
@@ -519,18 +602,29 @@ class VTKFile(pyxx.files.BinaryFile):
             if not query_points_ndarray.ndim == 2:
                 raise ValueError('Query points must be provided as a 2D array')
 
-            if not query_points_ndarray.shape[1] == 3:
+            if not query_points_ndarray.shape[1] == num_axes:
                 raise ValueError(
-                    'Query points must each have 3 coordinates (x, y, z)')
+                    f'Query points must each have {num_axes} coordinates '
+                    f'({", ".join(sorted(axes))})')
 
         except ValueError as exception:
             raise ValueError(
                 'Invalid format of "query_points" argument. This argument '
-                'should be provided as a shape (N,3) NumPy array of N points'
-            ) from exception
+                f'should be provided as a shape (N,{num_axes}) NumPy array '
+                'of N points') from exception
 
-        # Extract point coordinates and scalar data
-        points = self.points(query_point_units)
+        # Extract point coordinates of all points in VTK file
+        coordinates = []
+        if 'x' in axes:
+            coordinates.append(self.coordinates('x', query_point_units))
+        if 'y' in axes:
+            coordinates.append(self.coordinates('y', query_point_units))
+        if 'z' in axes:
+            coordinates.append(self.coordinates('z', query_point_units))
+
+        points = np.stack(coordinates, axis=1)
+
+        # Extract scalar data for all points in VTK file
         scalar_data = self.extract_data_series(identifier, output_units)
 
         # Perform interpolation
