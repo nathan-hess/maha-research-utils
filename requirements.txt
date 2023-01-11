@@ -16,4 +16,5 @@
 numpy
 pandas
 pyxx
+scipy
 vtk

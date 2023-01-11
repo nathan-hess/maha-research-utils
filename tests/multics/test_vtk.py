@@ -514,6 +514,170 @@ class Test_VTKFile(unittest.TestCase):
 
             self.assertTrue(df.equals(df_expected))
 
+    def test_interpolate(self):
+        # Verifies that interpolation is performed correctly
+        with self.subTest(data_type='scalar', on_grid_point=True,
+                          axes='z', interpolation='griddata'):
+            self.assertLessEqual(
+                max_array_diff(
+                    self.vtk_read_unit_convert.interpolate(
+                        identifier        = 'pFilm[bar]',
+                        query_points      = [0],
+                        interpolator_type = 'griddata',
+                        output_units      = 'bar',
+                        query_point_units = 'mm',
+                        interpolate_axes  = 'z',
+                        method            = 'nearest'
+                    ),
+                    [0]
+                ),
+                TEST_FLOAT_TOLERANCE
+            )
+
+        with self.subTest(data_type='scalar', on_grid_point=True,
+                          axes='xy', interpolation='griddata'):
+            self.assertLessEqual(
+                max_array_diff(
+                    self.vtk_read_unit_convert.interpolate(
+                        identifier        = 'pFilm[bar]',
+                        query_points      = [[-2, 0], [0, 3], [0, -1]],
+                        interpolator_type = 'griddata',
+                        output_units      = 'bar',
+                        query_point_units = 'mm',
+                        interpolate_axes  = 'xy',
+                        method            = 'linear'
+                    ),
+                    [0.98323613405227661133, 0, 0]
+                ),
+                TEST_FLOAT_TOLERANCE
+            )
+
+        with self.subTest(data_type='scalar', on_grid_point=True,
+                          axes='xyz', interpolation='RBF'):
+            self.assertLessEqual(
+                max_array_diff(
+                    self.vtk_read_unit_convert.interpolate(
+                        identifier        = 'pFilm[bar]',
+                        query_points      = (-0.002, 0, 0),
+                        interpolator_type = 'RBFInterpolator',
+                        output_units      = 'Pa_a',
+                        query_point_units = 'm',
+                        interpolate_axes  = 'xyz',
+                        kernel            = 'linear'
+                    ),
+                    [199648.6134052276611328125]
+                ),
+
+                # Using a greater test tolerance since changes to SciPy
+                # algorithms can potentially affect output
+                TEST_FLOAT_TOLERANCE * 1000
+            )
+
+        with self.subTest(data_type='scalar', on_grid_point=False,
+                          axes='xy', interpolation='griddata'):
+            self.assertLessEqual(
+                max_array_diff(
+                    self.vtk_read_unit_convert.interpolate(
+                        identifier        = 'pFilm[bar]',
+                        query_points      = [[2.5, 0], [1.8, -0.45]],
+                        interpolator_type = 'griddata',
+                        output_units      = 'bar',
+                        query_point_units = 'mm',
+                        interpolate_axes  = 'xy',
+                        method            = 'cubic'
+                    ),
+                    [0.6514330502760588, 0.9504980740357747]
+                ),
+
+                # Using a greater test tolerance since changes to SciPy
+                # algorithms can potentially affect output
+                TEST_FLOAT_TOLERANCE * 1000
+            )
+
+        with self.subTest(data_type='vector'):
+            self.assertLessEqual(
+                max_array_diff(
+                    self.vtk_read_unit_convert.interpolate(
+                        identifier        = 'UbarSurface[m/s]',
+                        query_points      = [(-2, 0, 0), [1.8, -0.45, 0]],
+                        interpolator_type = 'RBFInterpolator',
+                        output_units      = 'mm/s',
+                        query_point_units = 'mm',
+                        interpolate_axes  = 'xyz',
+                        kernel            = 'linear'
+                    ),
+                    [[0, 104.71975803375249824967, 0],
+                     [-23.75471546198923888937, -94.98546196236617333852, 0]]
+                ),
+
+                # Using a greater test tolerance since changes to SciPy
+                # algorithms can potentially affect output
+                TEST_FLOAT_TOLERANCE * 1000
+            )
+
+    def test_interpolate_invalid_args(self):
+        # Verifies that appropriate errors are thrown if invalid arguments are
+        # provided when attempting to interpolate data
+        with self.subTest(arg='interpolator_type'):
+            with self.assertRaises(ValueError):
+                self.vtk_read_unit_convert.interpolate(
+                    identifier        = 'pFilm[bar]',
+                    query_points      = [[-2, 0], [0, 3], [0, -1]],
+                    interpolator_type = 'nonexistent_type',
+                    output_units      = 'bar',
+                    query_point_units = 'mm',
+                    interpolate_axes  = 'xy',
+                    method            = 'linear'
+                )
+
+        with self.subTest(arg='interpolate_axes', issue='not_xyz'):
+            with self.assertRaises(ValueError):
+                self.vtk_read_unit_convert.interpolate(
+                    identifier        = 'pFilm[bar]',
+                    query_points      = [[-2, 0], [0, 3], [0, -1]],
+                    interpolator_type = 'griddata',
+                    output_units      = 'bar',
+                    query_point_units = 'mm',
+                    interpolate_axes  = 'wx',
+                    method            = 'linear'
+                )
+
+        with self.subTest(arg='interpolate_axes', issue='no_axes'):
+            with self.assertRaises(ValueError):
+                self.vtk_read_unit_convert.interpolate(
+                    identifier        = 'pFilm[bar]',
+                    query_points      = [[-2, 0], [0, 3], [0, -1]],
+                    interpolator_type = 'griddata',
+                    output_units      = 'bar',
+                    query_point_units = 'mm',
+                    interpolate_axes  = '',
+                    method            = 'linear'
+                )
+
+        with self.subTest(arg='query_points', issue='shape'):
+            with self.assertRaises(ValueError):
+                self.vtk_read_unit_convert.interpolate(
+                    identifier        = 'pFilm[bar]',
+                    query_points      = [[[-2, 0], [0, 3], [0, -1]]],
+                    interpolator_type = 'griddata',
+                    output_units      = 'bar',
+                    query_point_units = 'mm',
+                    interpolate_axes  = 'xy',
+                    method            = 'linear'
+                )
+
+        with self.subTest(arg='query_points', issue='axes'):
+            with self.assertRaises(ValueError):
+                self.vtk_read_unit_convert.interpolate(
+                    identifier        = 'pFilm[bar]',
+                    query_points      = [[-2, 0, 0], [0, 3, 0], [0, -1, 0]],
+                    interpolator_type = 'griddata',
+                    output_units      = 'bar',
+                    query_point_units = 'mm',
+                    interpolate_axes  = 'xy',
+                    method            = 'linear'
+                )
+
     def test_is_scalar(self):
         # Verifies that scalar data can be identified correctly
         with self.subTest(unit_conversion_enabled='True'):
