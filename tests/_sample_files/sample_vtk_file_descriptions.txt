@@ -20,3 +20,7 @@ sample_vtk_006
 sample_vtk_007
   Contains a field "rho" that does not match identifier name standards with
   unit conversions enabled
+
+sample_vtk_012
+  Contains a field "speed" that is missing units in the identifier, as
+  required when conversions enabled
