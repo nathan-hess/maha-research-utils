@@ -111,6 +111,11 @@ class VTKFile(pyxx.files.BinaryFile):
         return self._coordinate_units
 
     @property
+    def identifiers(self) -> List[str]:
+        """The list of all VTK data identifiers for data stored in the file"""
+        return list(self._df.columns)
+
+    @property
     def num_points(self) -> int:
         """The number of points in the VTK grid for which vector, scalar,
         and/or tensor data are stored

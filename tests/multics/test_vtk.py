@@ -198,6 +198,19 @@ class Test_VTKFile(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.vtk.unit_converter = print
 
+    def test_identifiers(self):
+        # Verifies that VTK data identifiers can be retrieved correctly
+        self.assertListEqual(
+            self.vtk_read_no_unit_convert.identifiers,
+            ['x', 'y', 'z', 'pFilm[bar]', 'pContact[bar]', 'aFractContact[-]',
+             'TFilm[degC]', 'rho[kg/m^3]', 'fV[-]', 'fG[-]', 'alphaV[-]',
+             'alphaG[-]', 'hRigid[micron]', 'dhdt[m/s]', 'dhRigiddt[m/s]',
+             'pAll[bar]', 'boundaryID[-]', 'Utheta[m/s]', 'Uradial[m/s]',
+             'UbarSurface[m/s]', 'gradp[Pa/m]', 'meanFlowVel[m/s]',
+             'shearStressCouetteTop[bar]', 'shearStressCouetteBot[bar]',
+             'shearStressPoiseuille[bar]']
+        )
+
     def test_check_unit_conversion_compliance_args(self):
         # Verifies that appropriate errors are thrown (or not thrown) if units
         # are provided or omitted with unit conversion enabled/disabled
