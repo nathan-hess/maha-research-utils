@@ -7,7 +7,7 @@ import io
 import pathlib
 import re
 import string
-from typing import Any, Dict, List, Set, Tuple, Union, Optional
+from typing import Any, Dict, List, Tuple, Union, Optional
 
 # Mypy type checking is disabled for several packages because they are not
 # PEP 561-compliant
@@ -516,7 +516,7 @@ class VTKFile(pyxx.files.BinaryFile):
                     output_units: Optional[str] = None,
                     query_point_units: Optional[str] = None,
                     interpolate_axes:
-                        Union[List[str], Tuple[str, ...], Set[str], str]
+                        Union[List[str], Tuple[str, ...], str]
                         = ('x', 'y', 'z'),
                     **kwargs
                     ) -> np.ndarray:
@@ -591,25 +591,32 @@ class VTKFile(pyxx.files.BinaryFile):
 
         **Point Coordinates**
 
-        The order in which the ``interpolate_axes`` is provided does not
-        matter.  It is always expected that point coordinates are provided in
-        the following sequence: ``(x, y, z)``.  Even if
-        ``interpolate_axes=('y', 'x', 'z')``, it is still expected that the
-        query points are provided as ``(x, y, z)``.
+        The order in which ``interpolate_axes`` values are provided must be in
+        the following sequence: ``(x, y, z)``.  An error will be thrown if an
+        argument such as ``interpolate_axes=('y', 'x', 'z')`` is provided.
         """
         # Validate inputs
-        axes = set(interpolate_axes)
+        axes = list(interpolate_axes)
         num_axes = len(axes)
 
         allowed_axes = {'x', 'y', 'z'}
-        if not axes.issubset(allowed_axes):
+        if not set(axes).issubset(allowed_axes):
             raise ValueError(
                 'Argument "interpolate_axes" contains invalid items: '
-                f'{axes - allowed_axes}')
+                f'{set(axes) - allowed_axes}')
+
+        if len(set(axes)) != len(axes):
+            raise ValueError(
+                'Argument "interpolate_axes" contains duplicate values')
 
         if not (1 <= num_axes <= 3):
             raise ValueError('Number of interpolation dimensions must be '
                              'between 1 and 3 (inclusive)')
+
+        if not axes == sorted(axes):
+            raise ValueError(
+                'Argument "interpolate_axes" must be in the following '
+                f'sequence: {sorted(axes)}')
 
         self._check_unit_conversion_compliance_args(output_units)
         self._check_unit_conversion_compliance_args(query_point_units)
