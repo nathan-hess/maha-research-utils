@@ -691,6 +691,30 @@ class Test_VTKFile(unittest.TestCase):
                     method            = 'linear'
                 )
 
+        with self.subTest(arg='query_points', issue='duplicate_axes'):
+            with self.assertRaises(ValueError):
+                self.vtk_read_unit_convert.interpolate(
+                    identifier        = 'pFilm[bar]',
+                    query_points      = [[-2, 0, 0], [0, 3, 0], [0, -1, 0]],
+                    interpolator_type = 'griddata',
+                    output_units      = 'bar',
+                    query_point_units = 'mm',
+                    interpolate_axes  = 'xyx',
+                    method            = 'linear'
+                )
+
+        with self.subTest(arg='query_points', issue='wrong_axes_order'):
+            with self.assertRaises(ValueError):
+                self.vtk_read_unit_convert.interpolate(
+                    identifier        = 'pFilm[bar]',
+                    query_points      = [[-2, 0, 0], [0, 3, 0], [0, -1, 0]],
+                    interpolator_type = 'griddata',
+                    output_units      = 'bar',
+                    query_point_units = 'mm',
+                    interpolate_axes  = 'yxz',
+                    method            = 'linear'
+                )
+
     def test_is_scalar(self):
         # Verifies that scalar data can be identified correctly
         with self.subTest(unit_conversion_enabled='True'):
