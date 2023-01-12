@@ -768,7 +768,8 @@ class VTKFile(pyxx.files.BinaryFile):
              path: Optional[Union[str, pathlib.Path]] = None,
              unit_conversion_enabled: bool = False,
              coordinate_units: Optional[str] = None,
-             strict: bool = False
+             strict: bool = False,
+             fallback_units: Optional[Dict[str, str]] = None
              ) -> None:
         """Reads a VTK file from the disk
 
@@ -794,6 +795,14 @@ class VTKFile(pyxx.files.BinaryFile):
         strict : bool, optional
             Whether to throw an exception if the data in the VTK file being
             read are not formatted in a valid way
+        fallback_units : dict, optional
+            This setting allows VTK files where some data are missing units
+            in the identifier to still be read with unit conversions enabled.
+            Must be a dictionary where keys and values are both strings.  If
+            :py:attr:`unit_conversion_enabled` is ``True`` and a VTK data
+            identifier does not include the data units, then if there is a key
+            in ``fallback_units`` matching the identifier, the corresponding
+            value in ``fallback_units`` will be set as the units
 
         Warnings
         --------
@@ -908,7 +917,18 @@ class VTKFile(pyxx.files.BinaryFile):
                     f'Invalid VTK data identifier "{identifier}" (matches '
                     'name of one of the point coordinate columns)')
 
-            self._check_unit_conversion_compliance_id(identifier)
+            try:
+                self._check_unit_conversion_compliance_id(identifier)
+            except VTKIdentifierNameError:
+                if (fallback_units is not None) and (identifier in fallback_units):
+                    # Add units to data identifier
+                    identifier = identifier + f'[{fallback_units[identifier]}]'
+
+                    # Re-check identifier format compliance
+                    self._check_unit_conversion_compliance_id(identifier)
+                else:
+                    raise
+
             if self.unit_conversion_enabled:
                 name = self._parse_column_id(identifier, 'name')
 

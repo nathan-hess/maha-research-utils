@@ -839,3 +839,37 @@ class Test_VTKFile(unittest.TestCase):
                         path                    = SAMPLE_FILES_DIR / file,
                         unit_conversion_enabled = True,
                         coordinate_units        = 'mm')
+
+        with self.subTest(case='duplicate_id'):
+            with self.assertRaises(VTKIdentifierNameError):
+                self.vtk.read(
+                    path                    = SAMPLE_FILES_DIR / 'sample_vtk.007.vtk',
+                    unit_conversion_enabled = True,
+                    coordinate_units        = 'mm',
+                    fallback_units          = {'rho': 'kg/m^3'})
+
+    def test_read_fallback_units(self):
+        # Verifies that users can specify missing units using the
+        # "fallback_units" argument
+        with self.subTest(units='valid'):
+            self.vtk.read(
+                path                    = SAMPLE_FILES_DIR / 'sample_vtk.012.vtk',
+                unit_conversion_enabled = True,
+                coordinate_units        = 'mm',
+                fallback_units          = {'speed': 'micron/s'})
+
+        with self.subTest(units='invalid'):
+            with self.assertRaises(VTKIdentifierNameError):
+                self.vtk.read(
+                    path                    = SAMPLE_FILES_DIR / 'sample_vtk.012.vtk',
+                    unit_conversion_enabled = True,
+                    coordinate_units        = 'mm',
+                    fallback_units          = {'speed': ''})
+
+        with self.subTest(units='not_provided'):
+            with self.assertRaises(VTKIdentifierNameError):
+                self.vtk.read(
+                    path                    = SAMPLE_FILES_DIR / 'sample_vtk.012.vtk',
+                    unit_conversion_enabled = True,
+                    coordinate_units        = 'mm',
+                    fallback_units          = {'velocity': 'mm/s'})
