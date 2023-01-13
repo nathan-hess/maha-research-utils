@@ -628,6 +628,24 @@ class Test_VTKFile(unittest.TestCase):
                 TEST_FLOAT_TOLERANCE * 1000
             )
 
+    def test_interpolate_slice(self):
+        # Verifies that interpolation using only a subset of VTK points works
+        # (in this case, only points with zero pressure are included, so 
+        # interpolated pressure should be zero)
+        self.assertEqual(
+            self.vtk_read_unit_convert.interpolate(
+                identifier        = 'pFilm[bar]',
+                query_points      = [[2.5, 0]],
+                interpolator_type = 'griddata',
+                output_units      = 'bar',
+                query_point_units = 'mm',
+                interpolate_axes  = 'xy',
+                method            = 'linear',
+                idx_slice         = np.index_exp[-12:]
+            )[0],
+            0
+        )
+
     def test_interpolate_invalid_args(self):
         # Verifies that appropriate errors are thrown if invalid arguments are
         # provided when attempting to interpolate data
@@ -713,6 +731,28 @@ class Test_VTKFile(unittest.TestCase):
                     query_point_units = 'mm',
                     interpolate_axes  = 'yxz',
                     method            = 'linear'
+                )
+
+        with self.subTest(arg='idx_slice', issue='wrong_type'):
+            with self.assertRaises(TypeError):
+                self.vtk_read_unit_convert.interpolate(
+                    identifier        = 'pFilm[bar]',
+                    query_points      = [[-2, 0, 0], [0, 3, 0], [0, -1, 0]],
+                    interpolator_type = 'griddata',
+                    output_units      = 'bar',
+                    query_point_units = 'mm',
+                    idx_slice         = 0,
+                )
+
+        with self.subTest(arg='idx_slice', issue='too_many_axes'):
+            with self.assertRaises(ValueError):
+                self.vtk_read_unit_convert.interpolate(
+                    identifier        = 'pFilm[bar]',
+                    query_points      = [[-2, 0, 0], [0, 3, 0], [0, -1, 0]],
+                    interpolator_type = 'griddata',
+                    output_units      = 'bar',
+                    query_point_units = 'mm',
+                    idx_slice         = np.index_exp[0:10, :],
                 )
 
     def test_is_scalar(self):
