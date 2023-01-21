@@ -5,6 +5,7 @@ Multics input and output files.  These objects are intended to aid in pre-
 and post-processing tasks.
 """
 
+from .configfile import MahaMulticsConfigFile
 from .units import (
     MahaMulticsUnit,
     MahaMulticsUnitConverter,
