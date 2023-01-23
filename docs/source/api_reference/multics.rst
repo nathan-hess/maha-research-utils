@@ -17,7 +17,7 @@ File Parsers
 The classes below can be used to read and/or write input and output files
 for the Maha Multics software.
 
-.. inheritance-diagram:: VTKFile
+.. inheritance-diagram:: MahaMulticsConfigFile VTKFile
     :parts: 1
 
 |
@@ -26,6 +26,7 @@ for the Maha Multics software.
     :toctree: ./api
     :template: ../_templates/api_reference_class_template.rst
 
+    MahaMulticsConfigFile
     VTKFile
 
 

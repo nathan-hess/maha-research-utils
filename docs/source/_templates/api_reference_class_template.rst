@@ -4,6 +4,7 @@
    DataFrame
    exps
    maha
+   MahaMulticsConfigFile
    MahaMulticsUnit
    MahaMulticsUnitConverter
    MahaMulticsUnitSystem
