@@ -2,12 +2,15 @@
 data in a key-value format.
 """
 
-from typing import Optional
+from typing import Dict, Optional, TypeVar
 
 from pyxx.arrays import max_list_item_len
 
+K = TypeVar('K')
+V = TypeVar('V')
 
-class Dictionary(dict):
+
+class Dictionary(Dict[K, V]):
     """Customized Python dictionary
 
     This class is a modified version of Python's built-in dictionaries.  Most
