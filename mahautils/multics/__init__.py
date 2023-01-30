@@ -11,4 +11,5 @@ from .units import (
     MahaMulticsUnitConverter,
     MahaMulticsUnitSystem,
 )
+from .simresults import SimResults
 from .vtk import VTKFile
