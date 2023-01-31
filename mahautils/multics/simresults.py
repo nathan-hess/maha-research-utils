@@ -34,22 +34,99 @@ class _SimResultsEntry:
                  description: Optional[str] = None,
                  group: Optional[str] = None,
                  ) -> None:
-        self.data = data
+        # Mypy exclusions in constructor were added as workarounds
+        # for python/mypy#3004
+        self.data = data  # type: ignore
         self.description = description
         self.group = group
         self.required = required
         self.units = units
 
     def __repr__(self) -> str:
-        return (
+        representation = (
             f'[{"Required" if self.required else "Optional"}] '
             f'[Units: {self.units}] '
-            f'{self.description}, '
-            f'{self.data}'
         )
+
+        if self.description is not None:
+            representation += f'{self.description}'
+
+            if self.data is not None:
+                representation += ', '
+
+        if self.data is not None:
+            representation += f'{self.data}'
+
+        return representation
 
     def __str__(self) -> str:
         return self.__repr__()
+
+    @property
+    def data(self) -> Union[np.ndarray, None]:
+        """A time series of simulation results data for the given variable"""
+        return self._data
+
+    @data.setter
+    def data(self,
+             data: Optional[Union[
+                 np.ndarray, List[float], Tuple[float, ...]]]
+             ) -> None:
+        if data is None:
+            self._data = None
+        else:
+            self._data = np.array(data, dtype=np.float64)
+
+            if self._data.ndim != 1:
+                raise ValueError('Simulation results data must be 1D')
+
+    @property
+    def description(self) -> Union[str, None]:
+        """A string describing the variable"""
+        return self._description
+
+    @description.setter
+    def description(self, description: Optional[str]) -> None:
+        if description is None:
+            self._description = None
+        else:
+            self._description = str(description)
+
+    @property
+    def group(self) -> Union[str, None]:
+        """A string identifying a group to which multiple simulation results
+        variables may belong"""
+        return self._group
+
+    @group.setter
+    def group(self, group: Optional[str]) -> None:
+        if group is None:
+            self._group = None
+        else:
+            self._group = str(group)
+
+    @property
+    def required(self) -> bool:
+        """Whether the Maha Multics software is required to output data for
+        the simulation results variable when running
+
+        If unable to output the variable, the Maha Multics software should
+        exit with error.
+        """
+        return self._required
+
+    @required.setter
+    def required(self, required: bool) -> None:
+        self._required = bool(required)
+
+    @property
+    def units(self) -> str:
+        """The units of the data stored for the simulation results variable"""
+        return self._units
+
+    @units.setter
+    def units(self, units: str) -> None:
+        self._units = str(units)
 
 
 class SimResults(MahaMulticsConfigFile):
