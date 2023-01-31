@@ -23,18 +23,6 @@
 
 .. autoclass:: {{ objname }}
 
-   {%- set methods_non_inherited = [] %}
-   {%- set methods_inherited = [] %}
-
-   {%- for item in methods %}
-      {%- if item not in inherited_members %}
-         {{- methods_non_inherited.append(item) or '' }}
-      {%- else %}
-         {{- methods_inherited.append(item) or '' }}
-      {%- endif %}
-   {%- endfor %}
-
-
    {%- set attributes_non_inherited = [] %}
    {%- set attributes_inherited = [] %}
 
@@ -47,17 +35,19 @@
    {%- endfor %}
 
 
-   .. automethod:: __init__
+   {%- set methods_non_inherited = [] %}
+   {%- set methods_inherited = [] %}
 
-
-   {% if methods_non_inherited %}
-   .. rubric:: {{ _('Methods') }}
-
-   .. autosummary::
-   {% for item in methods_non_inherited %}
-      ~{{ name }}.{{ item }}
+   {%- for item in methods %}
+      {%- if item not in inherited_members %}
+         {{- methods_non_inherited.append(item) or '' }}
+      {%- else %}
+         {{- methods_inherited.append(item) or '' }}
+      {%- endif %}
    {%- endfor %}
-   {% endif %}
+
+
+   .. automethod:: __init__
 
 
    {% if attributes_non_inherited %}
@@ -70,11 +60,11 @@
    {% endif %}
 
 
-   {% if methods_inherited %}
-   .. rubric:: {{ _('Inherited Methods') }}
+   {% if methods_non_inherited %}
+   .. rubric:: {{ _('Methods') }}
 
    .. autosummary::
-   {% for item in methods_inherited %}
+   {% for item in methods_non_inherited %}
       ~{{ name }}.{{ item }}
    {%- endfor %}
    {% endif %}
@@ -85,6 +75,16 @@
 
    .. autosummary::
    {% for item in attributes_inherited %}
+      ~{{ name }}.{{ item }}
+   {%- endfor %}
+   {% endif %}
+
+
+   {% if methods_inherited %}
+   .. rubric:: {{ _('Inherited Methods') }}
+
+   .. autosummary::
+   {% for item in methods_inherited %}
       ~{{ name }}.{{ item }}
    {%- endfor %}
    {% endif %}
