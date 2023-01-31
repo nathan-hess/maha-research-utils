@@ -11,6 +11,8 @@
    multics
    ndarray
    np
+   printDict
+   SimResults
    str
    TypedList
    TypedListWithID
