@@ -68,7 +68,7 @@ class SimResults(MahaMulticsConfigFile):
 
         # Initialize variables
         self._title: Union[str, None] = None
-        self._sim_options: Dict[str, str] = {}
+        self._compile_options: Dict[str, str] = {}
         self._data: Dictionary[str, _SimResultsEntry] = Dictionary()
 
         self._unit_converter = MahaMulticsUnitConverter() \
@@ -80,6 +80,16 @@ class SimResults(MahaMulticsConfigFile):
             self.parse()
 
     @property
+    def compile_options(self) -> Dict[str, str]:
+        """A dictionary containing options with which the Maha Multics
+        software was compiled
+
+        Note that this dictionary is returned **by reference**, so modifying
+        the returned value will modify the object attribute.
+        """
+        return self._compile_options
+
+    @property
     def num_time_steps(self) -> int:
         """The number of time steps in the data array of the simulation
         results file"""
@@ -89,16 +99,6 @@ class SimResults(MahaMulticsConfigFile):
         raise FileNotParsedError(
             'Attribute "num_time_steps" is not defined; file has not '
             'yet been parsed')
-
-    @property
-    def sim_options(self) -> Dict[str, str]:
-        """A dictionary containing options with which the Maha Multics
-        software was compiled
-
-        Note that this dictionary is returned **by reference**, so modifying
-        the returned value will modify the object attribute.
-        """
-        return self._sim_options
 
     @property
     def title(self) -> Union[str, None]:
@@ -161,7 +161,7 @@ class SimResults(MahaMulticsConfigFile):
 
                 for opt in options_list:
                     opt_parsed = [x.strip() for x in opt.split('=', maxsplit=1)]
-                    self._sim_options[opt_parsed[0]] = opt_parsed[1]
+                    self._compile_options[opt_parsed[0]] = opt_parsed[1]
 
                 break
 
