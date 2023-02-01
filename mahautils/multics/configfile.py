@@ -37,16 +37,16 @@ class MahaMulticsConfigFile(pyxx.files.TextFile):
         """
         super().__init__(path=path, comment_chars='#')
 
-    def _extract_section_by_keyword(self, section_label: str,
-                                    begin_regex: str, end_regex: str,
-                                    section_line_regex: str = r'(.*)',
-                                    max_sections: Optional[int] = None,
-                                    begin_idx: int = 0,
-                                    allow_comment_lines: bool = True,
-                                    ) -> Tuple[List[re.Match],
-                                               List[Tuple[str, ...]],
-                                               int,
-                                               int]:
+    def extract_section_by_keyword(self, section_label: str,
+                                   begin_regex: str, end_regex: str,
+                                   section_line_regex: str = r'(.*)',
+                                   max_sections: Optional[int] = None,
+                                   begin_idx: int = 0,
+                                   allow_comment_lines: bool = True,
+                                   ) -> Tuple[List[re.Match],
+                                              List[Tuple[str, ...]],
+                                              int,
+                                              int]:
         """Extracts a section from the :py:attr:`contents` list of file lines
 
         Many Maha Multics configuration files contain sections with certain

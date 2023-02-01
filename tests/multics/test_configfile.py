@@ -73,7 +73,7 @@ class Test_ConfigFile_ExtractSection(unittest.TestCase):
         # Verifies that section can be extracted from a file with only a
         # single section
         section_groups, next_line, num_sections \
-            = self.configfile01._extract_section_by_keyword(
+            = self.configfile01.extract_section_by_keyword(
                 section_label       = 'mySection',
                 begin_regex        = self.begin_regex,
                 end_regex          = self.end_regex,
@@ -97,7 +97,7 @@ class Test_ConfigFile_ExtractSection(unittest.TestCase):
         # Verifies that all sections can be extracted from a file with
         # multiple sections
         section_groups, next_line, num_sections \
-            = self.configfile02._extract_section_by_keyword(
+            = self.configfile02.extract_section_by_keyword(
                 section_label       = 'mySection',
                 begin_regex        = self.begin_regex,
                 end_regex          = self.end_regex,
@@ -124,7 +124,7 @@ class Test_ConfigFile_ExtractSection(unittest.TestCase):
         # multiple sections
         with self.subTest(section=1):
             section_groups, next_line, num_sections \
-                = self.configfile02._extract_section_by_keyword(
+                = self.configfile02.extract_section_by_keyword(
                     section_label       = 'mySection',
                     begin_regex        = self.begin_regex,
                     end_regex          = self.end_regex,
@@ -148,7 +148,7 @@ class Test_ConfigFile_ExtractSection(unittest.TestCase):
 
         with self.subTest(section=2):
             section_groups, next_line, num_sections \
-                = self.configfile02._extract_section_by_keyword(
+                = self.configfile02.extract_section_by_keyword(
                     section_label       = 'mySection',
                     begin_regex        = self.begin_regex,
                     end_regex          = self.end_regex,
@@ -173,7 +173,7 @@ class Test_ConfigFile_ExtractSection(unittest.TestCase):
     def test_no_section_line_regex(self):
         # Verifies that entire line is extracted if no section line
         # regex is specified
-        section_groups = self.configfile01._extract_section_by_keyword(
+        section_groups = self.configfile01.extract_section_by_keyword(
             section_label       = 'mySection',
             begin_regex        = self.begin_regex,
             end_regex          = self.end_regex
@@ -190,7 +190,7 @@ class Test_ConfigFile_ExtractSection(unittest.TestCase):
         # single section, the first line of data in the section is on the
         # same line as the section beginning identifier
         section_groups, next_line, num_sections \
-            = self.configfile03._extract_section_by_keyword(
+            = self.configfile03.extract_section_by_keyword(
                 section_label       = 'mySection',
                 begin_regex        = self.begin_regex,
                 end_regex          = self.end_regex,
@@ -214,7 +214,7 @@ class Test_ConfigFile_ExtractSection(unittest.TestCase):
         # Verifies that an error is thrown if providing an invalid
         # maximum number of sections
         with self.assertRaises(ValueError):
-            self.configfile01._extract_section_by_keyword(
+            self.configfile01.extract_section_by_keyword(
                 section_label       = 'mySection',
                 begin_regex        = self.begin_regex,
                 end_regex          = self.end_regex,
@@ -225,7 +225,7 @@ class Test_ConfigFile_ExtractSection(unittest.TestCase):
     def test_no_section_end(self):
         # Verifies that an error is thrown if no end of section is found
         with self.assertRaises(MahaMulticsFileFormatError):
-            self.configfile04._extract_section_by_keyword(
+            self.configfile04.extract_section_by_keyword(
                 section_label       = 'mySection',
                 begin_regex        = self.begin_regex,
                 end_regex          = self.end_regex
@@ -234,7 +234,7 @@ class Test_ConfigFile_ExtractSection(unittest.TestCase):
     def test_no_regex_match(self):
         # Verifies that an error is thrown if section lines don't match regex
         with self.assertRaises(MahaMulticsFileFormatError):
-            self.configfile04._extract_section_by_keyword(
+            self.configfile04.extract_section_by_keyword(
                 section_label       = 'mySection',
                 begin_regex        = self.begin_regex,
                 end_regex          = self.end_regex,

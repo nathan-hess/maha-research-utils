@@ -252,7 +252,7 @@ class SimResults(MahaMulticsConfigFile):
         )
 
         # Extract list of variables in "printDict"
-        sim_results_vars, idx, _ = self._extract_section_by_keyword(
+        sim_results_vars, idx, _ = self.extract_section_by_keyword(
             section_label      = 'printDict',
             begin_regex        = r'\s*printDict\s*{\s*',
             end_regex          = r'\s*}\s*',
