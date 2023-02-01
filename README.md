@@ -20,4 +20,4 @@ For more information about configuring Python and using packages, refer to the o
 
 ## Documentation
 
-Detailed documentation for the MahaUtils project can be found here: http://mahautils.readthedocs.io/.
+Detailed documentation for the MahaUtils project can be found here: https://mahautils.readthedocs.io.
