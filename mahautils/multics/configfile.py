@@ -41,8 +41,12 @@ class MahaMulticsConfigFile(pyxx.files.TextFile):
                                     begin_regex: str, end_regex: str,
                                     section_line_regex: str = r'(.*)',
                                     max_sections: Optional[int] = None,
-                                    begin_idx: int = 0
-                                    ) -> Tuple[List[re.Match], int, int]:
+                                    begin_idx: int = 0,
+                                    allow_comment_lines: bool = True,
+                                    ) -> Tuple[List[re.Match],
+                                               List[Tuple[str, ...]],
+                                               int,
+                                               int]:
         """Extracts a section from the :py:attr:`contents` list of file lines
 
         Many Maha Multics configuration files contain sections with certain
@@ -72,6 +76,13 @@ class MahaMulticsConfigFile(pyxx.files.TextFile):
         begin_idx : int, optional
             The index (in the :py:attr:`contents` list) at which to begin to
             search for and extract data from sections (default is ``0``)
+        allow_comment_lines : bool, optional
+            If ``True``, any lines within the section that do not match
+            ``section_line_regex`` but begin with any of the characters in
+            :py:attr:`comment_chars` will be outputted (part of the second
+            output of the method); if ``False``, any lines within the section
+            that do not match ``section_line_regex`` will result in an error
+            being thrown (default is ``True``)
 
         Returns
         -------
@@ -79,6 +90,11 @@ class MahaMulticsConfigFile(pyxx.files.TextFile):
             A list of :py:class:`re.Match` objects containing the matches for
             the regex pattern ``section_line_regex`` for all lines in the
             section(s)
+        list
+            A list (of the same length as the first argument returned) of
+            tuples of strings.  For each :py:class:`re.Match` object, the
+            corresponding item in this list contains a tuple with any full-line
+            comments preceding the matched line
         int
             The index of :py:attr:`contents` of the next line immediately
             following the line on which ``end_regex`` was found
@@ -94,12 +110,15 @@ class MahaMulticsConfigFile(pyxx.files.TextFile):
         # Counter to track how many sections have been found
         num_sections = 0
 
-        # List to store all regex groups in the section
-        section_groups = []
+        # Lists to store all regex groups in the section and associated comments
+        section_regex_groups = []
+        section_line_comments = []
 
         # Iterate through file and extract section contents
         i = begin_idx
         while i < len(self.contents):
+            comment_lines: List[str] = []
+
             if (max_sections is not None) and (num_sections >= max_sections):
                 break
 
@@ -121,12 +140,22 @@ class MahaMulticsConfigFile(pyxx.files.TextFile):
                 while not re.match(end_regex, line):
                     groups = re.search(section_line_regex, line)
 
-                    if groups is None:
+                    if groups is not None:
+                        section_regex_groups.append(groups)
+                        section_line_comments.append(tuple(comment_lines))
+                        comment_lines.clear()
+
+                    elif (
+                        allow_comment_lines
+                        and self.comment_chars is not None
+                        and line.strip().startswith(self.comment_chars)
+                    ):
+                        comment_lines.append(line)
+
+                    else:
                         raise MahaMulticsFileFormatError(
                             f'Line "{line}" in section "{section_label}" does '
                             'not match expected pattern')
-
-                    section_groups.append(groups)
 
                     i += 1
 
@@ -138,4 +167,4 @@ class MahaMulticsConfigFile(pyxx.files.TextFile):
 
             i += 1
 
-        return (section_groups, i, num_sections)
+        return (section_regex_groups, section_line_comments, i, num_sections)
