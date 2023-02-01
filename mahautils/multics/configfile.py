@@ -53,10 +53,13 @@ class MahaMulticsConfigFile(pyxx.files.TextFile):
         """
         line = line.strip()
 
-        if self.comment_chars is not None:
+        # Since `comment_chars` is hard-coded to be `('#',)` for this class,
+        # this condition should always be true; however, this check was still
+        # added to be safe
+        if self.comment_chars is not None:  # pragma: no cover
             while line.startswith(self.comment_chars):
                 for char in self.comment_chars:
-                    line = line.lstrip(char)
+                    line = line.lstrip(char).strip()
 
         return line.strip()
 

@@ -3,9 +3,18 @@ import unittest
 from mahautils.multics import MahaMulticsConfigFile
 from mahautils.multics.exceptions import MahaMulticsFileFormatError
 
+class Test_ConfigFile(unittest.TestCase):
+    def setUp(self) -> None:
+        pass
 
-class Test_ConfigFile_ExtractSection(unittest.TestCase):
+    def tearDown(self) -> None:
+        pass
+
+
+class Test_ConfigFile_ExtractSection(Test_ConfigFile):
     def setUp(self):
+        super().setUp()
+
         self.begin_regex = r'\s*begin_Section\s*{\s*'
         self.end_regex = r'\s*}\s*'
         self.section_line_regex = r'\s*([@?])\s*([\w\d\._]+)\s+\[([^\s]+)\]\s*'
@@ -273,3 +282,33 @@ class Test_ConfigFile_ExtractSection(unittest.TestCase):
                 end_regex          = self.end_regex,
                 section_line_regex = self.section_line_regex
             )
+
+
+class Test_ConfigFile_ExtractCommentText(Test_ConfigFile):
+    def setUp(self) -> None:
+        self.file = MahaMulticsConfigFile()
+
+    def test_extract_comment(self):
+        # Verifies that comment characters are removed from a line
+        self.assertEqual(
+            self.file._extract_full_line_comment_text(
+                '# information following A Comment'),
+            'information following A Comment'
+        )
+
+    def test_extract_comment_strip(self):
+        # Verifies that comment characters are removed from a line and
+        # leading/trailing whitespace is stripped
+        self.assertEqual(
+            self.file._extract_full_line_comment_text(
+                '     # information following A Comment       '),
+            'information following A Comment'
+        )
+
+    def test_extract_comment_multiple(self):
+        # Verifies that multiple comment characters are removed from a line
+        self.assertEqual(
+            self.file._extract_full_line_comment_text(
+                '     ##  # information following #A Comment'),
+            'information following #A Comment'
+        )
