@@ -37,6 +37,29 @@ class MahaMulticsConfigFile(pyxx.files.TextFile):
         """
         super().__init__(path=path, comment_chars='#')
 
+    def _extract_full_line_comment_text(self, line: str) -> str:
+        """Strips whitespace and leading comment characters from a string
+
+        Parameters
+        ----------
+        line : str
+            The line of the file to process
+
+        Returns
+        -------
+        str
+            The line with any of :py:attr:`comment_chars` removed from the
+            beginning of the line and leading and trailing whitespace stripped
+        """
+        line = line.strip()
+
+        if self.comment_chars is not None:
+            while line.startswith(self.comment_chars):
+                for char in self.comment_chars:
+                    line = line.lstrip(char)
+
+        return line.strip()
+
     def extract_section_by_keyword(self, section_label: str,
                                    begin_regex: str, end_regex: str,
                                    section_line_regex: str = r'(.*)',

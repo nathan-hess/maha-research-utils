@@ -244,15 +244,14 @@ class SimResults(MahaMulticsConfigFile):
 
         # Pre-process input file (to prepare to read simulation results data)
         self.clean_contents(
-            remove_comments         = True,
-            skip_full_line_comments = False,
-            strip                   = True,
-            concat_lines            = False,
-            remove_blank_lines      = True
+            remove_comments    = False,
+            strip              = True,
+            concat_lines       = False,
+            remove_blank_lines = True
         )
 
         # Extract list of variables in "printDict"
-        sim_results_vars, idx, _ = self.extract_section_by_keyword(
+        sim_results_vars, comments, _, _ = self.extract_section_by_keyword(
             section_label      = 'printDict',
             begin_regex        = r'\s*printDict\s*{\s*',
             end_regex          = r'\s*}\s*',
@@ -260,7 +259,14 @@ class SimResults(MahaMulticsConfigFile):
             max_sections       = 1,
         )
 
-        for var in sim_results_vars:
+        group_name = None
+        for i, var in enumerate(sim_results_vars):
+            if len(comments[i]) > 0:
+                group_name = '\n'.join(
+                    [self._extract_full_line_comment_text(x)
+                     for x in comments[i]]
+                )
+
             required_char, key, units = var.groups()
 
             if required_char == '@':
@@ -276,12 +282,20 @@ class SimResults(MahaMulticsConfigFile):
                     'a variable is required. The only valid characters are '
                     '"@" and "?"')  # pragma: no cover
 
-            self._data[key] = _SimResultsEntry(required, units)
+            self._data[key] = _SimResultsEntry(required, units, group=group_name)
 
         # Extract simulation data
+        self.clean_contents(
+            remove_comments         = True,
+            skip_full_line_comments = False,
+            strip                   = True,
+            concat_lines            = False,
+            remove_blank_lines      = True
+        )
+
         self._num_time_steps = 0
 
-        i = idx
+        i = 0
         while i < len(self.contents):
             line = self.contents[i]
 
