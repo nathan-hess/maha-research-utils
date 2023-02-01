@@ -45,17 +45,17 @@ class _SimResultsEntry:
     def __repr__(self) -> str:
         representation = (
             f'[{"Required" if self.required else "Optional"}] '
-            f'[Units: {self.units}] '
+            f'[Units: {self.units}]'
         )
 
         if self.description is not None:
-            representation += f'{self.description}'
+            representation += f' {self.description}'
 
             if self.data is not None:
-                representation += ', '
+                representation += ','
 
         if self.data is not None:
-            representation += f'{self.data}'
+            representation += f' {self.data}'
 
         return representation
 
