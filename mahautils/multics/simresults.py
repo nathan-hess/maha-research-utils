@@ -148,7 +148,7 @@ class SimResults(MahaMulticsConfigFile):
         self._compile_options: Dict[str, str] = {}
         self._data: Dictionary[str, _SimResultsEntry] = Dictionary()
 
-        self._unit_converter = MahaMulticsUnitConverter() \
+        self.unit_converter = MahaMulticsUnitConverter() \
             if unit_converter is None else unit_converter
 
         # If path was provided, read file
@@ -195,8 +195,16 @@ class SimResults(MahaMulticsConfigFile):
         in the simulation results file"""
         return self._unit_converter
 
+    @unit_converter.setter
+    def unit_converter(self, unit_converter: pyxx.units.UnitConverter) -> None:
+        if not isinstance(unit_converter, pyxx.units.UnitConverter):
+            raise TypeError('Argument "unit_converter" must be of type '
+                            f'{pyxx.units.UnitConverter}')
+
+        self._unit_converter = unit_converter
+
     @property
-    def vars(self) -> Tuple[str, ...]:
+    def variables(self) -> Tuple[str, ...]:
         """A tuple containing all variable names listed in the simulation
         results file
 

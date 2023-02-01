@@ -1,8 +1,12 @@
 import unittest
 
 import numpy as np
+import pyxx
 
-from mahautils.multics import SimResults
+from mahautils.multics import (
+    SimResults,
+    MahaMulticsUnitConverter,
+)
 from mahautils.multics.exceptions import (
     FileNotParsedError,
 )
@@ -130,6 +134,8 @@ class Test_SimResultsEntry(unittest.TestCase):
 
 class Test_SimResults(unittest.TestCase):
     def setUp(self) -> None:
+        self.sim_results_blank = SimResults()
+
         self.file01 = SAMPLE_FILES_DIR / 'simulation_results_01.txt'
         self.sim_results_01 = SimResults(self.file01)
 
@@ -180,3 +186,35 @@ class Test_SimResults_ReadProperties(Test_SimResults):
         with self.subTest(valid=False):
             with self.assertRaises(TypeError):
                 self.sim_results_01.title = 75992
+
+    def test_unit_converter(self):
+        # Verifies that a unit converter can be stored and retrieved
+        unit_converter = pyxx.units.UnitConverterSI()
+
+        with self.subTest(comment='default'):
+            self.assertIsInstance(self.sim_results_blank.unit_converter, MahaMulticsUnitConverter)
+            self.assertIsNot(self.sim_results_blank.unit_converter, unit_converter)
+
+        with self.subTest(comment='custom'):
+            self.sim_results_blank.unit_converter = unit_converter
+            self.assertIs(self.sim_results_blank.unit_converter, unit_converter)
+
+            self.assertIs(SimResults(unit_converter=unit_converter).unit_converter, unit_converter)
+
+        with self.subTest(comment='invalid'):
+            with self.assertRaises(TypeError):
+                SimResults(unit_converter=print)
+
+    def test_variables(self):
+        # Verifies that "variables" attribute functions correctly
+        self.assertTupleEqual(
+            self.sim_results_01.variables,
+            ('t', 'xBody', 'yBody', 'zBody', 'vxBody', 'FxSpring', 'FySpring', 'FzSpring', 'MxBody')
+        )
+
+        self.assertTupleEqual(
+            self.sim_results_02.variables,
+            ('t', 'xBody', 'yBody', 'zBody', 'vxBody', 'FxSpring', 'FySpring', 'FzSpring', 'MxBody')
+        )
+
+        self.assertTupleEqual(self.sim_results_blank.variables, ())
