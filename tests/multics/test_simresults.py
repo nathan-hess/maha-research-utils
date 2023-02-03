@@ -9,9 +9,16 @@ from mahautils.multics import (
 )
 from mahautils.multics.exceptions import (
     FileNotParsedError,
+    InvalidSimResultsFormatError,
+    SimResultsDataNotFoundError,
+    SimResultsKeyError,
 )
 from mahautils.multics.simresults import _SimResultsEntry
-from tests import SAMPLE_FILES_DIR
+from tests import (
+    SAMPLE_FILES_DIR,
+    max_array_diff,
+    TEST_FLOAT_TOLERANCE,
+)
 
 
 class Test_SimResultsEntry(unittest.TestCase):
@@ -143,6 +150,55 @@ class Test_SimResults(unittest.TestCase):
         self.sim_results_02 = SimResults(self.file02)
 
 
+class Test_SimResults_Parse(Test_SimResults):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_file_not_read(self):
+        # Verifies that an error is thrown if attempting to parse a file which
+        # has not been read
+        with self.assertRaises(FileNotParsedError):
+            self.sim_results_blank.parse()
+
+    def test_missing_description(self):
+        # Verifies that an error is thrown if attempting to read a simulation
+        # results file where the data array variables line (beginning with "$")
+        # is missing a variable description
+        with self.assertRaises(InvalidSimResultsFormatError):
+            SimResults(SAMPLE_FILES_DIR / 'simulation_results_03.txt')
+
+    def test_data_array_printdict_inconsistency(self):
+        # Verifies that an error is thrown if attempting to read a simulation
+        # results file where the data array variables line (beginning with "$")
+        # and the "printDict" section contain inconsistent data
+        with self.subTest(issue='mismatched_variables'):
+            with self.assertRaises(InvalidSimResultsFormatError):
+                SimResults(SAMPLE_FILES_DIR / 'simulation_results_04.txt')
+
+        with self.subTest(issue='mismatched_units'):
+            with self.assertRaises(InvalidSimResultsFormatError):
+                SimResults(SAMPLE_FILES_DIR / 'simulation_results_05.txt')
+
+    def test_mismatched_data_array(self):
+        # Verifies that an error is thrown if attempting to read a simulation
+        # results file where the number of data array variables (listed in the
+        # line beginning with "$") and shape of the data array differ
+        with self.assertRaises(InvalidSimResultsFormatError):
+            SimResults(SAMPLE_FILES_DIR / 'simulation_results_07.txt')
+
+    def test_read_single_data(self):
+        # Verifies that a simulation results file with a single outputted
+        # variable can be successfully read
+        self.assertLessEqual(
+            max_array_diff(
+                (SimResults(SAMPLE_FILES_DIR / 'simulation_results_06.txt')
+                    .get_data('xBody', 'micron')),
+                [3.4, 0, 3.32, 434, 4, 5, -232.4, 10]
+            ),
+            TEST_FLOAT_TOLERANCE
+        )
+
+
 class Test_SimResults_ReadProperties(Test_SimResults):
     def setUp(self) -> None:
         super().setUp()
@@ -218,3 +274,71 @@ class Test_SimResults_ReadProperties(Test_SimResults):
         )
 
         self.assertTupleEqual(self.sim_results_blank.variables, ())
+
+
+class Test_SimResults_Get(Test_SimResults):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_get_data(self):
+        # Verifies that data can be read correctly from the simulation results
+        # file (without unit conversions)
+        with self.subTest(var='t'):
+            self.assertLessEqual(
+                max_array_diff(
+                    self.sim_results_01.get_data('t', 's'),
+                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                ),
+                TEST_FLOAT_TOLERANCE
+            )
+
+        with self.subTest(var='FySpring'):
+            self.assertLessEqual(
+                max_array_diff(
+                    self.sim_results_01.get_data('FySpring', 'N'),
+                    [933, 3, 3, 0, 32, -0.32, 5, 1, 0.543, 0.1, 10]
+                ),
+                TEST_FLOAT_TOLERANCE
+            )
+
+    def test_get_data_unit_conversion(self):
+        # Verifies that data can be read correctly from the simulation results
+        # file (with unit conversions)
+        with self.subTest(var='t'):
+            self.assertLessEqual(
+                max_array_diff(
+                    self.sim_results_01.get_data('t', 'ms'),
+                    [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
+                ),
+                TEST_FLOAT_TOLERANCE
+            )
+
+        with self.subTest(var='yBody'):
+            self.assertLessEqual(
+                max_array_diff(
+                    self.sim_results_01.get_data('yBody', 'cm'),
+                    [0.42, 0, 0.332, 2.3323, 4.3323, 2.35, 0.042343, 3.4, -23.2, 0.0001, 1]
+                ),
+                TEST_FLOAT_TOLERANCE
+            )
+
+    def test_get_data_invalid(self):
+        # Verifies that an error is thrown if attempting to retrieve data
+        # that cannot be retrieved
+        with self.subTest(issue='nonexistent_var'):
+            with self.assertRaises(SimResultsKeyError):
+                self.sim_results_01.get_data('nonexistent', 'mm')
+
+        with self.subTest(issue='no_data'):
+            with self.assertRaises(SimResultsDataNotFoundError):
+                self.sim_results_01.get_data('vxBody', 'micron/s')
+
+    def test_list_groups(self):
+        # Verifies that a unique list of groups can be identified correctly
+        self.assertTupleEqual(
+            self.sim_results_01.list_groups(),
+            ('General Simulation Parameters', 'Body Position',
+             'Speed', 'Spring Force', 'Torque')
+        )
+
+        self.assertTupleEqual(self.sim_results_02.list_groups(), ())

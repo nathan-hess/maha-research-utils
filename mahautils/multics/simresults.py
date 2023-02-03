@@ -14,6 +14,8 @@ from .configfile import MahaMulticsConfigFile
 from .exceptions import (
     FileNotParsedError,
     InvalidSimResultsFormatError,
+    SimResultsDataNotFoundError,
+    SimResultsKeyError,
 )
 from .units import MahaMulticsUnitConverter
 
@@ -214,6 +216,66 @@ class SimResults(MahaMulticsConfigFile):
         """
         return tuple(self._data.keys())
 
+    def get_data(self, var: str, units: str) -> np.ndarray:
+        """Extracts simulation results data by variable name
+
+        Extracts data corresponding to a specific simulation results variable
+        and returns it as a NumPy array with user-specified units, performing
+        a unit conversion if necessary.
+
+        Parameters
+        ----------
+        var : str
+            The name of the variable whose data to extract
+        units : str
+            The units in which the simulation results data should be returned
+
+        Returns
+        -------
+        np.ndarray
+            A NumPy array containing the simulation results data for variable
+            ``var``, in units of ``units``
+        """
+        # Extract data
+        try:
+            data_ref = self._data[var].data
+
+            if data_ref is None:
+                raise SimResultsDataNotFoundError(
+                    f'No simulation results data are present for key "{var}"')
+
+        except KeyError as exception:
+            raise SimResultsKeyError(
+                f'No variable "{var}" present in simulation results file'
+            ) from exception
+
+        data = data_ref.copy()
+        stored_units = self._data[var].units
+
+        # Perform unit conversion if necessary
+        if units == stored_units:
+            return data
+
+        return self.unit_converter.convert(
+            quantity=data, from_unit=stored_units, to_unit=units)
+
+    def list_groups(self) -> Tuple[str, ...]:
+        """Returns a tuple containing all variable groups in the simulation
+        results file
+
+        Returns
+        -------
+        tuple
+            A tuple of strings, where each string is a variable group in the
+            simulation results file
+        """
+        groups = []
+        for entry in self._data.values():
+            if (entry.group is not None) and (entry.group not in groups):
+                groups.append(entry.group)
+
+        return tuple(groups)
+
     def parse(self) -> None:
         """Parses the file content in the :py:attr:`contents` list and
         populates attributes (such as :py:attr:`title`) with extracted data
@@ -352,7 +414,10 @@ class SimResults(MahaMulticsConfigFile):
                     ))
 
                     if data_array.ndim != 2:
-                        raise AssertionError(
+                        # Due to the list comprehension above, this condition
+                        # should never occur; however, it is checked anyway to
+                        # be safe
+                        raise AssertionError(  # pragma: no cover
                             'Simulation results data array must be 2D')
 
                     if data_array.shape[0] != num_data_array_vars:

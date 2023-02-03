@@ -1,0 +1,35 @@
+# Title: Sample simulation Results 1     
+
+# To adjust what values to print, specify "@" or "?" to indicate whether
+# the variable is required, the variable name, and the output units
+printDict{
+    # General Simulation Parameters
+    @t          [s]
+
+    # Body Position
+    ?xBody      [micron]
+    ?yBody      [mm]
+    ?zBody      [m]
+
+    # Speed
+    ?vxBody     [micron/s]
+
+    # Spring Force
+    ?FxSpring   [N]
+    ?FySpring   [N]
+    ?FzSpring   [N]
+
+    # Torque
+    ?MxBody     [N*m]
+}
+
+$xBody:micron:Body casing frame position in x
+#_OPTIONs: THERMAL = 0, CAV = 0, FFI = 1, MASS_CON = 0, INTERP = 1
+3.4
+0
+3.32
+434
+4.00
+5
+-232.4
+10.00

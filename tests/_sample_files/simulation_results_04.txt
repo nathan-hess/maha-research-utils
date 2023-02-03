@@ -7,7 +7,6 @@ printDict{
     @t          [s]
 
     # Body Position
-    ?xBody      [m]
     ?yBody      [mm]
     ?zBody      [m]
 

@@ -9,7 +9,7 @@ printDict{
     # Body Position
     ?xBody      [m]
     ?yBody      [mm]
-    ?zBody      [m]
+    ?zBody      [micron]
 
     # Speed
     ?vxBody     [micron/s]
