@@ -148,7 +148,10 @@ class SimResults(MahaMulticsConfigFile):
         # Initialize variables
         self._title: Union[str, None] = None
         self._compile_options: Dict[str, str] = {}
-        self._data: Dictionary[str, _SimResultsEntry] = Dictionary()
+        self._data: Dictionary[str, _SimResultsEntry] = Dictionary(
+            custom_except_class=SimResultsKeyError,
+            custom_except_msg='Variable "%s" not found in simulation results file'
+        )
 
         self.unit_converter = MahaMulticsUnitConverter() \
             if unit_converter is None else unit_converter
@@ -237,17 +240,11 @@ class SimResults(MahaMulticsConfigFile):
             ``var``, in units of ``units``
         """
         # Extract data
-        try:
-            data_ref = self._data[var].data
+        data_ref = self._data[var].data
 
-            if data_ref is None:
-                raise SimResultsDataNotFoundError(
-                    f'No simulation results data are present for key "{var}"')
-
-        except KeyError as exception:
-            raise SimResultsKeyError(
-                f'No variable "{var}" present in simulation results file'
-            ) from exception
+        if data_ref is None:
+            raise SimResultsDataNotFoundError(
+                f'No simulation results data are present for key "{var}"')
 
         data = data_ref.copy()
         stored_units = self._data[var].units

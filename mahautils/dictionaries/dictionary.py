@@ -2,7 +2,7 @@
 data in a key-value format.
 """
 
-from typing import Dict, Optional, TypeVar
+from typing import Dict, Optional, Type, TypeVar
 
 from pyxx.arrays import max_list_item_len
 
@@ -20,7 +20,9 @@ class Dictionary(Dict[K, V]):
     """
 
     def __init__(self, contents: Optional[dict] = None, str_indent: int = 0,
-                 str_pad_left: int = 1, str_pad_right: int = 2):
+                 str_pad_left: int = 1, str_pad_right: int = 2,
+                 custom_except_class: Type[Exception] = KeyError,
+                 custom_except_msg: str = '%s'):
         """Defines a :py:class:`Dictionary` instance
 
         Defines a new :py:class:`Dictionary` object, providing options to
@@ -41,6 +43,15 @@ class Dictionary(Dict[K, V]):
         str_pad_right : int, optional
             Sets the dictionary's :py:attr:`str_pad_right` attribute (default
             is ``0``)
+        custom_except_class : class, optional
+            An :py:class:`Exception` subclass to raise if a given key is not
+            found in the dictionary (default is :py:class:`KeyError`)
+        custom_except_msg : str, optional
+            Only applicable if ``custom_except_class`` is not ``None``.
+            Specifies an error message to throw if a key is not found in the
+            dictionary.  Must contain a single ``%s`` occurrence, which will
+            be replaced by the name of the key which was not found (default
+            is ``'%s'``)
         """
         super().__init__()
 
@@ -49,9 +60,20 @@ class Dictionary(Dict[K, V]):
         self.str_pad_left = str_pad_left
         self.str_pad_right = str_pad_right
 
+        # Store customized exception information
+        self.custom_except_class = custom_except_class
+        self.custom_except_msg = custom_except_msg
+
         # Store dictionary contents if provided
         if contents is not None:
             self.update(contents)
+
+    def __getitem__(self, key):
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            raise self.custom_except_class(  # pylint: disable=W0707
+                self.custom_except_msg % key)
 
     def __repr__(self):
         return str(self)
@@ -70,6 +92,40 @@ class Dictionary(Dict[K, V]):
             representation = ''
 
         return representation
+
+    @property
+    def custom_except_class(self) -> Type[Exception]:
+        """The exception to raise if a key does not exist in the dictionary"""
+        return self._custom_except_class
+
+    @custom_except_class.setter
+    def custom_except_class(self, custom_except_class: Type[Exception]) -> None:
+        if not issubclass(custom_except_class, Exception):
+            raise TypeError(
+                'Custom exceptions must be a subclass of `Exception`')
+
+        self._custom_except_class = custom_except_class
+
+    @property
+    def custom_except_msg(self) -> str:
+        """A custom error message if a key was not found in the dictionary
+
+        The message must contain a single ``%s`` occurrence, which will
+        be replaced by the name of the key which was not found.
+        """
+        return self._custom_except_msg
+
+    @custom_except_msg.setter
+    def custom_except_msg(self, custom_except_msg: str) -> None:
+        if not (
+            custom_except_msg.find('%s')
+            == custom_except_msg.rfind('%s')
+            != -1
+        ):
+            raise ValueError('Custom error message must contain exactly one '
+                             'occurrence of "%s"')
+
+        self._custom_except_msg = str(custom_except_msg)
 
     @property
     def str_indent(self):

@@ -22,6 +22,16 @@ class Test_Dictionary(unittest.TestCase):
             self.assertEqual(dictionary.pop('string'), 'str')
             self.assertDictEqual(dictionary, {'key': 2.72})
 
+    def test_getitem(self):
+        # Verify that custom exceptions are thrown if specified
+        with self.subTest(exception='default'):
+            with self.assertRaises(KeyError):
+                Dictionary()['nonexistent_key']
+
+        with self.subTest(exception='custom'):
+            with self.assertRaises(ValueError):
+                Dictionary(custom_except_class=ValueError)['nonexistent_key']
+
     def test_initialize_content(self):
         # Verify that dictionary content is initialized correctly
         dictionary = Dictionary({'key1': 'value1', 'key2': 6.28})
@@ -158,3 +168,21 @@ class Test_Dictionary(unittest.TestCase):
                 ('   key1 :    value1\n'
                  '   key24:    6.28')
             )
+
+    def test_set_custom_except_class_invalid(self):
+        # Verifies that custom exception classes have to be subclasses of
+        # `Exception`
+        with self.assertRaises(TypeError):
+            Dictionary(custom_except_class=str)
+
+    def test_set_custom_except_message(self):
+        # Verifies that custom exception messages have to be formatted
+        # correctly
+        for message in ('key "%s" error', '%skey error', 'key error%s'):
+            with self.subTest(message=message):
+                Dictionary(custom_except_msg=message)
+
+        for message in ('message', 'key "%s" not found %s'):
+            with self.subTest(message=message):
+                with self.assertRaises(ValueError):
+                    Dictionary(custom_except_msg=message)
