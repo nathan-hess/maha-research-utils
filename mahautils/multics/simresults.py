@@ -16,6 +16,7 @@ from .exceptions import (
     InvalidSimResultsFormatError,
     SimResultsDataNotFoundError,
     SimResultsKeyError,
+    SimResultsOverwriteError,
 )
 from .units import MahaMulticsUnitConverter
 
@@ -57,7 +58,7 @@ class _SimResultsEntry:
                 representation += ','
 
         if self.data is not None:
-            representation += f' {self.data}'
+            representation += f' {np.array2string(self.data, precision=2)}'
 
         return representation
 
@@ -161,6 +162,34 @@ class SimResults(MahaMulticsConfigFile):
             self.read(path)
             self.parse()
 
+    def __repr__(self) -> str:
+        return '\n'.join([
+            f'{self.__class__}',
+            f'Title:      {self.title}',
+            f'Time steps: {self.num_time_steps}',
+            f'Hashes:     {self.hashes}',
+            '',
+            self.__str__(),
+        ])
+
+    def __str__(self) -> str:
+        max_key_len = pyxx.arrays.max_list_item_len(self.variables)
+
+        representation = ''
+
+        for group in (list(self.list_groups()) + [None]):
+            var_str = [group if group is not None else 'No Group Assigned']
+
+            for var in self.variables:
+                if self._data[var].group == group:
+                    var_str.append(
+                        f'  {var:{max_key_len+1}s}: {str(self._data[var])}')
+
+            if len(var_str) > 1:
+                representation += '\n'.join(var_str) + '\n'
+
+        return representation
+
     @property
     def compile_options(self) -> Dict[str, str]:
         """A dictionary containing options with which the Maha Multics
@@ -255,6 +284,82 @@ class SimResults(MahaMulticsConfigFile):
 
         return self.unit_converter.convert(
             quantity=data, from_unit=stored_units, to_unit=units)
+
+    def get_description(self, var: str) -> Union[str, None]:
+        """Returns the description (if assigned) of a variable in the
+        simulation results file
+
+        Parameters
+        ----------
+        var : str
+            The name of the variable whose description to retrieve
+
+        Returns
+        -------
+        str or None
+            A string containing the description of the simulation results
+            variable, or ``None`` if no description is available
+        """
+        return self._data[var].description
+
+    def get_group(self, var: str) -> Union[str, None]:
+        """Returns the name of the group (if assigned) of a variable in the
+        simulation results file
+
+        Parameters
+        ----------
+        var : str
+            The name of the variable whose group to retrieve
+
+        Returns
+        -------
+        str or None
+            A string containing the name of the group of the simulation
+            results variable, or ``None`` if no group has been assigned
+        """
+        return self._data[var].group
+
+    def get_required(self, var: str) -> bool:
+        """Returns whether a variable in the simulation results file is
+        specified as "required"
+
+        Variables specified as "required" indicates to the Maha Multics
+        software that the simulation should exit with error if unable to
+        output these values.
+
+        Parameters
+        ----------
+        var : str
+            The name of the variable whose data to extract
+
+        Returns
+        -------
+        bool
+            Whether the variable specified by ``var`` is marked as "required"
+            in the simulation results file
+        """
+        return self._data[var].required
+
+    def get_units(self, var: str) -> str:
+        """Returns the "raw" units in which data in the simulation results
+        file are stored
+
+        When extracting data with :py:meth:`get_data`, the units can be
+        converted to any valid unit; however, the data in :py:class:`SimResults`
+        objects is internally stored with a particular set of units.  This
+        method returns these units of the internally stored data.
+
+        Parameters
+        ----------
+        var : str
+            The name of the variable whose units to return
+
+        Returns
+        -------
+        str
+            The internally stored units of data in the simulation results file
+        """
+        return self._data[var].units
 
     def list_groups(self) -> Tuple[str, ...]:
         """Returns a tuple containing all variable groups in the simulation
@@ -384,7 +489,7 @@ class SimResults(MahaMulticsConfigFile):
 
                     key = var_data[0]
                     units = var_data[1]
-                    description = var_data[2]
+                    description = var_data[2] if len(var_data[2]) > 0 else None
 
                     if key not in self._data:
                         raise InvalidSimResultsFormatError(
@@ -439,3 +544,126 @@ class SimResults(MahaMulticsConfigFile):
                 break
 
             i += 1
+
+    def set_data(self, var: str,
+                 data: Union[np.ndarray, List[float], Tuple[float, ...]],
+                 units: str) -> None:
+        """Adds or replaces simulation results data by variable name
+
+        Parameters
+        ----------
+        var : str
+            The name of the variable whose data to store
+        data : np.ndarray or list or tuple
+            A 1D array containing the data (in units of ``units``) to store
+        units : str
+            The units in which the simulation results data should be stored
+        """
+        self._data[var].data = data
+        self._data[var].units = units
+
+    def set_description(self, var: str, description: Union[str, None]) -> None:
+        """Adds or modifies the description of a variable in the simulation
+        results file
+
+        Parameters
+        ----------
+        var : str
+            The name of the variable whose description to retrieve
+        description : str or None
+            The description of the simulation results variable, or ``None`` to
+            remove the description
+        """
+        self._data[var].description = description
+
+    def set_group(self, var: str, group: Union[str, None]) -> None:
+        """Sets or modifies the name of the group of a variable in the
+        simulation results file
+
+        Parameters
+        ----------
+        var : str
+            The name of the variable whose group to retrieve
+        description : str or None
+            The group name of the simulation results variable, or ``None`` to
+            remove the group name
+        """
+        self._data[var].group = group
+
+    def set_required(self, var: str, required: bool) -> None:
+        """Modifies whether a variable in the simulation results file is
+        specified as "required"
+
+        Variables specified as "required" indicates to the Maha Multics
+        software that the simulation should exit with error if unable to
+        output these values.
+
+        Parameters
+        ----------
+        var : str
+            The name of the variable whose data to extract
+        required : bool
+            Whether the variable specified by ``var`` is marked as "required"
+            in the simulation results file
+        """
+        self._data[var].required = required
+
+    def set_units(self, var: str, units: str,
+                  action_if_data_present: str = 'error') -> None:
+        """Modifies the units of a variable in the simulation results file
+
+        Parameters
+        ----------
+        var : str
+            The name of the variable whose units to modify
+        units : str
+            The units to assign to variable ``var``
+        action_if_data_present : str, optional
+            The action that should be taken if simulation results data for
+            ``var`` are already present in the simulation results file
+            (default is ``'error'``).  See "Notes" section for additional
+            information
+
+        Notes
+        -----
+        In the case that simulation results data for ``var`` already exist, it
+        is not obvious how this case should be handled: should the data also
+        be converted to the new units, or should only the units be changed?
+
+        MahaUtils provides three options to handle this case:
+
+        1. ``'error'``: If simulation results data are present, throw an error
+        2. ``'convert_data'``: If simulation results data are present, convert
+           it to the units given by the ``units`` argument (e.g., :math:`3\ m`
+           would become :math:`0.003\ mm`)
+        3. ``'keep_data_values'``: If simulation results data are present,
+           keep the same values of the data but change the units (e.g.,
+           :math:`3\ m` would become :math:`3\ mm`)
+        """
+        # Validate inputs
+        valid_actions = ['error', 'convert_data', 'keep_data_values']
+        if action_if_data_present not in valid_actions:
+            raise ValueError('Action if data present must be selected '
+                             f'from {valid_actions}')
+
+        # Take no action if units match existing units
+        if self._data[var].units == units:
+            return
+
+        # Store units
+        if self._data[var].data is not None:
+            if action_if_data_present == 'error':
+                raise SimResultsOverwriteError(
+                    f'Unable to set units for "{var}" because simulation '
+                    'results data are already present')
+
+            if action_if_data_present == 'convert_data':
+                self._data[var].data = self.unit_converter.convert(
+                    self._data[var].data,
+                    from_unit=self._data[var].units, to_unit=units
+                )
+
+            if action_if_data_present == 'keep_data_values':
+                pass
+
+        self._data[var].units = units

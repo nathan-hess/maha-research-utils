@@ -35,15 +35,15 @@ class Test_SimResultsEntry(unittest.TestCase):
             with self.subTest(method=method):
                 self.entry.required = False
                 self.entry.description = 'My description'
-                self.entry._data = [0, 2, 9]
+                self.entry._data = np.array([0, 2, 9])
 
                 with self.subTest(required=False, description=True, data=True):
-                    self.assertEqual(repr_str(), '[Optional] [Units: m/s] My description, [0, 2, 9]')
+                    self.assertEqual(repr_str(), '[Optional] [Units: m/s] My description, [0 2 9]')
 
                 self.entry.required = True
 
                 with self.subTest(required=True, description=True, data=True):
-                    self.assertEqual(repr_str(), '[Required] [Units: m/s] My description, [0, 2, 9]')
+                    self.assertEqual(repr_str(), '[Required] [Units: m/s] My description, [0 2 9]')
 
                 self.entry._data = None
 
@@ -51,10 +51,10 @@ class Test_SimResultsEntry(unittest.TestCase):
                     self.assertEqual(repr_str(), '[Required] [Units: m/s] My description')
 
                 self.entry.description = None
-                self.entry._data = [0, 2, 9]
+                self.entry._data = np.array([0, 2, 9])
 
                 with self.subTest(required=True, description=False, data=True):
-                    self.assertEqual(repr_str(), '[Required] [Units: m/s] [0, 2, 9]')
+                    self.assertEqual(repr_str(), '[Required] [Units: m/s] [0 2 9]')
 
                 self.entry._data = None
 
@@ -120,7 +120,7 @@ class Test_SimResultsEntry(unittest.TestCase):
 
             self.entry.required = False
             self.assertFalse(self.entry.required)
-        
+
         with self.subTest(boolean_input=False):
             self.entry.required = 1
             self.assertTrue(self.entry.required)
@@ -333,12 +333,44 @@ class Test_SimResults_Get(Test_SimResults):
             with self.assertRaises(SimResultsDataNotFoundError):
                 self.sim_results_01.get_data('vxBody', 'micron/s')
 
+    def test_get_description(self):
+        # Verifies that the description of simulation results variables is
+        # correctly retrieved
+        with self.subTest(description_available=True):
+            self.assertEqual(self.sim_results_01.get_description('FySpring'),
+                             'Spring Force y')
+
+        with self.subTest(description_available=False):
+            self.assertIsNone(self.sim_results_01.get_description('FxSpring'))
+            self.assertIsNone(self.sim_results_01.get_description('MxBody'))
+
+    def test_get_group(self):
+        # Verifies that the group name of simulation results variables is
+        # correctly retrieved
+        with self.subTest(group_available=True):
+            self.assertEqual(self.sim_results_01.get_group('xBody'),
+                             'Body Position')
+            self.assertEqual(self.sim_results_01.get_group('vxBody'),
+                             'Speed')
+            self.assertEqual(self.sim_results_01.get_group('FzSpring'),
+                             'Spring Force')
+
+        with self.subTest(group_available=False):
+            self.assertIsNone(self.sim_results_01.get_group('t'))
+
+    def test_get_required(self):
+        # Verifies that simulation results variables are correctly identified
+        # as "required" or not
+        self.assertTrue(self.sim_results_01.get_required('t'))
+        self.assertFalse(self.sim_results_01.get_required('zBody'))
+        self.assertFalse(self.sim_results_01.get_required('vxBody'))
+        self.assertFalse(self.sim_results_01.get_required('FySpring'))
+
     def test_list_groups(self):
         # Verifies that a unique list of groups can be identified correctly
         self.assertTupleEqual(
             self.sim_results_01.list_groups(),
-            ('General Simulation Parameters', 'Body Position',
-             'Speed', 'Spring Force', 'Torque')
+            ('Body Position', 'Speed', 'Spring Force', 'Torque')
         )
 
         self.assertTupleEqual(self.sim_results_02.list_groups(), ())

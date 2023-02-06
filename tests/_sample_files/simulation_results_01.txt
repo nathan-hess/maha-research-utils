@@ -3,7 +3,6 @@
 # To adjust what values to print, specify "@" or "?" to indicate whether
 # the variable is required, the variable name, and the output units
 printDict{
-    # General Simulation Parameters
     @t          [s]
 
     # Body Position
