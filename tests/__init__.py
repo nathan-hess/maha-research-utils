@@ -1,5 +1,7 @@
+import io
 import math
 import pathlib
+import sys
 
 import numpy as np
 
@@ -11,6 +13,18 @@ TEST_TMP_DIR = PROJECT_TEST_DIR / 'tmp'
 
 TEST_FLOAT_TOLERANCE = 1e-12
 TEST_FLOAT_TOLERANCE_DECIMAL_PLACES = int(-math.log10(TEST_FLOAT_TOLERANCE))
+
+
+# Define context managers to facilitate testing
+class CapturePrint:
+    """Captures text printed to the terminal when running commands"""
+    def __enter__(self):
+        self.terminal_stdout = io.StringIO()
+        sys.stdout = self.terminal_stdout
+        return self.terminal_stdout
+
+    def __exit__(self, *args, **kwargs):
+        sys.stdout = sys.__stdout__
 
 
 # Define basic testing utilities

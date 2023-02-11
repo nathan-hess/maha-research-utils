@@ -19,6 +19,18 @@ class InvalidSimResultsFormatError(SimResultsError):
     """Maha Multics simulation results file content does not match expected
     format"""
 
+class SimResultsKeyError(SimResultsError, KeyError):
+    """Attempting to access a given variable in a simulation results file, but
+    the variable is not present in the file"""
+
+class SimResultsDataNotFoundError(SimResultsError, ValueError):
+    """Error thrown if attempting to access data in a simulation results file
+    that has not yet been defined"""
+
+class SimResultsOverwriteError(SimResultsError):
+    """Error thrown if overwriting data in a simulation results file that
+    should not be overwritten"""
+
 
 # VTK FILES
 class VTKFormatError(MahaMulticsFileFormatError):

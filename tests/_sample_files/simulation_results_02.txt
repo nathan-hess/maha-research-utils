@@ -1,0 +1,11 @@
+printDict{
+    @t          [s]
+    ?xBody      [m]
+    ?yBody      [m]
+    ?zBody      [m]
+    ?vxBody     [micron/s]
+    ?FxSpring   [N]
+    ?FySpring   [N]
+    ?FzSpring   [N]
+    ?MxBody     [N*m]
+}
