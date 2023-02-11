@@ -2,6 +2,7 @@
 files which store simulation results produced by the Maha Multics software.
 """
 
+import copy
 import pathlib
 import re
 from typing import Dict, List, Optional, Tuple, Union
@@ -14,6 +15,7 @@ from .configfile import MahaMulticsConfigFile
 from .exceptions import (
     FileNotParsedError,
     InvalidSimResultsFormatError,
+    SimResultsError,
     SimResultsDataNotFoundError,
     SimResultsKeyError,
     SimResultsOverwriteError,
@@ -58,7 +60,9 @@ class _SimResultsEntry:
                 representation += ','
 
         if self.data is not None:
-            representation += f' {np.array2string(self.data, precision=2)}'
+            array_str = np.array2string(self.data, precision=2,
+                                        max_line_width=1000000)
+            representation += f' {array_str}'
 
         return representation
 
@@ -144,6 +148,24 @@ class SimResults(MahaMulticsConfigFile):
     def __init__(self, path: Optional[Union[str, pathlib.Path]] = None,
                  unit_converter: Optional[pyxx.units.UnitConverter] = None
                  ) -> None:
+        """Creates an object that can read and write Maha Multics simulation
+        results files
+
+        Creates an instance of the :py:class:`SimResults` class and optionally
+        reads and parses a specified Maha Multics simulation results file.
+
+        Parameters
+        ----------
+        path : str or pathlib.Path, optional
+            The path and filename of the simulation results file to read and
+            parse (default is ``None``).  If set to ``None``, no file is read
+        unit_converter : pyxx.units.UnitConverter, optional
+            A :py:class:`pyxx.units.UnitConverter` instance which will be
+            used to convert units of quantities stored in the simulation
+            results file (default is ``None``).  If set to ``None``, the
+            :py:class:`MahaMulticsUnitConverter` unit converter will be used
+            to perform unit conversions
+        """
         super().__init__(path=path)
 
         # Initialize variables
@@ -163,32 +185,26 @@ class SimResults(MahaMulticsConfigFile):
             self.parse()
 
     def __repr__(self) -> str:
-        return '\n'.join([
+        representation = [
             f'{self.__class__}',
             f'Title:      {self.title}',
-            f'Time steps: {self.num_time_steps}',
+        ]
+
+        try:
+            representation.append(f'Time steps: {self.num_time_steps}')
+        except FileNotParsedError:
+            pass
+
+        representation.extend([
             f'Hashes:     {self.hashes}',
             '',
             self.__str__(),
         ])
 
+        return '\n'.join(representation)
+
     def __str__(self) -> str:
-        max_key_len = pyxx.arrays.max_list_item_len(self.variables)
-
-        representation = ''
-
-        for group in (list(self.list_groups()) + [None]):
-            var_str = [group if group is not None else 'No Group Assigned']
-
-            for var in self.variables:
-                if self._data[var].group == group:
-                    var_str.append(
-                        f'  {var:{max_key_len+1}s}: {str(self._data[var])}')
-
-            if len(var_str) > 1:
-                representation += '\n'.join(var_str) + '\n'
-
-        return representation
+        return self.__get_printable_vars_str(self.variables)
 
     @property
     def compile_options(self) -> Dict[str, str]:
@@ -248,7 +264,106 @@ class SimResults(MahaMulticsConfigFile):
         """
         return tuple(self._data.keys())
 
-    def get_data(self, var: str, units: str) -> np.ndarray:
+    def __get_printable_vars_str(self,
+                                 variables: Union[List[str], Tuple[str, ...]],
+                                 indent: int = 2
+                                 ) -> str:
+        if len(variables) == 0:
+            representation = '[No simulation results variables found]'
+
+        else:
+            max_key_len = pyxx.arrays.max_list_item_len(variables)
+
+            representation = ''
+
+            for group in (list(self.list_groups()) + [None]):
+                var_str = [group if group is not None else 'No Group Assigned']
+
+                for var in variables:
+                    if self._data[var].group == group:
+                        var_str.append(
+                            f'{" "*indent}{var:{max_key_len+1}s}: '
+                            f'{str(self._data[var])}'
+                        )
+
+                if len(var_str) > 1:
+                    representation += '\n'.join(var_str) + '\n'
+
+        return representation.strip('\n')
+
+    def append(self, key: str, required: bool, units: str,
+               data: Optional[
+                   Union[np.ndarray, List[float], Tuple[float, ...]]] = None,
+               description: Optional[str] = None,
+               group: Optional[str] = None,
+               ) -> None:
+        """Adds a variable to the simulation results file
+
+        Adds a new variable to the simulation results file, placing it at the
+        end of the :py:attr:`variables` list.
+
+        Parameters
+        ----------
+        key : str
+            A unique name to identify the variable
+        required : bool
+            Whether the simulation results variable is required to be
+            outputted by Maha Multics
+        units : str
+            The units of the variable's data
+        data : np.ndarray or list or tuple, optional
+            If desired, a 1D array consisting of the simulation results data
+            for the variable can be provided (default is ``None``)
+        description : str, optional
+            An optional description of the simulation results variable
+            (default is ``None``)
+        group : str, optional
+            An optional group to which the variable belongs (default is
+            ``None``)
+
+        Raises
+        ------
+        SimResultsOverwriteError
+            If a variable ``key`` already exists in the simulation results file
+        """
+        if key in self.variables:
+            raise SimResultsOverwriteError(
+                f'Simulation results variable "{key}" already exists')
+
+        self._data[key] = _SimResultsEntry(
+            required    = required,
+            units       = units,
+            data        = data,
+            description = description,
+            group       = group
+        )
+
+    def clear_data(self, regex_pattern: str = '.+') -> List[str]:
+        """Removes simulation results data for any variable(s) with names
+        matching a given regex pattern
+
+        Parameters
+        ----------
+        regex_pattern : str, optional
+            Any variables in :py:attr:`variables` matching this regex pattern
+            will have existing simulation results data deleted (default is
+            ``'.+'``, which matches all variable names)
+
+        Returns
+        -------
+        list
+            A list containing the variable names whose data were deleted
+        """
+        cleared_vars = []
+
+        for var in self.variables:
+            if re.match(regex_pattern, var):
+                cleared_vars.append(var)
+                self._data[var].data = None
+
+        return cleared_vars
+
+    def get_data(self, key: str, units: str) -> np.ndarray:
         """Extracts simulation results data by variable name
 
         Extracts data corresponding to a specific simulation results variable
@@ -257,7 +372,7 @@ class SimResults(MahaMulticsConfigFile):
 
         Parameters
         ----------
-        var : str
+        key : str
             The name of the variable whose data to extract
         units : str
             The units in which the simulation results data should be returned
@@ -266,17 +381,17 @@ class SimResults(MahaMulticsConfigFile):
         -------
         np.ndarray
             A NumPy array containing the simulation results data for variable
-            ``var``, in units of ``units``
+            ``key``, in units of ``units``
         """
         # Extract data
-        data_ref = self._data[var].data
+        data_ref = self._data[key].data
 
         if data_ref is None:
             raise SimResultsDataNotFoundError(
-                f'No simulation results data are present for key "{var}"')
+                f'No simulation results data are present for key "{key}"')
 
         data = data_ref.copy()
-        stored_units = self._data[var].units
+        stored_units = self._data[key].units
 
         # Perform unit conversion if necessary
         if units == stored_units:
@@ -285,13 +400,13 @@ class SimResults(MahaMulticsConfigFile):
         return self.unit_converter.convert(
             quantity=data, from_unit=stored_units, to_unit=units)
 
-    def get_description(self, var: str) -> Union[str, None]:
+    def get_description(self, key: str) -> Union[str, None]:
         """Returns the description (if assigned) of a variable in the
         simulation results file
 
         Parameters
         ----------
-        var : str
+        key : str
             The name of the variable whose description to retrieve
 
         Returns
@@ -300,15 +415,15 @@ class SimResults(MahaMulticsConfigFile):
             A string containing the description of the simulation results
             variable, or ``None`` if no description is available
         """
-        return self._data[var].description
+        return self._data[key].description
 
-    def get_group(self, var: str) -> Union[str, None]:
+    def get_group(self, key: str) -> Union[str, None]:
         """Returns the name of the group (if assigned) of a variable in the
         simulation results file
 
         Parameters
         ----------
-        var : str
+        key : str
             The name of the variable whose group to retrieve
 
         Returns
@@ -317,9 +432,9 @@ class SimResults(MahaMulticsConfigFile):
             A string containing the name of the group of the simulation
             results variable, or ``None`` if no group has been assigned
         """
-        return self._data[var].group
+        return self._data[key].group
 
-    def get_required(self, var: str) -> bool:
+    def get_required(self, key: str) -> bool:
         """Returns whether a variable in the simulation results file is
         specified as "required"
 
@@ -329,18 +444,18 @@ class SimResults(MahaMulticsConfigFile):
 
         Parameters
         ----------
-        var : str
+        key : str
             The name of the variable whose data to extract
 
         Returns
         -------
         bool
-            Whether the variable specified by ``var`` is marked as "required"
+            Whether the variable specified by ``key`` is marked as "required"
             in the simulation results file
         """
-        return self._data[var].required
+        return self._data[key].required
 
-    def get_units(self, var: str) -> str:
+    def get_units(self, key: str) -> str:
         """Returns the "raw" units in which data in the simulation results
         file are stored
 
@@ -351,7 +466,7 @@ class SimResults(MahaMulticsConfigFile):
 
         Parameters
         ----------
-        var : str
+        key : str
             The name of the variable whose units to return
 
         Returns
@@ -359,7 +474,7 @@ class SimResults(MahaMulticsConfigFile):
         str
             The internally stored units of data in the simulation results file
         """
-        return self._data[var].units
+        return self._data[key].units
 
     def list_groups(self) -> Tuple[str, ...]:
         """Returns a tuple containing all variable groups in the simulation
@@ -394,6 +509,8 @@ class SimResults(MahaMulticsConfigFile):
         if len(self.contents) == 0:
             raise FileNotParsedError(
                 'Unable to parse file. File has not yet been read')
+
+        original_contents = copy.deepcopy(self.contents)
 
         # Extract title
         for line in self.contents:
@@ -545,52 +662,174 @@ class SimResults(MahaMulticsConfigFile):
 
             i += 1
 
-    def set_data(self, var: str,
-                 data: Union[np.ndarray, List[float], Tuple[float, ...]],
-                 units: str) -> None:
+        self.contents.clear()
+        self.contents.extend(original_contents)
+
+    def remove(self, key: str) -> None:
+        """Removes a simulation results variable
+
+        Removes a variable and any associated data from the simulation results
+        file.
+
+        Parameters
+        ----------
+        key : str
+            The name of the variable to remove
+        """
+        if key not in self.variables:
+            raise SimResultsKeyError(
+                f'Simulation results variable "{key}" does not exist')
+
+        del self._data[key]
+
+    def search(self, keyword: str,
+               search_fields: Union[
+                   str, Tuple[str, ...], List[str]
+               ] = ('keys', 'description', 'group', 'units'),
+               case_sensitive: bool = False,
+               print_results: bool = True,
+               return_results: bool = False
+               ) -> Union[Tuple[str, ...], None]:
+        """Searches the simulation results file for a given search term
+
+        This method can be useful for finding data, particularly in a large
+        simulation results file.  It performs a relatively basic search,
+        checking to see if a given term ``keyword`` is in any of the specified
+        search fields.  The exact ``keyword`` must be found to register a
+        match; similar terms are not considered a match.
+
+        Parameters
+        ----------
+        keyword : str
+            The term to search for
+        search_fields : str or tuple or list, optional
+            One or more simulation results variable attributes in which to
+            search for ``keyword`` (default is to search all possible
+            attributes, ``('keys', 'description', 'group', 'units')``)
+        case_sensitive : bool, optional
+            Whether to perform a case-sensitive search (default is ``False``)
+        print_results : bool, optional
+            Whether to display results to the terminal (default is ``True``)
+        return_results : bool, optional
+            Whether to return a tuple of strings containing the simulation
+            results variable keys for all search matches (default is ``False``)
+
+        Returns
+        -------
+        tuple
+            A tuple of strings containing all simulation results variable keys
+            (i.e., selected from :py:attr:`variables`) for which search
+            matches were registered.  Only returned if ``return_results`` is
+            ``True``
+        """
+        keyword = str(keyword)
+        if not case_sensitive:
+            keyword = keyword.lower()
+
+        search_fields = pyxx.arrays.convert_to_tuple(search_fields)
+        invalid_fields = (set(search_fields)
+                          - set(('keys', 'description', 'group', 'units')))
+        if len(invalid_fields) > 0:
+            raise ValueError(f'Invalid search fields: {invalid_fields}')
+
+        matches = []
+        for var in self.variables:
+            if 'keys' in search_fields:
+                key = var
+                if not case_sensitive:
+                    key = key.lower()
+
+                if keyword in key:
+                    matches.append(var)
+                    continue
+
+            if 'description' in search_fields:
+                if (description := self._data[var].description) is not None:
+                    if not case_sensitive:
+                        description = description.lower()
+
+                    if keyword in description:
+                        matches.append(var)
+                        continue
+
+            if 'group' in search_fields:
+                if (group := self._data[var].group) is not None:
+                    if not case_sensitive:
+                        group = group.lower()
+
+                    if keyword in group:
+                        matches.append(var)
+                        continue
+
+            if 'units' in search_fields:
+                units = self._data[var].units
+                if not case_sensitive:
+                    units = units.lower()
+
+                if keyword in units:
+                    matches.append(var)
+                    continue
+
+        if print_results:
+            print(self.__get_printable_vars_str(matches))
+
+        if return_results:
+            return tuple(matches)
+
+        return None
+
+    def set_data(self, key: str,
+                 data: Union[np.ndarray, List[float], Tuple[float, ...], None],
+                 units: Optional[str] = None) -> None:
         """Adds or replaces simulation results data by variable name
 
         Parameters
         ----------
-        var : str
+        key : str
             The name of the variable whose data to store
         data : np.ndarray or list or tuple
             A 1D array containing the data (in units of ``units``) to store
         units : str
             The units in which the simulation results data should be stored
         """
-        self._data[var].data = data
-        self._data[var].units = units
+        self._data[key].data = data
 
-    def set_description(self, var: str, description: Union[str, None]) -> None:
+        if data is not None:
+            if units is None:
+                raise TypeError('If argument "data" is not `None`, argument '
+                                '"units" must be provided')
+
+            self._data[key].units = units
+
+    def set_description(self, key: str, description: Union[str, None]) -> None:
         """Adds or modifies the description of a variable in the simulation
         results file
 
         Parameters
         ----------
-        var : str
+        key : str
             The name of the variable whose description to retrieve
         description : str or None
             The description of the simulation results variable, or ``None`` to
             remove the description
         """
-        self._data[var].description = description
+        self._data[key].description = description
 
-    def set_group(self, var: str, group: Union[str, None]) -> None:
+    def set_group(self, key: str, group: Union[str, None]) -> None:
         """Sets or modifies the name of the group of a variable in the
         simulation results file
 
         Parameters
         ----------
-        var : str
+        key : str
             The name of the variable whose group to retrieve
         description : str or None
             The group name of the simulation results variable, or ``None`` to
             remove the group name
         """
-        self._data[var].group = group
+        self._data[key].group = group
 
-    def set_required(self, var: str, required: bool) -> None:
+    def set_required(self, key: str, required: bool) -> None:
         """Modifies whether a variable in the simulation results file is
         specified as "required"
 
@@ -600,33 +839,33 @@ class SimResults(MahaMulticsConfigFile):
 
         Parameters
         ----------
-        var : str
+        key : str
             The name of the variable whose data to extract
         required : bool
-            Whether the variable specified by ``var`` is marked as "required"
+            Whether the variable specified by ``key`` is marked as "required"
             in the simulation results file
         """
-        self._data[var].required = required
+        self._data[key].required = required
 
-    def set_units(self, var: str, units: str,
+    def set_units(self, key: str, units: str,
                   action_if_data_present: str = 'error') -> None:
         """Modifies the units of a variable in the simulation results file
 
         Parameters
         ----------
-        var : str
+        key : str
             The name of the variable whose units to modify
         units : str
-            The units to assign to variable ``var``
+            The units to assign to variable ``key``
         action_if_data_present : str, optional
             The action that should be taken if simulation results data for
-            ``var`` are already present in the simulation results file
+            ``key`` are already present in the simulation results file
             (default is ``'error'``).  See "Notes" section for additional
             information
 
         Notes
         -----
-        In the case that simulation results data for ``var`` already exist, it
+        In the case that simulation results data for ``key`` already exist, it
         is not obvious how this case should be handled: should the data also
         be converted to the new units, or should only the units be changed?
 
@@ -647,23 +886,123 @@ class SimResults(MahaMulticsConfigFile):
                              f'from {valid_actions}')
 
         # Take no action if units match existing units
-        if self._data[var].units == units:
+        if self._data[key].units == units:
             return
 
         # Store units
-        if self._data[var].data is not None:
+        if self._data[key].data is not None:
             if action_if_data_present == 'error':
                 raise SimResultsOverwriteError(
-                    f'Unable to set units for "{var}" because simulation '
+                    f'Unable to set units for "{key}" because simulation '
                     'results data are already present')
 
             if action_if_data_present == 'convert_data':
-                self._data[var].data = self.unit_converter.convert(
-                    self._data[var].data,
-                    from_unit=self._data[var].units, to_unit=units
+                self._data[key].data = self.unit_converter.convert(
+                    self._data[key].data,
+                    from_unit=self._data[key].units, to_unit=units
                 )
 
             if action_if_data_present == 'keep_data_values':
                 pass
 
-        self._data[var].units = units
+        self._data[key].units = units
+
+    def update_contents(self, add_sim_data: bool = True, indent: int = 4,
+                        padding: int = 4) -> None:
+        """Updates the :py:attr:`contents` list based on object attributes
+
+        This method synchronizes the :py:attr:`contents` list with the data
+        stored in the :py:class:`SimResults` attributes (:py:attr:`title`,
+        variables added by :py:meth:`append`, etc.).  This step should
+        generally be performed prior to calling :py:meth:`write`, as writing
+        a file directly saves the data in :py:attr:`contents` to disk.
+
+        Parameters
+        ----------
+        add_sim_data : bool, optional
+            Whether to add simulation results data to the end of
+            :py:attr:`contents` (default is ``True``)
+        indent : int, optional
+            The number of spaces to use for indentation in the file (default
+            is ``4``)
+        padding : int, optional
+            The number of spaces to place between simulation results variable
+            names and the units in the ``printDict`` section of the simulation
+            results file (default is ``4``)
+        """
+        if self.comment_chars is None:
+            # This condition should not be reached since comment characters
+            # are hard-coded for simulation results files, but the check is
+            # still present to be safe
+            raise SimResultsError(  # pragma: no cover
+                'Cannot update contents until the "comment_chars" attribute '
+                'is defined')
+        comment_char = self.comment_chars[0]
+
+        self.contents.clear()
+
+        # Write title
+        if self.title is not None:
+            self.contents.append(f'{comment_char} Title: {self.title}')
+            self.contents.append('')
+
+        # Write "printDict" section
+        self.contents.append('printDict{')
+
+        if len(self.variables) > 0:
+            max_key_len = pyxx.arrays.max_list_item_len(self.variables)
+            for group in ([None] + list(self.list_groups())):
+                group_lines = []
+                group_vars_added = False
+
+                if group is not None:
+                    group_lines.append(f'{" "*indent}{comment_char} {group}')
+
+                for var in self.variables:
+                    if self._data[var].group == group:
+                        group_vars_added = True
+                        group_lines.append(
+                            f'{" "*indent}'
+                            f'{"@" if self._data[var].required else "?"}'
+                            f'{var:{max_key_len}s}'
+                            f'{" "*padding}[{self._data[var].units}]'
+                        )
+
+                # This should always be true, since the list of groups is
+                # identified by the contents of "_data" (which guarantees
+                # that each group should have at least one variable)
+                if group_vars_added:  # pragma: no cover
+                    self.contents.extend(group_lines + [''])
+        else:
+            self.contents.append('')
+
+        self.contents[-1] = '}'
+
+        # Write simulation data, if available
+        if add_sim_data:
+            # Simulation results variables and descriptions
+            data_vars = ''
+            data_array = []
+            for var in self.variables:
+                data = self._data[var].data
+
+                if data is not None:
+                    if (description := self._data[var].description) is None:
+                        description = ''
+
+                    data_vars += (f'${var}:{self._data[var].units}:{description}')
+
+                    data_array.append(data)
+
+            # Simulation results data
+            if len(data_vars) > 0:
+                self.contents.append(data_vars)
+
+                # Compilation options
+                compile_opts_str = ', '.join(
+                    [f'{k} = {v}' for k, v in self.compile_options.items()])
+                self.contents.append(f'#_OPTIONs: {compile_opts_str}'.strip())
+
+                # Simulation results data
+                for line in np.transpose(np.array(data_array, dtype=np.float64)):
+                    self.contents.append(' '.join([str(x) for x in line]))

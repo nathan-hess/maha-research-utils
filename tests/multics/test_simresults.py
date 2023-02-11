@@ -12,9 +12,11 @@ from mahautils.multics.exceptions import (
     InvalidSimResultsFormatError,
     SimResultsDataNotFoundError,
     SimResultsKeyError,
+    SimResultsOverwriteError,
 )
 from mahautils.multics.simresults import _SimResultsEntry
 from tests import (
+    CapturePrint,
     SAMPLE_FILES_DIR,
     max_array_diff,
     TEST_FLOAT_TOLERANCE,
@@ -150,6 +152,49 @@ class Test_SimResults(unittest.TestCase):
         self.sim_results_02 = SimResults(self.file02)
 
 
+class Test_SimResults_General(Test_SimResults):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_repr(self):
+        # Verifies that printable string representation is formatted correctly
+        with self.subTest(contents=True):
+            self.sim_results_01.clear_data()
+
+            self.assertListEqual(
+                self.sim_results_01.__repr__().split('\n'),
+                ['<class \'mahautils.multics.simresults.SimResults\'>',
+                 f'Title:      {self.sim_results_01.title}',
+                 f'Time steps: {self.sim_results_01.num_time_steps}',
+                 f'Hashes:     {self.sim_results_01.hashes}',
+                 '',
+                 'Body Position',
+                 '  xBody    : [Optional] [Units: m] Body casing frame position in x',
+                 '  yBody    : [Optional] [Units: mm] Body casing frame position in y',
+                 '  zBody    : [Optional] [Units: m]',
+                 'Speed',
+                 '  vxBody   : [Optional] [Units: micron/s]',
+                 'Spring Force',
+                 '  FxSpring : [Optional] [Units: N]',
+                 '  FySpring : [Optional] [Units: N] Spring Force y',
+                 '  FzSpring : [Optional] [Units: N] Spring Force z',
+                 'Torque',
+                 '  MxBody   : [Optional] [Units: N*m]',
+                 'No Group Assigned',
+                 '  t        : [Required] [Units: s] Sim Time',]
+            )
+
+        with self.subTest(contents=False):
+            self.assertEqual(
+                self.sim_results_blank.__repr__(),
+                ('<class \'mahautils.multics.simresults.SimResults\'>\n'
+                 'Title:      None\n'
+                 'Hashes:     {}\n'
+                 '\n'
+                 '[No simulation results variables found]')
+            )
+
+
 class Test_SimResults_Parse(Test_SimResults):
     def setUp(self) -> None:
         super().setUp()
@@ -276,33 +321,109 @@ class Test_SimResults_ReadProperties(Test_SimResults):
         self.assertTupleEqual(self.sim_results_blank.variables, ())
 
 
-class Test_SimResults_Get(Test_SimResults):
+class Test_SimResults_AppendRemove(Test_SimResults):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_get_data(self):
-        # Verifies that data can be read correctly from the simulation results
+    def test_append(self):
+        # Verifies that variables can be added to a simulation results file
+        self.assertTupleEqual(self.sim_results_blank.variables, ())
+
+        with self.subTest(key='valid'):
+            self.sim_results_blank.append(key='velocity1', required=True, units='m/s')
+            self.assertTupleEqual(self.sim_results_blank.variables, ('velocity1',))
+
+            self.sim_results_blank.append(key='velocity2', required=True, units='mph', description='myDescription')
+            self.assertTupleEqual(self.sim_results_blank.variables, ('velocity1', 'velocity2'))
+            self.assertEqual(self.sim_results_blank._data['velocity2'].description, 'myDescription')
+
+        with self.subTest(key='invalid'):
+            with self.assertRaises(SimResultsOverwriteError):
+                self.sim_results_blank.append(key='velocity1', required=True, units='m/s')
+
+    def test_remove(self):
+        # Verifies that variables can be removed from a simulation results file
+        with self.subTest(key='valid'):
+            self.assertIn('xBody', self.sim_results_01.variables)
+            self.sim_results_01.remove('xBody')
+            self.assertNotIn('xBody', self.sim_results_01.variables)
+
+        with self.subTest(key='invalid'):
+            with self.assertRaises(SimResultsKeyError):
+                self.sim_results_01.remove('nonexistent_key')
+
+
+class Test_SimResults_GetSetAttributes(Test_SimResults):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_clear_data(self):
+        # Verifies that data can be cleared from desired variable(s)
+        cleared_vars = self.sim_results_01.clear_data()
+
+        with self.subTest(check='data'):
+            for var in self.sim_results_01.variables:
+                self.assertIsNone(self.sim_results_01._data[var].data)
+
+        with self.subTest(check='cleared_vars'):
+            self.assertListEqual(cleared_vars, list(self.sim_results_01.variables))
+
+    def test_clear_data_regex(self):
+        # Verifies that data can be cleared from desired variable(s)
+        cleared_vars = self.sim_results_01.clear_data('.Body')
+
+        with self.subTest(check='data'):
+            for var in ['xBody', 'yBody', 'zBody']:
+                self.assertIsNone(self.sim_results_01._data[var].data)
+
+        with self.subTest(check='cleared_vars'):
+            self.assertListEqual(cleared_vars, ['xBody', 'yBody', 'zBody'])
+
+    def test_get_set_data(self):
+        # Verifies that data can be read and set correctly from the simulation results
         # file (without unit conversions)
         with self.subTest(var='t'):
-            self.assertLessEqual(
-                max_array_diff(
-                    self.sim_results_01.get_data('t', 's'),
-                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-                ),
-                TEST_FLOAT_TOLERANCE
-            )
+            with self.subTest(action='get'):
+                self.assertLessEqual(
+                    max_array_diff(
+                        self.sim_results_01.get_data('t', 's'),
+                        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    ),
+                    TEST_FLOAT_TOLERANCE
+                )
+
+            with self.subTest(action='set'):
+                self.sim_results_01.set_data('t', None)
+
+                with self.assertRaises(SimResultsDataNotFoundError):
+                    self.sim_results_01.get_data('t', 's')
 
         with self.subTest(var='FySpring'):
-            self.assertLessEqual(
-                max_array_diff(
-                    self.sim_results_01.get_data('FySpring', 'N'),
-                    [933, 3, 3, 0, 32, -0.32, 5, 1, 0.543, 0.1, 10]
-                ),
-                TEST_FLOAT_TOLERANCE
-            )
+            with self.subTest(action='get'):
+                self.assertLessEqual(
+                    max_array_diff(
+                        self.sim_results_01.get_data('FySpring', 'N'),
+                        [933, 3, 3, 0, 32, -0.32, 5, 1, 0.543, 0.1, 10]
+                    ),
+                    TEST_FLOAT_TOLERANCE
+                )
+
+            with self.subTest(action='set'):
+                with self.assertRaises(TypeError):
+                    self.sim_results_01.set_data('FySpring', [0, -1.2, 3.4])
+
+                self.sim_results_01.set_data('FySpring', [0, -1.2, 3.4], 'N')
+
+                self.assertLessEqual(
+                    max_array_diff(
+                        self.sim_results_01.get_data('FySpring', 'N'),
+                        [0, -1.2, 3.4]
+                    ),
+                    TEST_FLOAT_TOLERANCE
+                )
 
     def test_get_data_unit_conversion(self):
-        # Verifies that data can be read correctly from the simulation results
+        # Verifies that data can be read and set correctly from the simulation results
         # file (with unit conversions)
         with self.subTest(var='t'):
             self.assertLessEqual(
@@ -333,38 +454,157 @@ class Test_SimResults_Get(Test_SimResults):
             with self.assertRaises(SimResultsDataNotFoundError):
                 self.sim_results_01.get_data('vxBody', 'micron/s')
 
-    def test_get_description(self):
+    def test_get_set_description(self):
         # Verifies that the description of simulation results variables is
-        # correctly retrieved
-        with self.subTest(description_available=True):
+        # correctly retrieved and saved
+        with self.subTest(action='get'):
+            with self.subTest(description_available=True):
+                self.assertEqual(self.sim_results_01.get_description('FySpring'),
+                                 'Spring Force y')
+
+            with self.subTest(description_available=False):
+                self.assertIsNone(self.sim_results_01.get_description('FxSpring'))
+                self.assertIsNone(self.sim_results_01.get_description('MxBody'))
+
+        with self.subTest(action='set'):
+            self.sim_results_01.set_description('FySpring', 'new Description')
             self.assertEqual(self.sim_results_01.get_description('FySpring'),
-                             'Spring Force y')
+                             'new Description')
 
-        with self.subTest(description_available=False):
-            self.assertIsNone(self.sim_results_01.get_description('FxSpring'))
-            self.assertIsNone(self.sim_results_01.get_description('MxBody'))
-
-    def test_get_group(self):
+    def test_get_set_group(self):
         # Verifies that the group name of simulation results variables is
-        # correctly retrieved
-        with self.subTest(group_available=True):
+        # correctly retrieved and saved
+        with self.subTest(action='get'):
+            with self.subTest(group_available=True):
+                self.assertEqual(self.sim_results_01.get_group('xBody'),
+                                 'Body Position')
+                self.assertEqual(self.sim_results_01.get_group('vxBody'),
+                                 'Speed')
+                self.assertEqual(self.sim_results_01.get_group('FzSpring'),
+                                 'Spring Force')
+
+            with self.subTest(group_available=False):
+                self.assertIsNone(self.sim_results_01.get_group('t'))
+
+        with self.subTest(action='set'):
+            self.sim_results_01.set_group('xBody', 'newGroup')
             self.assertEqual(self.sim_results_01.get_group('xBody'),
-                             'Body Position')
-            self.assertEqual(self.sim_results_01.get_group('vxBody'),
-                             'Speed')
-            self.assertEqual(self.sim_results_01.get_group('FzSpring'),
-                             'Spring Force')
+                             'newGroup')
 
-        with self.subTest(group_available=False):
-            self.assertIsNone(self.sim_results_01.get_group('t'))
-
-    def test_get_required(self):
+    def test_get_set_required(self):
         # Verifies that simulation results variables are correctly identified
         # as "required" or not
-        self.assertTrue(self.sim_results_01.get_required('t'))
-        self.assertFalse(self.sim_results_01.get_required('zBody'))
-        self.assertFalse(self.sim_results_01.get_required('vxBody'))
-        self.assertFalse(self.sim_results_01.get_required('FySpring'))
+        with self.subTest(action='get'):
+            self.assertTrue(self.sim_results_01.get_required('t'))
+            self.assertFalse(self.sim_results_01.get_required('zBody'))
+            self.assertFalse(self.sim_results_01.get_required('vxBody'))
+            self.assertFalse(self.sim_results_01.get_required('FySpring'))
+
+        with self.subTest(action='set'):
+            self.sim_results_01.set_required('t', True)
+            self.assertTrue(self.sim_results_01.get_required('t'))
+
+            self.sim_results_01.set_required('t', False)
+            self.assertFalse(self.sim_results_01.get_required('t'))
+
+    def test_get_set_units_error(self):
+        # Verifies that simulation results variable units can be retrieved
+        # and stored as expected
+        with self.subTest(data_present=True):
+            with self.subTest(action='get'):
+                self.assertEqual(self.sim_results_01.get_units('t'), 's')
+
+            with self.subTest(action='set'):
+                self.sim_results_01.set_units('t', 's')
+
+                with self.assertRaises(SimResultsOverwriteError):
+                    self.sim_results_01.set_units('t', 'ms', 'error')
+
+        with self.subTest(data_present=False):
+            with self.subTest(action='get'):
+                self.assertEqual(self.sim_results_01.get_units('vxBody'), 'micron/s')
+
+            with self.subTest(action='set'):
+                self.sim_results_01.set_units('vxBody', 'mm/s', 'error')
+                self.assertEqual(self.sim_results_01.get_units('vxBody'), 'mm/s')
+
+    def test_get_set_units_convert_data(self):
+        # Verifies that simulation results variable units can be retrieved
+        # and stored as expected
+        with self.subTest(data_present=True):
+            with self.subTest(action='get'):
+                self.assertEqual(self.sim_results_01.get_units('t'), 's')
+
+            with self.subTest(action='set'):
+                self.assertLessEqual(
+                    max_array_diff(
+                        self.sim_results_01._data['t'].data,
+                        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    ),
+                    TEST_FLOAT_TOLERANCE
+                )
+
+                self.sim_results_01.set_units('t', 'ms', 'convert_data')
+
+                self.assertEqual(self.sim_results_01.get_units('t'), 'ms')
+
+                self.assertLessEqual(
+                    max_array_diff(
+                        self.sim_results_01._data['t'].data,
+                        [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
+                    ),
+                    TEST_FLOAT_TOLERANCE
+                )
+
+        with self.subTest(data_present=False):
+            with self.subTest(action='get'):
+                self.assertEqual(self.sim_results_01.get_units('vxBody'), 'micron/s')
+
+            with self.subTest(action='set'):
+                self.sim_results_01.set_units('vxBody', 'mm/s', 'convert_data')
+                self.assertEqual(self.sim_results_01.get_units('vxBody'), 'mm/s')
+
+    def test_get_set_units_keep_data_values(self):
+        # Verifies that simulation results variable units can be retrieved
+        # and stored as expected
+        with self.subTest(data_present=True):
+            with self.subTest(action='get'):
+                self.assertEqual(self.sim_results_01.get_units('t'), 's')
+
+            with self.subTest(action='set'):
+                self.assertLessEqual(
+                    max_array_diff(
+                        self.sim_results_01._data['t'].data,
+                        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    ),
+                    TEST_FLOAT_TOLERANCE
+                )
+
+                self.sim_results_01.set_units('t', 'ms', 'keep_data_values')
+
+                self.assertEqual(self.sim_results_01.get_units('t'), 'ms')
+
+                self.assertLessEqual(
+                    max_array_diff(
+                        self.sim_results_01._data['t'].data,
+                        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    ),
+                    TEST_FLOAT_TOLERANCE
+                )
+
+        with self.subTest(data_present=False):
+            with self.subTest(action='get'):
+                self.assertEqual(self.sim_results_01.get_units('vxBody'), 'micron/s')
+
+            with self.subTest(action='set'):
+                self.sim_results_01.set_units('vxBody', 'mm/s', 'keep_data_values')
+                self.assertEqual(self.sim_results_01.get_units('vxBody'), 'mm/s')
+
+    def test_get_set_units_invalid(self):
+        # Verifies that simulation results variable units can be retrieved
+        # and stored as expected
+        with self.assertRaises(ValueError):
+            self.sim_results_01.set_units('vxBody', 'mm/s', 'invalid_action')
 
     def test_list_groups(self):
         # Verifies that a unique list of groups can be identified correctly
@@ -374,3 +614,190 @@ class Test_SimResults_Get(Test_SimResults):
         )
 
         self.assertTupleEqual(self.sim_results_02.list_groups(), ())
+
+
+class Test_SimResults_Search(Test_SimResults):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_search_keys(self):
+        # Verifies that searching keys works correctly
+        self.assertTupleEqual(
+            self.sim_results_01.search(
+                keyword='body', search_fields='keys',
+                print_results=False, return_results=True),
+            ('xBody', 'yBody', 'zBody', 'vxBody', 'MxBody')
+        )
+
+    def test_search_description(self):
+        # Verifies that searching descriptions works correctly
+        self.assertTupleEqual(
+            self.sim_results_01.search(
+                keyword='body', search_fields='description',
+                print_results=False, return_results=True),
+            ('xBody', 'yBody')
+        )
+
+    def test_search_group(self):
+        # Verifies that searching groups works correctly
+        self.assertTupleEqual(
+            self.sim_results_01.search(
+                keyword='body', search_fields='group',
+                print_results=False, return_results=True),
+            ('xBody', 'yBody', 'zBody')
+        )
+
+    def test_search_units(self):
+        # Verifies that searching units works correctly
+        self.assertTupleEqual(
+            self.sim_results_01.search(
+                keyword='s', search_fields='units',
+                print_results=False, return_results=True),
+            ('t', 'vxBody')
+        )
+
+    def test_search_multiple(self):
+        # Verifies that searching multiple fields works correctly
+        self.assertTupleEqual(
+            self.sim_results_01.search(
+                keyword='s', search_fields=('keys', 'units'),
+                print_results=False, return_results=True),
+            ('t', 'vxBody', 'FxSpring', 'FySpring', 'FzSpring')
+        )
+
+    def test_search_case_sensitive(self):
+        # Verifies that searching multiple fields works correctly
+        self.assertTupleEqual(
+            self.sim_results_01.search(
+                keyword='s', case_sensitive=True,
+                search_fields=('keys', 'description', 'group', 'units'),
+                print_results=False, return_results=True),
+            ('t', 'xBody', 'yBody', 'zBody', 'vxBody')
+        )
+
+    def test_invalid_search_fields(self):
+        # Verifies that an error is thrown if attempting to perform a search
+        # within invalid search fields
+        with self.assertRaises(ValueError):
+            self.sim_results_01.search('', search_fields=('keys', 'invalid'))
+
+    def test_search_print(self):
+        # Verifies that search results are printed correctly
+        self.sim_results_01.clear_data()
+
+        with CapturePrint() as terminal_stdout:
+            self.assertIsNone(self.sim_results_01.search(
+                keyword='sp', print_results=True, return_results=False
+            ))
+
+            self.assertEqual(
+                terminal_stdout.getvalue(),
+                ('Speed\n'
+                 '  vxBody   : [Optional] [Units: micron/s]\n'
+                 'Spring Force\n'
+                 '  FxSpring : [Optional] [Units: N]\n'
+                 '  FySpring : [Optional] [Units: N] Spring Force y\n'
+                 '  FzSpring : [Optional] [Units: N] Spring Force z\n')
+            )
+
+
+class Test_SimResults_UpdateContents(Test_SimResults):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.sim_results_01.contents.clear()
+        self.assertListEqual(self.sim_results_01.contents, [])
+
+        self.sim_results_blank.contents.clear()
+        self.assertListEqual(self.sim_results_blank.contents, [])
+
+    def test_update_content_blank(self):
+        # Verifies that "contents" attribute can be updated with a minimal set of data
+        self.sim_results_blank.update_contents()
+
+        self.assertListEqual(
+            self.sim_results_blank.contents,
+            [
+                'printDict{',
+                '}',
+            ]
+        )
+
+    def test_update_content_data(self):
+        # Verifies that "contents" attribute can be updated with a simulation results
+        # file populated with data
+        self.sim_results_01.update_contents()
+
+        self.assertListEqual(
+            self.sim_results_01.contents,
+            [
+                '# Title: Sample simulation Results 1',
+                '',
+                'printDict{',
+                '    @t           [s]',
+                '',
+                '    # Body Position',
+                '    ?xBody       [m]',
+                '    ?yBody       [mm]',
+                '    ?zBody       [m]',
+                '',
+                '    # Speed',
+                '    ?vxBody      [micron/s]',
+                '',
+                '    # Spring Force',
+                '    ?FxSpring    [N]',
+                '    ?FySpring    [N]',
+                '    ?FzSpring    [N]',
+                '',
+                '    # Torque',
+                '    ?MxBody      [N*m]',
+                '}',
+                ('$t:s:Sim Time$xBody:m:Body casing frame position in x'
+                 '$yBody:mm:Body casing frame position in y$zBody:m:$FxSpring:N:'
+                 '$FySpring:N:Spring Force y$FzSpring:N:Spring Force z'),
+                '#_OPTIONs: THERMAL = 0, CAV = 0, FFI = 1, MASS_CON = 0, INTERP = 1',
+                '0.0 3.4 4.2 2.1 -1000.0 933.0 0.0',
+                '1.0 0.0 0.0 -4.0 9.0 3.0 933.0',
+                '2.0 9.0 3.32 3.0 99.3 3.0 0.0021',
+                '3.0 434.0 23.323 93.24323 3.0 0.0 -220.32332',
+                '4.0 323.0 43.323 399.0 -0.3 32.0 959.0',
+                '5.0 4.32 23.5 69.0 32.0 -0.32 3.54993',
+                '6.0 34.0 0.42343 2.34e-08 3.21 5.0 1.0',
+                '7.0 4.3 34.0 990.0 3.0 1.0 2.0',
+                '8.0 3000.0 -232.0 43.0 3.32 0.543 114.0',
+                '9.0 0.0 0.001 3693.3 9.4 0.1 3332.4',
+                '10.0 10.0 10.0 10.0 10.0 10.0 10.0',
+            ]
+        )
+
+    def test_update_content_no_data(self):
+        # Verifies that "contents" attribute can be updated with a simulation results
+        # file populated with data, excluding the simulation results data
+        self.sim_results_01.update_contents(add_sim_data=False)
+
+        self.assertListEqual(
+            self.sim_results_01.contents,
+            [
+                '# Title: Sample simulation Results 1',
+                '',
+                'printDict{',
+                '    @t           [s]',
+                '',
+                '    # Body Position',
+                '    ?xBody       [m]',
+                '    ?yBody       [mm]',
+                '    ?zBody       [m]',
+                '',
+                '    # Speed',
+                '    ?vxBody      [micron/s]',
+                '',
+                '    # Spring Force',
+                '    ?FxSpring    [N]',
+                '    ?FySpring    [N]',
+                '    ?FzSpring    [N]',
+                '',
+                '    # Torque',
+                '    ?MxBody      [N*m]',
+                '}',
+            ]
+        )
