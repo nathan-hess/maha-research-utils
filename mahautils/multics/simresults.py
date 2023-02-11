@@ -169,14 +169,16 @@ class SimResults(MahaMulticsConfigFile):
         super().__init__(path=path)
 
         # Initialize variables
-        self._title: Union[str, None] = None
         self._compile_options: Dict[str, str] = {}
         self._data: Dictionary[str, _SimResultsEntry] = Dictionary(
             custom_except_class=SimResultsKeyError,
             custom_except_msg='Variable "%s" not found in simulation results file'
         )
         self._num_time_steps: Union[int, None] = None
+        self._title: Union[str, None] = None
+        self.trailing_newline = True
 
+        # Select unit converter
         self.unit_converter = MahaMulticsUnitConverter() \
             if unit_converter is None else unit_converter
 
