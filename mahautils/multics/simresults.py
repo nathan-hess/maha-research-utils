@@ -175,14 +175,14 @@ class SimResults(MahaMulticsConfigFile):
             custom_except_class=SimResultsKeyError,
             custom_except_msg='Variable "%s" not found in simulation results file'
         )
+        self._num_time_steps: Union[int, None] = None
 
         self.unit_converter = MahaMulticsUnitConverter() \
             if unit_converter is None else unit_converter
 
         # If path was provided, read file
         if path is not None:
-            self.read(path)
-            self.parse()
+            self.read(path, parse=True)
 
     def __repr__(self) -> str:
         representation = [
@@ -220,12 +220,12 @@ class SimResults(MahaMulticsConfigFile):
     def num_time_steps(self) -> int:
         """The number of time steps in the data array of the simulation
         results file"""
-        if hasattr(self, '_num_time_steps'):
-            return self._num_time_steps
+        if self._num_time_steps is None:
+            raise FileNotParsedError(
+                'Attribute "num_time_steps" is not defined; file has not '
+                'yet been parsed')
 
-        raise FileNotParsedError(
-            'Attribute "num_time_steps" is not defined; file has not '
-            'yet been parsed')
+        return self._num_time_steps
 
     @property
     def title(self) -> Union[str, None]:
