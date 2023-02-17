@@ -13,9 +13,12 @@
 
 ##############################################################################
 
+dash
+dash-bootstrap-components
 matplotlib
 numpy
 pandas
+plotly
 pyxx
 scipy
 vtk
