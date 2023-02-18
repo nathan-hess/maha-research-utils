@@ -115,7 +115,19 @@ autodoc_default_options = {
     'members': True,
     'undoc-members': True,
     'private-members': False,
+    'special-members': '__init__',
     'inherited-members': True,
     'member-order': 'bysource',
     'show-inheritance': True,
 }
+
+
+# -- Sphinx `doctest` extension options --------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/extensions/doctest.html
+
+# Test code in "standard" reStructuredText blocks (i.e., lines that are not
+# inside a `.. doctest::` block but start with `>>>` are tested)
+doctest_test_doctest_blocks = 'default'
+
+# Code executed before running test code snippets for all documentation files
+doctest_global_setup = 'import mahautils'
