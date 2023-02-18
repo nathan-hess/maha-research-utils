@@ -6,6 +6,7 @@ and post-processing tasks.
 """
 
 from .configfile import MahaMulticsConfigFile
+from .fluidprop import FluidPropertyFile
 from .units import (
     MahaMulticsUnit,
     MahaMulticsUnitConverter,

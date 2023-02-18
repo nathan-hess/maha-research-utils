@@ -10,6 +10,11 @@ class FileNotParsedError(MahaMulticsFileFormatError):
     before the file has been read or contents populated"""
 
 
+# FLUID PROPERTY FILES
+class FluidPropertyFileError(MahaMulticsFileFormatError):
+    """General exception for errors with fluid property files"""
+
+
 # SIMULATION RESULTS FILES
 class SimResultsError(MahaMulticsFileFormatError):
     """General exception for errors related to Maha Multics simulation results
