@@ -7,6 +7,7 @@ import pathlib
 from typing import Optional, Union
 
 import numpy as np
+import pyxx
 
 from .configfile import MahaMulticsConfigFile
 from .exceptions import (
@@ -24,6 +25,7 @@ class FluidPropertyFile(MahaMulticsConfigFile):
     so their properties can be viewed.
     """
 
+    # Order and units of columns of data in fluid property files
     __file_format = (
         # Symbol   Description                         Units     Attribute name
         ('rho',    'density',                          'kg/m^3', '_density'      ),  # noqa: E202, E203, E501  # pylint: disable=C0301
@@ -35,8 +37,33 @@ class FluidPropertyFile(MahaMulticsConfigFile):
         ('h',      'specific enthalpy',                'J/kg'  , '_enthalpy'     ),  # noqa: E202, E203, E501  # pylint: disable=C0301
     )
 
-    def __init__(self, path: Optional[Union[str, pathlib.Path]] = None) -> None:
-        super().__init__(path)
+    # Default units of pressure and temperature in fluid property files
+    __pressure_units = 'Pa_a'  # Pascals, absolute pressure
+    __temperature_units = 'K'  # Kelvin
+
+    def __init__(self, path: Optional[Union[str, pathlib.Path]] = None,
+                 unit_converter: Optional[pyxx.units.UnitConverter] = None
+                 ) -> None:
+        """Creates an object that can read and write Maha Multics fluid
+        property files
+
+        Creates an instance of the :py:class:`FluidPropertyFile` class and
+        optionally reads and parses a specified Maha Multics fluid property
+        file.
+
+        Parameters
+        ----------
+        path : str or pathlib.Path, optional
+            The path and filename of the fluid property file to read and
+            parse (default is ``None``).  If set to ``None``, no file is read
+        unit_converter : pyxx.units.UnitConverter, optional
+            A :py:class:`pyxx.units.UnitConverter` instance which will be
+            used to convert units of quantities stored in the simulation
+            results file (default is ``None``).  If set to ``None``, the
+            :py:class:`MahaMulticsUnitConverter` unit converter will be used
+            to perform unit conversions
+        """
+        super().__init__(path=path, unit_converter=unit_converter)
 
         # Initialize variables
         self._num_pressure: Union[int, None] = None
@@ -98,23 +125,28 @@ class FluidPropertyFile(MahaMulticsConfigFile):
                 'Fluid property file is missing required lines listing '
                 'temperature and pressure ranges')
 
-        # Get number of temperature values and temperature step
-        self._num_temperature = int(float(self.contents.pop(0)))
-        self._step_temperature = float(self.contents.pop(0))
+        try:
+            # Get number of temperature values and temperature step
+            self._num_temperature = int(float(self.contents.pop(0)))
+            self._step_temperature = float(self.contents.pop(0))
 
-        # Get number of pressure values and pressure step
-        self._num_pressure = int(float(self.contents.pop(0)))
-        self._step_pressure = float(self.contents.pop(0))
+            # Get number of pressure values and pressure step
+            self._num_pressure = int(float(self.contents.pop(0)))
+            self._step_pressure = float(self.contents.pop(0))
 
-        # Get list of all temperature and pressure values
-        self._temperature_values = np.array(
-            [float(i) for i in self.contents.pop(0).split()],
-            dtype=np.float64,
-        )
-        self._pressure_values = np.array(
-            [float(i) for i in self.contents.pop(0).split()],
-            dtype=np.float64,
-        )
+            # Get list of all temperature and pressure values
+            self._temperature_values = np.array(
+                [float(i) for i in self.contents.pop(0).split()],
+                dtype=np.float64,
+            )
+            self._pressure_values = np.array(
+                [float(i) for i in self.contents.pop(0).split()],
+                dtype=np.float64,
+            )
+        except ValueError as exception:
+            raise FluidPropertyFileError(
+                'Fluid property file is missing required temperature and '
+                'pressure metadata') from exception
 
         # VALIDATE FILE FORMAT
         # Check that file has expected number of lines
@@ -130,7 +162,7 @@ class FluidPropertyFile(MahaMulticsConfigFile):
             - self._step_temperature
         ))
         if max_diff > tolerance:
-            raise ValueError(
+            raise FluidPropertyFileError(
                 'Fluid property file temperature values do not have stated '
                 f'temperature step (maximum difference: {max_diff})')
 
@@ -139,7 +171,7 @@ class FluidPropertyFile(MahaMulticsConfigFile):
             - self._step_pressure
         ))
         if max_diff > tolerance:
-            raise ValueError(
+            raise FluidPropertyFileError(
                 'Fluid property file pressure values do not have stated '
                 f'pressure step (maximum difference: {max_diff})')
 
