@@ -4,4 +4,5 @@ The ``mahautils.utils`` module provides utility functions and other
 general-purpose code applicable to a variety of MahaUtils modules.
 """
 
+from .arrays import to_np_1D_array
 from .capture_printing import CaptureStderr
