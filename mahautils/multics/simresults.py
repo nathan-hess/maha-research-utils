@@ -20,7 +20,6 @@ from .exceptions import (
     SimResultsKeyError,
     SimResultsOverwriteError,
 )
-from .units import MahaMulticsUnitConverter
 
 
 class _SimResultsEntry:
@@ -166,7 +165,7 @@ class SimResults(MahaMulticsConfigFile):
             :py:class:`MahaMulticsUnitConverter` unit converter will be used
             to perform unit conversions
         """
-        super().__init__(path=path)
+        super().__init__(path=path, unit_converter=unit_converter)
 
         # Initialize variables
         self._compile_options: Dict[str, str] = {}
@@ -177,10 +176,6 @@ class SimResults(MahaMulticsConfigFile):
         self._num_time_steps: Union[int, None] = None
         self._title: Union[str, None] = None
         self.trailing_newline = True
-
-        # Select unit converter
-        self.unit_converter = MahaMulticsUnitConverter() \
-            if unit_converter is None else unit_converter
 
         # If path was provided, read file
         if path is not None:
@@ -240,20 +235,6 @@ class SimResults(MahaMulticsConfigFile):
             raise TypeError('Argument "title" must be of type "str"')
 
         self._title = title
-
-    @property
-    def unit_converter(self) -> pyxx.units.UnitConverter:
-        """The unit converter used to convert the units of quantities stored
-        in the simulation results file"""
-        return self._unit_converter
-
-    @unit_converter.setter
-    def unit_converter(self, unit_converter: pyxx.units.UnitConverter) -> None:
-        if not isinstance(unit_converter, pyxx.units.UnitConverter):
-            raise TypeError('Argument "unit_converter" must be of type '
-                            f'{pyxx.units.UnitConverter}')
-
-        self._unit_converter = unit_converter
 
     @property
     def variables(self) -> Tuple[str, ...]:
