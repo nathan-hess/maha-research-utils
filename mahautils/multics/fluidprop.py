@@ -105,6 +105,117 @@ class FluidPropertyFile(MahaMulticsConfigFile):
 
         return self._num_temperature
 
+    def get_pressure_step(self, units: str) -> float:
+        """Returns the increments of pressure over which properties in the
+        file are stored
+
+        Fluid properties are stored in discrete increments of pressure.  This
+        method returns this "step" or increment between pressure values.
+
+        Parameters
+        ----------
+        units : str
+            The units in which the pressure increment should be stored
+
+        Returns
+        -------
+        float
+            The pressure increment over which fluid properties are stored
+        """
+        if self._step_pressure is None:
+            raise FileNotParsedError(
+                'Cannot return pressure step; file has not yet been parsed')
+
+        return float(self.unit_converter.convert(
+            quantity  = self._step_pressure,
+            from_unit = self.__pressure_units,
+            to_unit   = units,
+        ))
+
+    def get_pressure_values(self, units: str) -> np.ndarray:
+        """Returns the (discrete) pressure values over which properties in the
+        file are stored
+
+        Fluid properties are stored for discrete values of pressure.  This
+        method returns all pressure values for which fluid properties are
+        stored.
+
+        Parameters
+        ----------
+        units : str
+            The units in which the pressure values should be stored
+
+        Returns
+        -------
+        np.ndarray
+            The pressure values for which fluid properties are stored
+        """
+        if self._pressure_values is None:
+            raise FileNotParsedError(
+                'Cannot return pressure values; file has not yet been parsed')
+
+        return self.unit_converter.convert(
+            quantity  = self._pressure_values,
+            from_unit = self.__pressure_units,
+            to_unit   = units,
+        )
+
+    def get_temperature_step(self, units: str) -> float:
+        """Returns the increments of temperature over which properties in the
+        file are stored
+
+        Fluid properties are stored in discrete increments of temperature.
+        This method returns this "step" or increment between temperature
+        values.
+
+        Parameters
+        ----------
+        units : str
+            The units in which the temperature increment should be returned
+
+        Returns
+        -------
+        float
+            The temperature increment over which fluid properties are stored
+        """
+        if self._step_temperature is None:
+            raise FileNotParsedError(
+                'Cannot return temperature step; file has not yet been parsed')
+
+        return float(self.unit_converter.convert(
+            quantity  = self._step_temperature,
+            from_unit = self.__temperature_units,
+            to_unit   = units,
+        ))
+
+    def get_temperature_values(self, units: str) -> np.ndarray:
+        """Returns the (discrete) temperature values over which properties in
+        the file are stored
+
+        Fluid properties are stored for discrete values of temperature.  This
+        method returns all temperature values for which fluid properties are
+        stored.
+
+        Parameters
+        ----------
+        units : str
+            The units in which the temperature values should be stored
+
+        Returns
+        -------
+        np.ndarray
+            The temperature values for which fluid properties are stored
+        """
+        if self._temperature_values is None:
+            raise FileNotParsedError(
+                'Cannot return temperature values; file has not yet been parsed')
+
+        return self.unit_converter.convert(
+            quantity  = self._temperature_values,
+            from_unit = self.__temperature_units,
+            to_unit   = units,
+        )
+
     def parse(self) -> None:
         super().parse()
         original_contents = copy.deepcopy(self.contents)

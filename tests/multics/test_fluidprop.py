@@ -22,6 +22,20 @@ class Test_FluidPropertyFile_Properties(Test_FluidPropertyFile):
     def setUp(self) -> None:
         super().setUp()
 
+    def test_get_properties_before_parse(self):
+        # Verifies that an error is thrown if attempting to retrieve file
+        # properties before parsing file
+        test_cases = [
+            ('get_pressure_step', ('Pa_a',)),
+            ('get_pressure_values', ('Pa_a',)),
+            ('get_temperature_step', ('K',)),
+            ('get_temperature_values', ('K',)),
+        ]
+
+        for method, args in test_cases:
+            with self.assertRaises(FileNotParsedError):
+                getattr(self.fluid_prop_blank, method)(*args)
+
     def test_num_pressure(self):
         # Checks functionality of "num_pressure" attribute
         with self.subTest(file_read=True):
@@ -39,6 +53,58 @@ class Test_FluidPropertyFile_Properties(Test_FluidPropertyFile):
         with self.subTest(file_read=False):
             with self.assertRaises(FileNotParsedError):
                 self.fluid_prop_blank.num_temperature
+
+    def test_get_pressure_step(self):
+        # Verifies that pressure step is retrieved correctly
+        with self.subTest(units='Pa_a'):
+            self.assertEqual(self.fluid_prop_01.get_pressure_step('Pa_a'), 1000)
+
+        with self.subTest(units='bar_a'):
+            self.assertEqual(self.fluid_prop_01.get_pressure_step('bar_a'), 0.01)
+
+    def test_get_pressure_values(self):
+        # Verifies that pressure values list is retrieved correctly
+        with self.subTest(units='Pa_a'):
+            self.assertLessEqual(
+                max_array_diff(
+                    self.fluid_prop_01.get_pressure_values('Pa_a'),
+                    [4151.56846, 5151.56846, 6151.56846]
+                ),
+                TEST_FLOAT_TOLERANCE)
+
+        with self.subTest(units='bar_a'):
+            self.assertLessEqual(
+                max_array_diff(
+                    self.fluid_prop_01.get_pressure_values('bar_a'),
+                    [0.0415156846, 0.0515156846, 0.0615156846]
+                ),
+                TEST_FLOAT_TOLERANCE)
+
+    def test_get_temperature_step(self):
+        # Verifies that temperature step is retrieved correctly
+        with self.subTest(units='K'):
+            self.assertEqual(self.fluid_prop_01.get_temperature_step('K'), 1)
+
+        with self.subTest(units='degC_diff'):
+            self.assertEqual(self.fluid_prop_01.get_temperature_step('degC_diff'), 1)
+
+    def test_get_temperature_values(self):
+        # Verifies that temperature values list is retrieved correctly
+        with self.subTest(units='K'):
+            self.assertLessEqual(
+                max_array_diff(
+                    self.fluid_prop_01.get_temperature_values('K'),
+                    [201, 202, 203, 204]
+                ),
+                TEST_FLOAT_TOLERANCE)
+
+        with self.subTest(units='degC'):
+            self.assertLessEqual(
+                max_array_diff(
+                    self.fluid_prop_01.get_temperature_values('degC'),
+                    [-72.15, -71.15, -70.15, -69.15]
+                ),
+                TEST_FLOAT_TOLERANCE)
 
 
 class Test_FluidPropertyFile_Parse(Test_FluidPropertyFile):
