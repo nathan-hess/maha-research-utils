@@ -508,9 +508,7 @@ class SimResults(MahaMulticsConfigFile):
         blank lines).
         """
         # Verify that file contents have been read
-        if len(self.contents) == 0:
-            raise FileNotParsedError(
-                'Unable to parse file. File has not yet been read')
+        super().parse()
 
         original_contents = copy.deepcopy(self.contents)
 

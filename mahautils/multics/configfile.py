@@ -8,7 +8,10 @@ from typing import List, Optional, Tuple, Union
 
 import pyxx
 
-from .exceptions import MahaMulticsFileFormatError
+from .exceptions import (
+    FileNotParsedError,
+    MahaMulticsFileFormatError,
+)
 
 
 class MahaMulticsConfigFile(pyxx.files.TextFile):
@@ -194,3 +197,11 @@ class MahaMulticsConfigFile(pyxx.files.TextFile):
             i += 1
 
         return (section_regex_groups, section_line_comments, i, num_sections)
+
+    def parse(self) -> None:
+        super().parse()
+
+        # Verify that file contents have been read
+        if len(self.contents) == 0:
+            raise FileNotParsedError(
+                'Unable to parse file. File has not yet been read')
