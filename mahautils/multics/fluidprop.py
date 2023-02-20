@@ -48,7 +48,7 @@ class FluidPropertyFile(MahaMulticsConfigFile):
         ('nu',     'kinematic viscosity',              'm^2/s' , '_viscosity_k'  ),  # noqa: E202, E203, E501  # pylint: disable=C0301
         ('cp',     'specific heat capacity',           'J/kg/K', '_specific_heat'),  # noqa: E202, E203, E501  # pylint: disable=C0301
         ('lambda', 'thermal conductivity',             'W/m/K' , '_thermal_cond' ),  # noqa: E202, E203, E501  # pylint: disable=C0301
-        ('alpha',  'volumetric expansion coefficient', '1/K'   , '_expand_coeff' ),  # noqa: E202, E203, E501  # pylint: disable=C0301
+        ('alpha',  'volumetric expansion coefficient', 'K^(-1)', '_expand_coeff' ),  # noqa: E202, E203, E501  # pylint: disable=C0301
         ('h',      'specific enthalpy',                'J/kg'  , '_enthalpy'     ),  # noqa: E202, E203, E501  # pylint: disable=C0301
     )
 
