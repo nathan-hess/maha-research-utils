@@ -4,16 +4,21 @@ property files used by the Maha Multics software.
 
 import copy
 import pathlib
-from typing import Optional, Union
+from typing import List, Optional, Tuple, Union
 
+# Mypy type checking disabled for packages that are not PEP 561-compliant
 import numpy as np
 import pyxx
+import scipy.interpolate  # type: ignore
 
+from mahautils.utils.arrays import to_np_1D_array
 from .configfile import MahaMulticsConfigFile
 from .exceptions import (
     FileNotParsedError,
     FluidPropertyFileError,
 )
+
+NumberOrNumericList = Union[float, np.ndarray, List[float], Tuple[float, ...]]
 
 
 class FluidPropertyFile(MahaMulticsConfigFile):
@@ -23,14 +28,24 @@ class FluidPropertyFile(MahaMulticsConfigFile):
     lubrication behavior.  One method of providing fluid properties is with
     formatted fluid property files.  This class allows such files to be read
     so their properties can be viewed.
+
+    Maha Multics fluid property files store the following properties:
+
+    - Density
+    - Bulk modulus
+    - Kinematic viscosity
+    - Specific heat capacity
+    - Thermal conductivity
+    - Volumetric expansion coefficient
+    - Specific enthalpy
     """
 
     # Order and units of columns of data in fluid property files
     __file_format = (
         # Symbol   Description                         Units     Attribute name
         ('rho',    'density',                          'kg/m^3', '_density'      ),  # noqa: E202, E203, E501  # pylint: disable=C0301
-        ('K',      'bulk modulus',                     'Pa'    , '_bulk_modulus' ),  # noqa: E202, E203, E501  # pylint: disable=C0301
-        ('nu',     'kinematic viscosity',              'm^2/s' , '_viscosity'    ),  # noqa: E202, E203, E501  # pylint: disable=C0301
+        ('k',      'bulk modulus',                     'Pa_a'  , '_bulk_modulus' ),  # noqa: E202, E203, E501  # pylint: disable=C0301
+        ('nu',     'kinematic viscosity',              'm^2/s' , '_viscosity_k'  ),  # noqa: E202, E203, E501  # pylint: disable=C0301
         ('cp',     'specific heat capacity',           'J/kg/K', '_specific_heat'),  # noqa: E202, E203, E501  # pylint: disable=C0301
         ('lambda', 'thermal conductivity',             'W/m/K' , '_thermal_cond' ),  # noqa: E202, E203, E501  # pylint: disable=C0301
         ('alpha',  'volumetric expansion coefficient', '1/K'   , '_expand_coeff' ),  # noqa: E202, E203, E501  # pylint: disable=C0301
@@ -75,10 +90,10 @@ class FluidPropertyFile(MahaMulticsConfigFile):
 
         self._density: Union[np.ndarray, None] = None
         self._bulk_modulus: Union[np.ndarray, None] = None
-        self._viscosity: Union[np.ndarray, None] = None
+        self._viscosity_k: Union[np.ndarray, None] = None
         self._specific_heat: Union[np.ndarray, None] = None
         self._thermal_conduct: Union[np.ndarray, None] = None
-        self._expansion_coeff: Union[np.ndarray, None] = None
+        self._expand_coeff: Union[np.ndarray, None] = None
         self._enthalpy: Union[np.ndarray, None] = None
 
         # If path was provided, read file
@@ -214,6 +229,275 @@ class FluidPropertyFile(MahaMulticsConfigFile):
             quantity  = self._temperature_values,
             from_unit = self.__temperature_units,
             to_unit   = units,
+        )
+
+    def interpolate(self, fluid_property: str, output_units: str,
+                    pressures: NumberOrNumericList, pressure_units: str,
+                    temperatures: NumberOrNumericList, temperature_units: str,
+                    interpolator_type: str, **kwargs,
+                    ) -> np.ndarray:
+        """Interpolates and/or extrapolates fluid property data for given
+        pressures and temperatures
+
+        Retrieves fluid property data from the file for given pressure(s) and
+        temperature(s), interpolating and/or extrapolating if necessary.
+        Interpolation is performed with the :py:mod:`scipy.interpolate` package
+        (https://docs.scipy.org/doc/scipy/reference/interpolate.html).
+
+        Parameters
+        ----------
+        fluid_property : str
+            The name of the fluid property for which data should be returned
+        output_units : str
+            The units with which to return fluid property data
+        pressures : float or np.ndarray or list or tuple
+            The pressure(s) at which fluid properties should be returned.  See
+            the "Notes" section for more information about required format
+        pressure_units : str
+            The units in which the ``pressures`` argument is provided
+        temperatures : float or np.ndarray or list or tuple
+            The temperature(s) at which fluid properties should be returned.
+            See the "Notes" section for more information about required format
+        temperature_units : str
+            The units in which the ``temperatures`` argument is provided
+        interpolator_type : str
+            The SciPy interpolation function to use to perform interpolation.
+            Can be selected from any of the options in the "Notes" section
+        **kwargs
+            Any keyword arguments to be supplied to the SciPy interpolation
+            function specified by ``interpolator_type``.  See the "Notes"
+            section for more information
+
+        Returns
+        -------
+        np.ndarray
+            The interpolated value(s) of the fluid properties given by
+            ``fluid_property`` for the pressures and temperatures given
+            by ``pressures`` and ``temperatures``, respectively.  See the
+            "Notes" section for more information about the output data format
+
+        Notes
+        -----
+        **Valid Fluid Properties**
+
+        The table below summarizes valid inputs for the ``fluid_property``
+        argument.
+
+        .. list-table::
+            :align: left
+            :header-rows: 1
+            :widths: auto
+
+            * - Fluid Property
+              - Valid ``fluid_property`` Inputs
+              - Sample Units
+            * - Density
+              - ``rho``, ``density``
+              - ``kg/m^3``
+            * - Bulk modulus
+              - ``k``, ``bulk modulus``
+              - ``Pa_a``
+            * - Kinematic viscosity
+              - ``nu``, ``kinematic viscosity``
+              - ``m^2/s``
+            * - Specific heat capacity
+              - ``cp``, ``specific heat capacity``
+              - ``J/kg/K``
+            * - Thermal conductivity
+              - ``lambda``, ``thermal conductivity``
+              - ``W/m/K``
+            * - Volumetric expansion coefficient
+              - ``alpha``, ``volumetric expansion coefficient``
+              - ``1/K``
+            * - Specific enthalpy
+              - ``h``, ``specific enthalpy``
+              - ``J/kg``
+            * - Dynamic viscosity
+              - ``mu``, ``dynamic viscosity``, ``absolute viscosity``
+              - ``Pa_a*s``
+
+        **Interpolation Functions**
+
+        The following interpolation functions are available (set the
+        ``interpolator_type`` argument to the given string to use each):
+
+        - ``'interpn'``: The :py:class:`scipy.interpolate.interpn` function
+          for multidimensional interpolation on rectangular grids (`reference
+          <https://docs.scipy.org/doc/scipy/reference/generated
+          /scipy.interpolate.interpn.html>`__)
+        - ``'griddata'``: The :py:class:`scipy.interpolate.griddata`
+          interpolation function for unstructured, multivariate interpolation
+          (`reference <https://docs.scipy.org/doc/scipy/reference/generated
+          /scipy.interpolate.griddata.html>`__)
+        - ``'RBFInterpolator'``: The :py:class:`scipy.interpolate.RBFInterpolator`
+          function for unstructured, multivariate interpolation using a radial
+          basis function (`reference <https://docs.scipy.org/doc/scipy/reference
+          /generated/scipy.interpolate.RBFInterpolator.html>`__)
+
+        Review the SciPy documentation for questions about parameters for the
+        interpolation functions.  *Some of these interpolation functions
+        require users to set* ``kwargs`` *to meet specific mathematical
+        requirements, and errors may be encountered if such requirements are
+        not met.*
+
+        **Formatting of Pressure and Temperature Inputs**
+
+        Interpolation can be performed for one or more pressures and/or
+        temperatures with a single call of the :py:meth:`interpolate` method.
+        The table below specifies the valid format of the ``pressures`` and
+        ``temperatures`` arguments, and the corresponding format of data that
+        would be returned by each selection of inputs.
+
+        .. list-table::
+            :align: left
+            :header-rows: 1
+            :widths: auto
+
+            * - Input: ``pressures``
+              - Input: ``temperatures``
+              - Output Shape
+              - Notes
+            * - ``float``
+              - ``float``
+              - ``(1,)``
+              - Returns the interpolated property at the input pressure and
+                temperature
+            * - ``list`` (length ``n``)
+              - ``float``
+              - ``(n,)``
+              - Returns the interpolated property at every value of
+                ``pressures`` for the specified temperature
+            * - ``float``
+              - ``list`` (length ``n``)
+              - ``(n,)``
+              - Returns the interpolated property at every value of
+                ``temperatures`` for the specified pressure
+            * - ``list`` (length ``n``)
+              - ``list`` (length ``n``)
+              - ``(n,)``
+              - Input lists **must** have equal length.  Component ``i`` of
+                the returned array is interpolated for ``pressures[i]`` and
+                ``temperatures[i]``
+
+        Note that a length-1 list is considered equivalent to ``float`` in the
+        table above.  Also, NumPy arrays or tuples can be used in place of
+        ``list`` above.
+        """
+        fluid_property = str(fluid_property).lower()
+
+        for _, _, _, attr in self.__file_format:
+            if getattr(self, attr) is None:
+                raise FileNotParsedError(
+                    'Unable to interpolate fluid properties; file has not '
+                    'been read/parsed')
+
+        if (self._pressure_values is None) or (self._temperature_values is None):
+            raise FileNotParsedError(
+                'Unable to interpolate fluid properties; file has not '
+                'been read/parsed')
+
+        # Convert pressures and temperatures to NumPy arrays
+        pressures = to_np_1D_array(pressures, dtype=np.float64)
+        temperatures = to_np_1D_array(temperatures, dtype=np.float64)
+
+        num_pressures = len(pressures)
+        num_temperatures = len(temperatures)
+
+        # Check that input array sizes are compatible
+        if (
+            (num_pressures > 1) and (num_temperatures > 1)
+            and (num_pressures != num_temperatures)
+        ):
+            raise ValueError(
+                'Pressure and temperature arrays both have lengths greater '
+                'than 1, but their lengths are not equal')
+
+        # Ensure pressure and temperature arrays have the same size
+        if (num_pressures > 1) and (num_temperatures == 1):
+            temperatures = np.repeat(temperatures, num_pressures)
+
+        elif ((num_temperatures > 1) and (num_pressures == 1)):
+            pressures = np.repeat(pressures, num_temperatures)
+
+        # Retrieve data to interpolate/extrapolate
+        data: np.ndarray = np.array([])
+        data_units = ''
+
+        success = False
+        for symbol, desc, units, attr in self.__file_format:
+            if fluid_property in (symbol, desc):
+                data = getattr(self, attr)
+                data_units = units
+
+                success = True
+                break
+
+        if not success:
+            if fluid_property in ('mu', 'absolute viscosity',
+                                  'dynamic viscosity'):
+                data = np.multiply(self._density, self._viscosity_k)  # type: ignore
+                data_units \
+                    = f'{self.__file_format[0][2]}*{self.__file_format[2][2]}'
+
+                success = True
+
+        if not success:
+            raise ValueError(f'Invalid fluid property "{fluid_property}"')
+
+        # Perform interpolation/extrapolation
+        pressures = self.unit_converter.convert(
+            quantity  = pressures,
+            from_unit = pressure_units,
+            to_unit   = self.__pressure_units
+        )
+        temperatures = self.unit_converter.convert(
+            quantity  = temperatures,
+            from_unit = temperature_units,
+            to_unit   = self.__temperature_units
+        )
+
+        if interpolator_type == 'interpn':
+            output_data = scipy.interpolate.interpn(
+                points = (self._temperature_values, self._pressure_values),
+                values = data,
+                xi     = np.transpose(np.array([temperatures, pressures])),
+                **kwargs
+            )
+
+        elif interpolator_type in ('griddata', 'RBFInterpolator'):
+            mesh_p, mesh_t = np.meshgrid(self._pressure_values,
+                                         self._temperature_values)
+            mesh_points = np.transpose(np.array([mesh_t.flatten(),
+                                                 mesh_p.flatten()]))
+            data_flat = data.flatten()
+
+            query_points = np.transpose(np.array([temperatures, pressures]))
+
+            if interpolator_type == 'griddata':
+                output_data = scipy.interpolate.griddata(
+                    points = mesh_points,
+                    values = data_flat,
+                    xi     = query_points,
+                    **kwargs
+                )
+
+            else:
+                interpolator = scipy.interpolate.RBFInterpolator(
+                    y = mesh_points,
+                    d = data_flat,
+                    **kwargs
+                )
+
+                output_data = interpolator(query_points)
+
+        else:
+            raise ValueError(
+                f'Interpolator "{interpolator_type}" is not supported')
+
+        return self.unit_converter.convert(
+            quantity  = output_data,
+            from_unit = data_units,
+            to_unit   = output_units,
         )
 
     def parse(self) -> None:

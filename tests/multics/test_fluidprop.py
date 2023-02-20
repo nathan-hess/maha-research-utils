@@ -130,7 +130,7 @@ class Test_FluidPropertyFile_Parse(Test_FluidPropertyFile):
         # when parsing
         self.assertLessEqual(
             max_array_diff(
-                self.fluid_prop_01._viscosity,
+                self.fluid_prop_01._viscosity_k,
                 [[4.5,                 2,      203                ],
                  [5454.3,              322,    0.16381575692650774],
                  [0.39334265876273344, 0.9544, 0.0278             ],
