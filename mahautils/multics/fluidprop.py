@@ -333,6 +333,12 @@ class FluidPropertyFile(MahaMulticsConfigFile):
           function for unstructured, multivariate interpolation using a radial
           basis function (`reference <https://docs.scipy.org/doc/scipy/reference
           /generated/scipy.interpolate.RBFInterpolator.html>`__)
+        - ``'CloughTocher2DInterpolator'``: The
+          :py:class:`scipy.interpolate.CloughTocher2DInterpolator`
+          function for unstructured, multivariate interpolation using a
+          piecewise cubic, :math:`C^1` smooth, curvature-minimizing interpolant
+          (`reference <https://docs.scipy.org/doc/scipy/reference/generated
+          /scipy.interpolate.CloughTocher2DInterpolator.html>`__)
 
         Review the SciPy documentation for questions about parameters for the
         interpolation functions.  *Some of these interpolation functions
@@ -464,7 +470,8 @@ class FluidPropertyFile(MahaMulticsConfigFile):
                 **kwargs
             )
 
-        elif interpolator_type in ('griddata', 'RBFInterpolator'):
+        elif interpolator_type in ('griddata', 'RBFInterpolator',
+                                   'CloughTocher2DInterpolator'):
             mesh_p, mesh_t = np.meshgrid(self._pressure_values,
                                          self._temperature_values)
             mesh_points = np.transpose(np.array([mesh_t.flatten(),
@@ -481,10 +488,19 @@ class FluidPropertyFile(MahaMulticsConfigFile):
                     **kwargs
                 )
 
-            else:
+            elif interpolator_type == 'RBFInterpolator':
                 interpolator = scipy.interpolate.RBFInterpolator(
                     y = mesh_points,
                     d = data_flat,
+                    **kwargs
+                )
+
+                output_data = interpolator(query_points)
+
+            else:
+                interpolator = scipy.interpolate.CloughTocher2DInterpolator(
+                    points = mesh_points,
+                    values = data_flat,
                     **kwargs
                 )
 
