@@ -43,8 +43,14 @@ Quick Links
 
         .. figure:: ./_static/icon_download.svg
             :align: center
+            :class: only-light
             :width: 200px
-        
+
+        .. figure:: ./_static/icon_download_dark_theme.svg
+            :align: center
+            :class: only-dark
+            :width: 200px
+
         Instructions for installing and running |PackageNameStylized|
 
     .. grid-item-card:: Examples
@@ -53,6 +59,12 @@ Quick Links
 
         .. figure:: ./_static/icon_examples.svg
             :align: center
+            :class: only-light
+            :width: 200px
+
+        .. figure:: ./_static/icon_examples_dark_theme.svg
+            :align: center
+            :class: only-dark
             :width: 200px
 
         Code samples illustrating how to use |PackageNameStylized|
@@ -63,6 +75,12 @@ Quick Links
 
         .. figure:: ./_static/icon_python_shell.svg
             :align: center
+            :class: only-light
+            :width: 200px
+
+        .. figure:: ./_static/icon_python_shell_dark_theme.svg
+            :align: center
+            :class: only-dark
             :width: 200px
 
         Detailed API reference documentation
