@@ -2,13 +2,13 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="388.03271"
+   width="700"
    height="387.98981"
-   viewBox="0 0 102.6672 102.65584"
+   viewBox="0 0 185.20871 102.65584"
    version="1.1"
    id="svg5"
    inkscape:version="1.2.1 (9c6d41e, 2022-07-14)"
-   sodipodi:docname="logo.svg"
+   sodipodi:docname="logo_header.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -25,9 +25,9 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="true"
-     inkscape:zoom="1.4142136"
-     inkscape:cx="189.85817"
-     inkscape:cy="316.07672"
+     inkscape:zoom="0.46016849"
+     inkscape:cx="72.799422"
+     inkscape:cy="404.19978"
      inkscape:window-width="1600"
      inkscape:window-height="828"
      inkscape:window-x="0"
@@ -49,7 +49,7 @@
        id="path-effect3300"
        is_visible="true"
        lpeversion="1"
-       pattern="M0,0 L1,0"
+       pattern="M 0,0 H 1"
        copytype="repeated"
        prop_scale="1"
        scale_y_rel="false"
@@ -65,7 +65,7 @@
        id="path-effect3263"
        is_visible="true"
        lpeversion="1"
-       pattern="M0,0 L1,0"
+       pattern="M 0,0 H 1"
        copytype="repeated"
        prop_scale="1"
        scale_y_rel="false"
@@ -97,7 +97,7 @@
        id="path-effect3209"
        is_visible="true"
        lpeversion="1"
-       pattern="M0,0 L1,0"
+       pattern="M 0,0 H 1"
        copytype="single_stretched"
        prop_scale="1"
        scale_y_rel="false"
@@ -118,7 +118,7 @@
        inkscape:vp_x="0 : 39.155714 : 1"
        inkscape:vp_y="0 : 1000 : 0"
        inkscape:vp_z="127.00026 : 39.155714 : 1"
-       inkscape:persp3d-origin="63.50013 : 17.989006 : 1"
+       inkscape:persp3d-origin="63.500129 : 17.989006 : 1"
        id="perspective1927" />
     <pattern
        patternUnits="userSpaceOnUse"
@@ -153,18 +153,18 @@
      id="rect1414"
      width="83.646851"
      height="18.51606"
-     x="9.505846"
+     x="50.78093"
      y="69.484497" />
   <rect
      style="fill:#808080;stroke:#000000;stroke-width:1.04711;stroke-dasharray:none"
      id="rect1411"
      width="88.006859"
      height="20.206264"
-     x="9.9854527"
-     y="44.936192"
+     x="53.398865"
+     y="58.39323"
      transform="matrix(0.95074495,-0.30997425,0,1,0,0)" />
   <path
      id="text874"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:72.6433px;font-family:cabin;-inkscape-font-specification:cabin;fill:#15b7ef;fill-opacity:1;stroke:#000000;stroke-width:1.8;stroke-dasharray:none;stroke-opacity:1"
-     d="m 27.732422,27.806254 c -2.731607,16.880043 -5.483255,33.778785 -8.222656,50.666016 4.95052,0 9.901041,0 14.851562,0 1.386283,-9.202343 2.77069,-18.40497 4.15625,-27.607422 4.287576,6.524209 8.576642,13.047441 12.863281,19.572265 4.257952,-6.533537 8.517012,-13.066351 12.775391,-19.599609 1.38302,9.211557 2.764372,18.423366 4.148438,27.634766 4.952473,0 9.904947,0 14.857421,0 -2.773783,-17.03717 -5.539997,-34.075582 -8.310547,-51.113282 -3.776692,0 -7.553385,0 -11.330078,0 -4.053257,6.48258 -8.102561,12.967638 -12.154296,19.451172 -4.07384,-6.483961 -8.15072,-12.966021 -12.222657,-19.451172 -3.780599,0 -7.561198,0 -11.341797,0 -0.02344,0.149089 -0.04687,0.298177 -0.07031,0.447266 z" />
+     d="m 69.007505,27.806254 c -2.731607,16.880043 -5.483255,33.778785 -8.222656,50.666016 4.95052,0 9.901041,0 14.851562,0 1.386283,-9.202343 2.77069,-18.40497 4.15625,-27.607422 4.287576,6.524209 8.576642,13.047441 12.863281,19.572265 4.257952,-6.533537 8.517008,-13.066351 12.775388,-19.599609 1.38302,9.211557 2.76438,18.423366 4.14844,27.634766 4.95247,0 9.90495,0 14.85742,0 -2.77378,-17.03717 -5.53999,-34.075582 -8.31054,-51.113282 -3.7767,0 -7.55339,0 -11.33008,0 -4.05326,6.48258 -8.102564,12.967638 -12.154299,19.451172 -4.07384,-6.483961 -8.15072,-12.966021 -12.222657,-19.451172 -3.780599,0 -7.561198,0 -11.341797,0 -0.02344,0.149089 -0.04687,0.298177 -0.07031,0.447266 z" />
 </svg>
