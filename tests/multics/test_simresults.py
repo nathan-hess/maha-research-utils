@@ -1,12 +1,8 @@
 import unittest
 
 import numpy as np
-import pyxx
 
-from mahautils.multics import (
-    SimResults,
-    MahaMulticsUnitConverter,
-)
+from mahautils.multics import SimResults
 from mahautils.multics.exceptions import (
     FileNotParsedError,
     InvalidSimResultsFormatError,
@@ -287,24 +283,6 @@ class Test_SimResults_ReadProperties(Test_SimResults):
         with self.subTest(valid=False):
             with self.assertRaises(TypeError):
                 self.sim_results_01.title = 75992
-
-    def test_unit_converter(self):
-        # Verifies that a unit converter can be stored and retrieved
-        unit_converter = pyxx.units.UnitConverterSI()
-
-        with self.subTest(comment='default'):
-            self.assertIsInstance(self.sim_results_blank.unit_converter, MahaMulticsUnitConverter)
-            self.assertIsNot(self.sim_results_blank.unit_converter, unit_converter)
-
-        with self.subTest(comment='custom'):
-            self.sim_results_blank.unit_converter = unit_converter
-            self.assertIs(self.sim_results_blank.unit_converter, unit_converter)
-
-            self.assertIs(SimResults(unit_converter=unit_converter).unit_converter, unit_converter)
-
-        with self.subTest(comment='invalid'):
-            with self.assertRaises(TypeError):
-                SimResults(unit_converter=print)
 
     def test_variables(self):
         # Verifies that "variables" attribute functions correctly

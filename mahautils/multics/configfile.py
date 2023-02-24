@@ -8,7 +8,11 @@ from typing import List, Optional, Tuple, Union
 
 import pyxx
 
-from .exceptions import MahaMulticsFileFormatError
+from .exceptions import (
+    FileNotParsedError,
+    MahaMulticsFileFormatError,
+)
+from .units import MahaMulticsUnitConverter
 
 
 class MahaMulticsConfigFile(pyxx.files.TextFile):
@@ -22,7 +26,8 @@ class MahaMulticsConfigFile(pyxx.files.TextFile):
     files.
     """
 
-    def __init__(self, path: Optional[Union[str, pathlib.Path]] = None
+    def __init__(self, path: Optional[Union[str, pathlib.Path]] = None,
+                 unit_converter: Optional[pyxx.units.UnitConverter] = None
                  ) -> None:
         """Creates an object to represent Maha Multics configuration files
 
@@ -34,8 +39,31 @@ class MahaMulticsConfigFile(pyxx.files.TextFile):
         ----------
         path : str or pathlib.Path, optional
             Location of the text file in the file system  (default is ``None``)
+        unit_converter : pyxx.units.UnitConverter, optional
+            A :py:class:`pyxx.units.UnitConverter` instance which will be
+            used to convert units of quantities stored in the configuration file
+            (default is ``None``, which uses the
+            :py:class:`MahaMulticsUnitConverter` unit converter to perform unit
+            conversions)
         """
         super().__init__(path=path, comment_chars='#')
+
+        self.unit_converter = MahaMulticsUnitConverter() \
+            if unit_converter is None else unit_converter
+
+    @property
+    def unit_converter(self) -> pyxx.units.UnitConverter:
+        """The unit converter used to convert the units of quantities stored
+        in the file"""
+        return self._unit_converter
+
+    @unit_converter.setter
+    def unit_converter(self, unit_converter: pyxx.units.UnitConverter) -> None:
+        if not isinstance(unit_converter, pyxx.units.UnitConverter):
+            raise TypeError('Argument "unit_converter" must be of type '
+                            f'{pyxx.units.UnitConverter}')
+
+        self._unit_converter = unit_converter
 
     def _extract_full_line_comment_text(self, line: str) -> str:
         """Strips whitespace and leading comment characters from a string
@@ -194,3 +222,11 @@ class MahaMulticsConfigFile(pyxx.files.TextFile):
             i += 1
 
         return (section_regex_groups, section_line_comments, i, num_sections)
+
+    def parse(self) -> None:
+        super().parse()
+
+        # Verify that file contents have been read
+        if len(self.contents) == 0:
+            raise FileNotParsedError(
+                'Unable to parse file. File has not yet been read')

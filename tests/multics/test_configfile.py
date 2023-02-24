@@ -1,14 +1,40 @@
 import unittest
 
-from mahautils.multics import MahaMulticsConfigFile
+import pyxx
+
+from mahautils.multics import MahaMulticsConfigFile, MahaMulticsUnitConverter
 from mahautils.multics.exceptions import MahaMulticsFileFormatError
+
 
 class Test_ConfigFile(unittest.TestCase):
     def setUp(self) -> None:
-        pass
+        self.config_file_blank = MahaMulticsConfigFile()
 
     def tearDown(self) -> None:
         pass
+
+
+class Test_ConfigFile_Properties(Test_ConfigFile):
+    def test_unit_converter(self):
+        # Verifies that a unit converter can be stored and retrieved
+        unit_converter = pyxx.units.UnitConverterSI()
+
+        with self.subTest(comment='default'):
+            self.assertIsInstance(self.config_file_blank.unit_converter, MahaMulticsUnitConverter)
+            self.assertIsNot(self.config_file_blank.unit_converter, unit_converter)
+
+        with self.subTest(comment='custom'):
+            self.config_file_blank.unit_converter = unit_converter
+            self.assertIs(self.config_file_blank.unit_converter, unit_converter)
+
+            self.assertIs(
+                MahaMulticsConfigFile(unit_converter=unit_converter).unit_converter,
+                unit_converter
+            )
+
+        with self.subTest(comment='invalid'):
+            with self.assertRaises(TypeError):
+                MahaMulticsConfigFile(unit_converter=print)
 
 
 class Test_ConfigFile_ExtractSection(Test_ConfigFile):
