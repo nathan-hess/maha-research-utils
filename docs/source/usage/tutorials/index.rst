@@ -1,10 +1,10 @@
 .. include:: ../../constants.rst
 
 
-.. _section-examples:
+.. _section-tutorials:
 
-Examples
-========
+Tutorials
+=========
 
 This section contains example code with commentary to illustrate how to use
 the objects in the |PackageNameStylized| package to perform various tasks.
