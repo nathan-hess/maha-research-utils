@@ -859,7 +859,7 @@ class VTKFile(pyxx.files.BinaryFile):
         """
         # SETUP --------------------------------------------------------------
         # Set "path" attribute, verify file exists, and store file hashes
-        #   Mypy type annotation added because mmediately after calling
+        #   Mypy type annotation added because immediately after calling
         #   `set_read_metadata()`, the "path" attribute cannot be `None`
         #   or else an error would have been thrown
         self.set_read_metadata(path)
