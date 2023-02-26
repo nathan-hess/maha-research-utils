@@ -677,7 +677,8 @@ class SimResults(MahaMulticsConfigFile):
         simulation results file.  It performs a relatively basic search,
         checking to see if a given term ``keyword`` is in any of the specified
         search fields.  The exact ``keyword`` must be found to register a
-        match; similar terms are not considered a match.
+        match; similar terms are not considered a match.  To match any string,
+        set ``keyword`` to ``''``.
 
         Parameters
         ----------

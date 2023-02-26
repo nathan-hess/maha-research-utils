@@ -25,6 +25,8 @@ in the documentation.
     pages do not discuss the optimal way to store data, but rather how data
     are currently stored in files used by the Maha Multics software.
 
+|
+
 .. toctree::
     :caption: File Format Specifications
     :maxdepth: 1
