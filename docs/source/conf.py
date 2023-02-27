@@ -36,6 +36,7 @@ extensions = [
     'sphinxcontrib.spelling',
     'sphinx_copybutton',
     'sphinx_design',
+    'matplotlib.sphinxext.plot_directive',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -130,3 +131,11 @@ doctest_test_doctest_blocks = 'default'
 
 # Code executed before running test code snippets for all documentation files
 doctest_global_setup = 'import mahautils'
+
+
+# -- Matplotlib plotting extension options -----------------------------------
+# https://matplotlib.org/stable/api/sphinxext_plot_directive_api.html
+
+# Source and download links to show with plots
+plot_html_show_source_link = False
+plot_html_show_formats = False
