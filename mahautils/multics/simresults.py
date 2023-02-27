@@ -30,6 +30,10 @@ class _SimResultsEntry:
     simulation results files.
     """
 
+    # Whether to include raw data when converting `_SimResultsEntry` objects
+    # to a printable string representation
+    show_data = True
+
     def __init__(self,
                  required: bool,
                  units: str,
@@ -55,12 +59,11 @@ class _SimResultsEntry:
         if self.description is not None:
             representation += f' {self.description}'
 
-            if self.data is not None:
+            if (self.show_data) and (self.data is not None):
                 representation += ','
 
-        if self.data is not None:
-            array_str = np.array2string(self.data, precision=2,
-                                        max_line_width=1000000)
+        if (self.show_data) and (self.data is not None):
+            array_str = np.array2string(self.data, precision=2)
             representation += f' {array_str}'
 
         return representation
@@ -201,6 +204,7 @@ class SimResults(MahaMulticsConfigFile):
         return '\n'.join(representation)
 
     def __str__(self) -> str:
+        _SimResultsEntry.show_data = True
         return self.__get_printable_vars_str(self.variables)
 
     @property
@@ -668,8 +672,9 @@ class SimResults(MahaMulticsConfigFile):
                    str, Tuple[str, ...], List[str]
                ] = ('keys', 'description', 'group', 'units'),
                case_sensitive: bool = False,
+               show_data: bool = False,
                print_results: bool = True,
-               return_results: bool = False
+               return_results: bool = False,
                ) -> Union[Tuple[str, ...], None]:
         """Searches the simulation results file for a given search term
 
@@ -690,6 +695,10 @@ class SimResults(MahaMulticsConfigFile):
             attributes, ``('keys', 'description', 'group', 'units')``)
         case_sensitive : bool, optional
             Whether to perform a case-sensitive search (default is ``False``)
+        show_data : bool, optional
+            Whether to print simulation results data, if available, for each
+            variable (default is ``False``).  Setting this to ``True`` can
+            considerably increase output verbosity
         print_results : bool, optional
             Whether to display results to the terminal (default is ``True``)
         return_results : bool, optional
@@ -713,6 +722,8 @@ class SimResults(MahaMulticsConfigFile):
                           - set(('keys', 'description', 'group', 'units')))
         if len(invalid_fields) > 0:
             raise ValueError(f'Invalid search fields: {invalid_fields}')
+
+        _SimResultsEntry.show_data = show_data
 
         matches = []
         for var in self.variables:

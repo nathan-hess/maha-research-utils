@@ -22,6 +22,10 @@ from tests import (
 class Test_SimResultsEntry(unittest.TestCase):
     def setUp(self) -> None:
         self.entry = _SimResultsEntry(True, '')
+        self.original_show_data = _SimResultsEntry.show_data
+
+    def tearDown(self) -> None:
+        _SimResultsEntry.show_data = self.original_show_data
 
     def test_repr_str(self):
         # Verifies that string representation is constructed correctly
@@ -58,6 +62,24 @@ class Test_SimResultsEntry(unittest.TestCase):
 
                 with self.subTest(required=True, description=False, data=False):
                     self.assertEqual(repr_str(), '[Required] [Units: m/s]')
+
+    def test_repr_str_show_data(self):
+        # Verifies that showing data can be enabled or disabled
+        for method in ('__repr__', '__str__'):
+            repr_str = getattr(self.entry, method)
+
+            self.entry.units = 'm/s'
+            self.entry._data = np.array([0, 2, 9])
+            self.entry.description = 'My description'
+
+            with self.subTest(method=method):
+                with self.subTest(show_data=False):
+                    _SimResultsEntry.show_data = False
+                    self.assertEqual(repr_str(), '[Required] [Units: m/s] My description')
+
+                with self.subTest(show_data=True):
+                    _SimResultsEntry.show_data = True
+                    self.assertEqual(repr_str(), '[Required] [Units: m/s] My description, [0 2 9]')
 
     def test_data(self):
         # Verifies that "data" attribute correctly converts inputs
@@ -147,6 +169,10 @@ class Test_SimResults(unittest.TestCase):
         self.file02 = SAMPLE_FILES_DIR / 'simulation_results_02.txt'
         self.sim_results_02 = SimResults(self.file02)
 
+        self.original_show_data = _SimResultsEntry.show_data
+
+    def tearDown(self) -> None:
+        _SimResultsEntry.show_data = self.original_show_data
 
 class Test_SimResults_General(Test_SimResults):
     def setUp(self) -> None:
@@ -661,7 +687,7 @@ class Test_SimResults_Search(Test_SimResults):
 
     def test_search_print(self):
         # Verifies that search results are printed correctly
-        self.sim_results_01.clear_data()
+        _SimResultsEntry.show_data = False
 
         with CapturePrint() as terminal_stdout:
             self.assertIsNone(self.sim_results_01.search(
