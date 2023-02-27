@@ -27,6 +27,7 @@ general-purpose research tasks as well as simplify interaction with the
 
     usage/tutorials/index
     usage/file_formats/index
+    usage/reference/index
 
 
 .. toctree::

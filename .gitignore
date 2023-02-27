@@ -130,6 +130,7 @@ dmypy.json
 
 # Auto-generated documentation files
 /docs/source/api_reference/api/
+/docs/source/usage/reference/unitconverter_units.rst
 
 # Development and testing files
 /scratch/

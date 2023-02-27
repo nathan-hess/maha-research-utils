@@ -1,0 +1,23 @@
+.. include:: ../../constants.rst
+
+
+.. _section-unitconverter_units:
+
+Unit Converter Default Units
+============================
+
+The units on this page are defined by default in
+:py:class:`mahautils.multics.MahaMulticsUnitConverter` instances.  Unless a
+different unit converter is explicitly specified, these are the units
+available when using classes in the :py:mod:`mahautils.multics` module.
+
+.. list-table::
+    :header-rows: 1
+    :widths: auto
+
+    * - Key
+      - Name
+      - Description
+      - Tags
+      - Aliases
+[[INSERT_UNIT_TABLE]]

@@ -11,6 +11,9 @@ import sys
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[2]))
 import mahautils
 
+sys.path.append(str(pathlib.Path(__file__).resolve().parent / '_scripts'))
+import create_unit_table
+
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -139,3 +142,10 @@ doctest_global_setup = 'import mahautils'
 # Source and download links to show with plots
 plot_html_show_source_link = False
 plot_html_show_formats = False
+
+
+# -- Custom scripts ----------------------------------------------------------
+# Scripts that run pre-processing tasks before building documentation
+
+# Generate table of default units in `MahaMulticsUnitConverter` instances
+create_unit_table.main()
