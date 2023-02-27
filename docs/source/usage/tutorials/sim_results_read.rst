@@ -1,5 +1,10 @@
 .. include:: ../../constants.rst
 
+.. spelling:word-list::
+
+    aren
+    ve
+
 
 Reading Simulation Results Files
 ================================
