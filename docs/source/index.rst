@@ -18,9 +18,16 @@ general-purpose research tasks as well as simplify interaction with the
     :hidden:
 
     getting_started/installation
-    getting_started/examples/index
-    getting_started/file_formats/index
     getting_started/about
+
+
+.. toctree::
+    :caption: Usage
+    :hidden:
+
+    usage/tutorials/index
+    usage/file_formats/index
+    usage/reference/index
 
 
 .. toctree::
@@ -53,8 +60,8 @@ Quick Links
 
         Instructions for installing and running |PackageNameStylized|
 
-    .. grid-item-card:: Examples
-        :link: section-examples
+    .. grid-item-card:: Tutorials
+        :link: section-tutorials
         :link-type: ref
 
         .. figure:: ./_static/icon_examples.svg
@@ -84,3 +91,10 @@ Quick Links
             :width: 200px
 
         Detailed API reference documentation
+
+
+Source Code
+-----------
+
+|PackageNameStylized| is an open source project.  All source code is available
+through `GitHub <https://github.com/nathan-hess/maha-research-utils>`__.
