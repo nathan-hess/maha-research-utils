@@ -18,7 +18,6 @@ general-purpose research tasks as well as simplify interaction with the
     :hidden:
 
     getting_started/installation
-    getting_started/about
 
 
 .. toctree::
