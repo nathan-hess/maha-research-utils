@@ -13,7 +13,6 @@ import pyxx
 from mahautils.dictionaries.dictionary import Dictionary
 from .configfile import MahaMulticsConfigFile
 from .exceptions import (
-    FileNotParsedError,
     InvalidSimResultsFormatError,
     SimResultsError,
     SimResultsDataNotFoundError,
@@ -176,7 +175,7 @@ class SimResults(MahaMulticsConfigFile):
             custom_except_class=SimResultsKeyError,
             custom_except_msg='Variable "%s" not found in simulation results file'
         )
-        self._num_time_steps: Union[int, None] = None
+        self._num_time_steps: int = 0
         self._title: Union[str, None] = None
         self.trailing_newline = True
 
@@ -190,10 +189,7 @@ class SimResults(MahaMulticsConfigFile):
             f'Title:      {self.title}',
         ]
 
-        try:
-            representation.append(f'Time steps: {self.num_time_steps}')
-        except FileNotParsedError:
-            pass
+        representation.append(f'Time steps: {self.num_time_steps}')
 
         representation.extend([
             f'Hashes:     {self.hashes}',
@@ -221,11 +217,6 @@ class SimResults(MahaMulticsConfigFile):
     def num_time_steps(self) -> int:
         """The number of time steps in the data array of the simulation
         results file"""
-        if self._num_time_steps is None:
-            raise FileNotParsedError(
-                'Attribute "num_time_steps" is not defined; file has not '
-                'yet been parsed')
-
         return self._num_time_steps
 
     @property
@@ -320,10 +311,12 @@ class SimResults(MahaMulticsConfigFile):
         self._data[key] = _SimResultsEntry(
             required    = required,
             units       = units,
-            data        = data,
+            data        = None,
             description = description,
             group       = group
         )
+
+        self.set_data(key, data, units)
 
     def clear_data(self, regex_pattern: str = '.+') -> List[str]:
         """Removes simulation results data for any variable(s) with names
@@ -347,6 +340,10 @@ class SimResults(MahaMulticsConfigFile):
             if re.match(regex_pattern, var):
                 cleared_vars.append(var)
                 self._data[var].data = None
+
+        keys_without_data = [x.data is None for x in self._data.values()]
+        if all(keys_without_data):
+            self._num_time_steps = 0
 
         return cleared_vars
 
@@ -785,14 +782,25 @@ class SimResults(MahaMulticsConfigFile):
         units : str
             The units in which the simulation results data should be stored
         """
-        self._data[key].data = data
-
         if data is not None:
+            # Store units
             if units is None:
                 raise TypeError('If argument "data" is not `None`, argument '
                                 '"units" must be provided')
 
             self._data[key].units = units
+
+            # Validate data shape
+            if self.num_time_steps == 0:
+                self._num_time_steps = len(data)
+
+            elif (self.num_time_steps > 0) and (len(data) != self.num_time_steps):
+                raise ValueError(
+                    f'Simulation results file has data for {self.num_time_steps} '
+                    f'time steps. Cannot add new data series with {len(data)} '
+                    'time steps')
+
+        self._data[key].data = data
 
     def set_description(self, key: str, description: Union[str, None]) -> None:
         """Adds or modifies the description of a variable in the simulation

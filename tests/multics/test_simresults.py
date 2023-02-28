@@ -1,3 +1,4 @@
+import copy
 import unittest
 
 import numpy as np
@@ -211,6 +212,7 @@ class Test_SimResults_General(Test_SimResults):
                 self.sim_results_blank.__repr__(),
                 ('<class \'mahautils.multics.simresults.SimResults\'>\n'
                  'Title:      None\n'
+                 'Time steps: 0\n'
                  'Hashes:     {}\n'
                  '\n'
                  '[No simulation results variables found]')
@@ -289,8 +291,7 @@ class Test_SimResults_ReadProperties(Test_SimResults):
             self.assertEqual(self.sim_results_02.num_time_steps, 0)
 
         with self.subTest(file_read=False):
-            with self.assertRaises(FileNotParsedError):
-                SimResults().num_time_steps
+            self.assertEqual(SimResults().num_time_steps, 0)
 
     def test_title(self):
         # Verifies that title is read correctly from simulation results file
@@ -383,6 +384,20 @@ class Test_SimResults_GetSetAttributes(Test_SimResults):
         with self.subTest(check='cleared_vars'):
             self.assertListEqual(cleared_vars, ['xBody', 'yBody', 'zBody'])
 
+    def test_clear_data_num_time_steps(self):
+        # Verifies that number of time steps is updated correctly when clearing data
+        sim_results = copy.deepcopy(self.sim_results_01)
+        with self.subTest(clear_all=True):
+            self.assertEqual(sim_results.num_time_steps, 11)
+            _ = sim_results.clear_data()
+            self.assertEqual(sim_results.num_time_steps, 0)
+
+        sim_results = copy.deepcopy(self.sim_results_01)
+        with self.subTest(clear_all=False):
+            self.assertEqual(sim_results.num_time_steps, 11)
+            _ = sim_results.clear_data('.Body')
+            self.assertEqual(sim_results.num_time_steps, 11)
+
     def test_get_set_data(self):
         # Verifies that data can be read and set correctly from the simulation results
         # file (without unit conversions)
@@ -416,15 +431,25 @@ class Test_SimResults_GetSetAttributes(Test_SimResults):
                 with self.assertRaises(TypeError):
                     self.sim_results_01.set_data('FySpring', [0, -1.2, 3.4])
 
-                self.sim_results_01.set_data('FySpring', [0, -1.2, 3.4], 'N')
+                self.sim_results_01.set_data(
+                    'FySpring', [0, -1.2, 3.4, 5, -6, 7, 8, 9, 10, 11, 12], 'N')
 
                 self.assertLessEqual(
                     max_array_diff(
                         self.sim_results_01.get_data('FySpring', 'N'),
-                        [0, -1.2, 3.4]
+                        [0, -1.2, 3.4, 5, -6, 7, 8, 9, 10, 11, 12]
                     ),
                     TEST_FLOAT_TOLERANCE
                 )
+
+                with self.assertRaises(ValueError):
+                    self.sim_results_01.set_data('FySpring', [0, -1.2, 3.4], 'N')
+
+    def test_set_data_num_time_steps(self):
+        # Verifies that number of time steps is updated correctly when setting data
+        self.assertEqual(self.sim_results_02.num_time_steps, 0)
+        self.sim_results_02.set_data('yBody', [0, 1, 2, 3], 'm')
+        self.assertEqual(self.sim_results_02.num_time_steps, 4)
 
     def test_get_data_unit_conversion(self):
         # Verifies that data can be read and set correctly from the simulation results
