@@ -609,8 +609,11 @@ class SimResults(MahaMulticsConfigFile):
 
                 # Parse simulation data
                 try:
+                    # Replace "nan(ind)" with "nan" since MSVC compiler outputs
+                    # NaN as "nan(ind)" but this can't be converted by NumPy
                     data_array = np.transpose(np.array(
-                        [x.split() for x in self.contents[i+1:]],
+                        [x.replace('nan(ind)', 'nan').split()
+                         for x in self.contents[i+1:]],
                         dtype=np.float64,
                     ))
 
