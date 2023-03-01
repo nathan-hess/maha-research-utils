@@ -3,23 +3,63 @@ results.
 """
 
 import dash
+from dash import Input, Output, State
 import dash_bootstrap_components as dbc
 
 from .header import _app_header
+from .info import _info_box
+from .plotting import _graph, _plot_controls
 
 app = dash.Dash(
     external_stylesheets=[
         dbc.themes.BOOTSTRAP,
         dbc.icons.BOOTSTRAP,
+        dbc.icons.FONT_AWESOME,
     ]
 )
-app.title = 'Simulation Results Viewer'
+app.title = 'MahaUtils SimViewer'
 
 
 def main() -> None:
     """Main entrypoint for running MahaUtils simulation results viewer"""
     app.layout = dash.html.Div([
         _app_header(),
+        _graph(),
+        _plot_controls(),
+        _info_box(),
     ])
 
     app.run_server(debug=True)
+
+
+@app.callback(
+    Output('info-button-modal', 'is_open'),
+    Input('info-button', 'n_clicks'),
+    Input('info-box-close-button', 'n_clicks'),
+    State('info-button-modal', 'is_open'),
+)
+def toggle_info_box(n_clicks_open, n_clicks_close, is_open):
+    """Callback which opens and closes the modal information box
+    """
+    # Callback is triggered on page load, so this condition prevents the
+    # modal box from being displayed in this case
+    if (n_clicks_open is None) and (n_clicks_close is None):
+        return is_open
+
+    return not is_open
+
+
+@app.callback(
+    Output('plot-config-panel', 'is_open'),
+    Input('plot-config-button', 'n_clicks'),
+    State('plot-config-panel', 'is_open'),
+)
+def toggle_plot_config_panel(n_clicks, is_open):
+    """Callback which opens and closes the plot configuration panel
+    """
+    # Callback is triggered on page load, so this condition prevents the
+    # panel from being displayed in this case
+    if n_clicks is None:
+        return is_open
+
+    return not is_open

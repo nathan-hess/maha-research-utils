@@ -4,10 +4,6 @@
 import dash
 import dash_bootstrap_components as dbc
 
-from mahautils import __version__ as VERSION
-
-REPO_URL = 'https://github.com/nathan-hess/maha-research-utils'
-
 
 def _app_header():
     """Creates a formatted header for the application"""
@@ -16,7 +12,7 @@ def _app_header():
             # Left side of header: app name
             dbc.Row([
                 dash.html.H1(
-                    'Maha Multics Simulation Results Viewer',
+                    'MahaUtils Simulation Results Viewer',
                     style={
                         'font-size': 24,
                         'margin-left': '10px',
@@ -25,31 +21,42 @@ def _app_header():
                 ),
             ]),
 
-            # Right side of header: version and link to repository
-            dbc.Stack([
+            # Right side of header: buttons to open plot configuration pane
+            # and app information box
+            dbc.Row(
                 dash.html.Div(
-                    f'v{VERSION}',
-                    style={
-                        'font-size': 12,
-                        'color': 'gray',
-                        'margin-left': '10px',
-                        'margin-right': '10px',
-                        'text-align': 'right',
-                    },
+                    [
+                        dash.html.Button(
+                            dash.html.I(className='fa fa-wrench'),
+                            id='plot-config-button',
+                            style={
+                                'height': '32px',
+                                'width': '32px',
+                                'border-radius': '8px',
+                                'text-align': 'center',
+                                'margin-left': '10px',
+                                'margin-right': '2px',
+                            },
+                        ),
+                        dash.html.Button(
+                            dash.html.I(className='fa fa-question-circle'),
+                            id='info-button',
+                            style={
+                                'height': '32px',
+                                'width': '32px',
+                                'border-radius': '8px',
+                                'text-align': 'center',
+                                'margin-left': '2px',
+                                'margin-right': '10px',
+                            },
+                        ),
+                    ],
                 ),
-                dash.html.A(
-                    ['Source Code ', dash.html.I(className='bi bi-github')],
-                    href=REPO_URL,
-                    target='_blank',
-                    style={
-                        'font-size': 12,
-                        'color': 'gray',
-                        'margin-left': '10px',
-                        'margin-right': '10px',
-                        'text-align': 'right',
-                    },
-                ),
-            ]),
+                style={
+                    'margin-left': 'auto',
+                    'margin-right': '0px',
+                },
+            ),
         ], direction='horizontal'),
 
         # Horizontal line below title
