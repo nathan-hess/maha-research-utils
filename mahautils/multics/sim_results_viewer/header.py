@@ -1,8 +1,10 @@
 """Code for generating the header of the simulation results viewer.
 """
 
-import dash
-import dash_bootstrap_components as dbc
+# Mypy type checking is disabled for several packages because they are not
+# PEP 561-compliant
+import dash                              # type: ignore
+import dash_bootstrap_components as dbc  # type: ignore
 
 
 def _app_header():

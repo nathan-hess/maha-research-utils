@@ -1,10 +1,12 @@
 """Information box showing software version and credits.
 """
 
-import dash
-import dash_bootstrap_components as dbc
+# Mypy type checking is disabled for several packages because they are not
+# PEP 561-compliant
+import dash                              # type: ignore
+import dash_bootstrap_components as dbc  # type: ignore
 import numpy as np
-import plotly
+import plotly                            # type: ignore
 import pyxx
 
 from .constants import (

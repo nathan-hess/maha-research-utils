@@ -2,9 +2,16 @@
 results.
 """
 
-import dash
-from dash import Input, Output, State
-import dash_bootstrap_components as dbc
+# Some linter settings are disabled due to incompatibility with standard Dash
+# coding practice
+#
+# pylint: disable=unused-argument
+
+# Mypy type checking is disabled for several packages because they are not
+# PEP 561-compliant
+import dash                              # type: ignore
+from dash import Input, Output, State    # type: ignore
+import dash_bootstrap_components as dbc  # type: ignore
 
 from .constants import PROJECT_NAME, GUI_SHORT_NAME, VERSION
 from .header import _app_header
