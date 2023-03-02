@@ -7,6 +7,9 @@ results.
 #
 # pylint: disable=unused-argument
 
+import sys
+from typing import List, Optional
+
 # Mypy type checking is disabled for several packages because they are not
 # PEP 561-compliant
 import dash                              # type: ignore
@@ -28,8 +31,11 @@ app = dash.Dash(
 app.title = f'{PROJECT_NAME} {GUI_SHORT_NAME} v{VERSION}'
 
 
-def main() -> None:
+def main(argv: Optional[List[str]] = None) -> int:
     """Main entrypoint for running MahaUtils simulation results viewer"""
+    if argv is None:
+        argv = sys.argv[1:]
+
     app.layout = dash.html.Div([
         _app_header(),
         _graph(),
@@ -37,7 +43,9 @@ def main() -> None:
         _info_box(),
     ])
 
-    app.run_server(debug=True)
+    app.run_server(debug=('--debug' in argv))
+
+    return 0
 
 
 @app.callback(
