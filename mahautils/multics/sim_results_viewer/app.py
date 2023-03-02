@@ -37,15 +37,11 @@ def main() -> None:
     Input('info-button', 'n_clicks'),
     Input('info-box-close-button', 'n_clicks'),
     State('info-button-modal', 'is_open'),
+    prevent_initial_call=True,
 )
 def toggle_info_box(n_clicks_open, n_clicks_close, is_open):
     """Callback which opens and closes the modal information box
     """
-    # Callback is triggered on page load, so this condition prevents the
-    # modal box from being displayed in this case
-    if (n_clicks_open is None) and (n_clicks_close is None):
-        return is_open
-
     return not is_open
 
 
@@ -53,13 +49,9 @@ def toggle_info_box(n_clicks_open, n_clicks_close, is_open):
     Output('plot-config-panel', 'is_open'),
     Input('plot-config-button', 'n_clicks'),
     State('plot-config-panel', 'is_open'),
+    prevent_initial_call=True,
 )
 def toggle_plot_config_panel(n_clicks, is_open):
     """Callback which opens and closes the plot configuration panel
     """
-    # Callback is triggered on page load, so this condition prevents the
-    # panel from being displayed in this case
-    if n_clicks is None:
-        return is_open
-
     return not is_open
