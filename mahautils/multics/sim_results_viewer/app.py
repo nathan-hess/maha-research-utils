@@ -6,6 +6,7 @@ import dash
 from dash import Input, Output, State
 import dash_bootstrap_components as dbc
 
+from .constants import PROJECT_NAME, GUI_SHORT_NAME, VERSION
 from .header import _app_header
 from .info import _info_box
 from .plotting import _graph, _plot_controls
@@ -17,7 +18,7 @@ app = dash.Dash(
         dbc.icons.FONT_AWESOME,
     ]
 )
-app.title = 'MahaUtils SimViewer'
+app.title = f'{PROJECT_NAME} {GUI_SHORT_NAME} v{VERSION}'
 
 
 def main() -> None:

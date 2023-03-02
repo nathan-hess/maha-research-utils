@@ -7,28 +7,33 @@ import numpy as np
 import plotly
 import pyxx
 
-from mahautils import __version__ as VERSION
-
-REPO_URL = 'https://github.com/nathan-hess/maha-research-utils'
+from .constants import (
+    GUI_LONG_NAME,
+    GUI_SHORT_NAME,
+    PROJECT_NAME,
+    REPO_URL,
+    VERSION,
+)
 
 
 def _info_box():
     contents = [
         dbc.ModalHeader(
-            dbc.ModalTitle(f'MahaUtils SimViewer v{VERSION}'),
+            dbc.ModalTitle(f'{PROJECT_NAME} SimViewer v{VERSION}'),
             close_button=True,
         ),
         dbc.ModalBody([
             dash.html.P(
                 [
-                    ('MahaUtils is an open source project, and all source '
-                     'code is available through '),
+                    (f'{PROJECT_NAME} is an open source project, and all '
+                     'source code is available through '),
                     dash.html.A(
                         ['GitHub ', dash.html.I(className='bi bi-github')],
                         href=REPO_URL,
                         target='_blank',
                     ),
-                    '.  Graphical user interface powered by ',
+                    (f'.  The {PROJECT_NAME} {GUI_LONG_NAME} ({GUI_SHORT_NAME}) '
+                     'graphical user interface is powered by '),
                     dash.html.A(
                         'Dash',
                         href='https://plotly.com/dash/',
