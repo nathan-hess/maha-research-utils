@@ -7,6 +7,7 @@ results.
 #
 # pylint: disable=unused-argument
 
+import argparse
 import sys
 from typing import List, Optional
 
@@ -33,9 +34,24 @@ app.title = f'{PROJECT_NAME} {GUI_SHORT_NAME} v{VERSION}'
 
 def main(argv: Optional[List[str]] = None) -> int:
     """Main entrypoint for running MahaUtils simulation results viewer"""
+    # Command-line argument parsing
     if argv is None:
         argv = sys.argv[1:]
 
+    parser = argparse.ArgumentParser(
+        prog='MahaUtilsSimViewer',
+        description=('The MahaUtils Simulation Results Viewer is a graphical '
+                     'tool that aids in reading Maha Multics simulation '
+                     'results files and viewing results. Project documentation '
+                     'can be found at https://mahautils.readthedocs.io.'),
+    )
+    parser.add_argument('--version', action='version', version=VERSION)
+    parser.add_argument('--debug', action='store_true',
+                        help=('enable Dash\'s debug mode (more information: '
+                              'https://dash.plotly.com/devtools)'))
+    args = parser.parse_args(argv)
+
+    # Create and load Dash app
     app.layout = dash.html.Div([
         _app_header(),
         _graph(),
@@ -43,8 +59,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         _info_box(),
     ])
 
-    app.run_server(debug=('--debug' in argv))
-
+    app.run_server(debug=bool(args.debug))
     return 0
 
 
