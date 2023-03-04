@@ -8,6 +8,7 @@ results.
 # pylint: disable=unused-argument
 
 import argparse
+import base64
 import sys
 from typing import List, Optional
 
@@ -16,11 +17,14 @@ from typing import List, Optional
 import dash                              # type: ignore
 from dash import Input, Output, State    # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
+import plotly.express as px              # type: ignore
 
+from mahautils.multics import SimResults
 from .constants import PROJECT_NAME, GUI_SHORT_NAME, VERSION
 from .header import _app_header
 from .info import _info_box
 from .plotting import _graph, _plot_controls
+
 
 app = dash.Dash(
     external_stylesheets=[
@@ -30,6 +34,8 @@ app = dash.Dash(
     ]
 )
 app.title = f'{PROJECT_NAME} {GUI_SHORT_NAME} v{VERSION}'
+
+_sim_results = SimResults()
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -61,6 +67,25 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     app.run_server(debug=bool(args.debug))
     return 0
+
+
+@app.callback(
+    Output('plotly-graph', 'figure'),
+    Input('upload-data', 'contents'),
+    prevent_initial_call=True,
+)
+def load_data(contents: str):
+    """Reads uploaded simulation results from a file"""
+    content_data = contents.split(',', maxsplit=1)[1]
+    decoded_data = base64.b64decode(content_data).decode('utf_8')
+
+    _sim_results.set_contents(decoded_data.split('\n'), trailing_newline=True)
+    _sim_results.parse()
+
+    fig = px.line(x=_sim_results.get_data('t', 's'),
+                  y=_sim_results.get_data('pMaxFilm', 'bar'))
+
+    return fig
 
 
 @app.callback(
