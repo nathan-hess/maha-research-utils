@@ -2,7 +2,7 @@
 data in a key-value format.
 """
 
-from typing import Dict, Optional, Type, TypeVar
+from typing import Optional, OrderedDict, Type, TypeVar
 
 from pyxx.arrays import max_list_item_len
 
@@ -10,7 +10,7 @@ K = TypeVar('K')
 V = TypeVar('V')
 
 
-class Dictionary(Dict[K, V]):
+class Dictionary(OrderedDict[K, V]):
     """Customized Python dictionary
 
     This class is a modified version of Python's built-in dictionaries.  Most
@@ -159,3 +159,91 @@ class Dictionary(Dict[K, V]):
     @str_pad_right.setter
     def str_pad_right(self, str_pad_right: int):
         self._str_pad_right = int(str_pad_right)
+
+    def index(self, key) -> int:
+        """Returns the index of a key in the dictionary
+
+        Parameters
+        ----------
+        key : Any
+            A key in the dictionary
+
+        Returns
+        -------
+        int
+            The location (beginning from 0) of ``key`` in the dictionary
+        """
+        if key not in self:
+            raise KeyError(f'Key "{key}" not present in dictionary')
+
+        return list(self.keys()).index(key)
+
+    def insert(self, index: int, key, value) -> None:
+        """Adds a new item to the dictionary at a specified position
+
+        Parameters
+        ----------
+        index : int
+            The position in the dictionary at which to insert the new key
+        key : Any
+            The key for the new item to insert int the dictionary
+        value : Any
+            The value for the new item to insert in the dictionary
+        """
+        if key in self:
+            raise KeyError(f'Key "{key}" already exists, unable to overwrite')
+
+        keys = list(self.keys())
+
+        # Insert at beginning of dictionary
+        self[key] = value
+
+        # Rearrange items in dictionary so that new item is in the
+        # correct position
+        if index < len(self) / 2:
+            self.move_to_end(key, last=False)
+
+            for k in reversed(keys[0:index]):
+                self.move_to_end(k, last=False)
+        else:
+            for k in reversed(keys[index:]):
+                self.move_to_end(k, last=True)
+
+        # It is not optimal to rearrange items iteratively, but the parent
+        # `OrderedDict` class is written in C so we don't have access to
+        # internal attributes and pointers that would make it faster (it would
+        # be possible to rewrite the MahaUtils `Dictionary` for improved
+        # efficiency, but the intended applications of the package
+        # don't necessitate fast performance)
+
+    def insert_after(self, existing_key, key, value) -> None:
+        """Adds a new item to the dictionary at after another existing item
+        in the dictionary
+
+        Parameters
+        ----------
+        existing_key : Any
+            The existing key in the dictionary after which ``key`` should
+            be inserted
+        key : Any
+            The key for the new item to insert int the dictionary
+        value : Any
+            The value for the new item to insert in the dictionary
+        """
+        self.insert(self.index(existing_key) + 1, key, value)
+
+    def insert_before(self, existing_key, key, value) -> None:
+        """Adds a new item to the dictionary at before another existing item
+        in the dictionary
+
+        Parameters
+        ----------
+        existing_key : Any
+            The existing key in the dictionary before which ``key`` should
+            be inserted
+        key : Any
+            The key for the new item to insert int the dictionary
+        value : Any
+            The value for the new item to insert in the dictionary
+        """
+        self.insert(self.index(existing_key), key, value)
