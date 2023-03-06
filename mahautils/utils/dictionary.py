@@ -23,7 +23,8 @@ class Dictionary(OrderedDict[K, V]):
     def __init__(self, contents: Optional[dict] = None, str_indent: int = 0,
                  str_pad_left: int = 1, str_pad_right: int = 2,
                  custom_except_class: Type[Exception] = KeyError,
-                 custom_except_msg: str = '%s'):
+                 custom_except_msg: str = '%s',
+                 ) -> None:
         """Defines a :py:class:`Dictionary` instance
 
         Defines a new :py:class:`Dictionary` object, providing options to
@@ -76,10 +77,10 @@ class Dictionary(OrderedDict[K, V]):
             raise self.custom_except_class(  # pylint: disable=W0707
                 self.custom_except_msg % key)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
 
-    def __str__(self):
+    def __str__(self) -> str:
         if len(self) > 0:
             # Determine maximum string length of keys in dictionary
             _max_key_len = max_list_item_len(self.keys())
@@ -140,7 +141,7 @@ class Dictionary(OrderedDict[K, V]):
         self._str_indent = int(str_indent)
 
     @property
-    def str_pad_left(self):
+    def str_pad_left(self) -> int:
         """The number of spaces between the printed key and the separator when
         converting a :py:class:`Dictionary` object to a printable string
         representation"""
@@ -151,7 +152,7 @@ class Dictionary(OrderedDict[K, V]):
         self._str_pad_left = int(str_pad_left)
 
     @property
-    def str_pad_right(self):
+    def str_pad_right(self) -> int:
         """The number of spaces between the separator and printed value when
         converting a :py:class:`Dictionary` object to a printable string
         representation"""
@@ -161,7 +162,7 @@ class Dictionary(OrderedDict[K, V]):
     def str_pad_right(self, str_pad_right: int):
         self._str_pad_right = int(str_pad_right)
 
-    def index(self, key) -> int:
+    def index(self, key: K) -> int:
         """Returns the index of a key in the dictionary
 
         Parameters
@@ -179,7 +180,7 @@ class Dictionary(OrderedDict[K, V]):
 
         return list(self.keys()).index(key)
 
-    def insert(self, index: int, key, value) -> None:
+    def insert(self, index: int, key: K, value: V) -> None:
         """Adds a new item to the dictionary at a specified position
 
         Parameters
@@ -217,7 +218,7 @@ class Dictionary(OrderedDict[K, V]):
         # efficiency, but the intended applications of the package
         # don't necessitate fast performance)
 
-    def insert_after(self, existing_key, key, value) -> None:
+    def insert_after(self, existing_key: K, key: K, value: V) -> None:
         """Adds a new item to the dictionary at after another existing item
         in the dictionary
 
@@ -233,7 +234,7 @@ class Dictionary(OrderedDict[K, V]):
         """
         self.insert(self.index(existing_key) + 1, key, value)
 
-    def insert_before(self, existing_key, key, value) -> None:
+    def insert_before(self, existing_key: K, key: K, value: V) -> None:
         """Adds a new item to the dictionary at before another existing item
         in the dictionary
 
