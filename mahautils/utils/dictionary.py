@@ -13,10 +13,11 @@ V = TypeVar('V')
 class Dictionary(OrderedDict[K, V]):
     """Customized Python dictionary
 
-    This class is a modified version of Python's built-in dictionaries.  Most
-    typical dictionary methods function as they do in a ``dict`` object, with
-    the exception of some customizations such as altering how the dictionary
-    is converted to a string.
+    This class is a modified version of Python's built-in :py:class:`OrderedDict`
+    dictionary.  Most typical dictionary methods function as they do in a
+    :py:class`dict`.  However, additional functionality has been added, such as
+    being able to insert items at any position in the dictionary and
+    customizations for printing content in the dictionary.
     """
 
     def __init__(self, contents: Optional[dict] = None, str_indent: int = 0,

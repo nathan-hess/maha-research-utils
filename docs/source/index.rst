@@ -34,8 +34,8 @@ general-purpose research tasks as well as simplify interaction with the
     :hidden:
 
     Overview <api_reference/index>
-    api_reference/dictionaries
     api_reference/multics
+    api_reference/utils
 
 
 Quick Links

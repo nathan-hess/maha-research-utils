@@ -1,12 +1,12 @@
 import unittest
 
-from mahautils.dictionaries import Dictionary
+from mahautils.utils import Dictionary
 
 
 class Test_Dictionary(unittest.TestCase):
     def test_dict_methods(self):
         # Verify that methods for built-in Python dictionaries work
-        # for `mahautils.dictionaries.Dictionary` object
+        # for MahaUtils `Dictionary` objects
         dictionary = Dictionary()
         self.assertDictEqual(dictionary, {})
 
