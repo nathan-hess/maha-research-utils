@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Tuple, Union
 import numpy as np
 import pyxx
 
-from mahautils.dictionaries.dictionary import Dictionary
+from mahautils.utils.dictionary import Dictionary
 from .configfile import MahaMulticsConfigFile
 from .exceptions import (
     InvalidSimResultsFormatError,

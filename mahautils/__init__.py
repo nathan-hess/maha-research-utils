@@ -9,6 +9,5 @@ __version__ = '1.0.0'
 
 
 # PACKAGE MODULES ------------------------------------------------------------
-from . import dictionaries
 from . import multics
 from . import utils

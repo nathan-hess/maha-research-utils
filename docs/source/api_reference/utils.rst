@@ -3,12 +3,12 @@
    str
 
 
-mahautils.dictionaries
-======================
+mahautils.utils
+===============
 
-.. automodule:: mahautils.dictionaries
+.. automodule:: mahautils.utils
 
-.. currentmodule:: mahautils.dictionaries
+.. currentmodule:: mahautils.utils
 
 
 Dictionary Objects
