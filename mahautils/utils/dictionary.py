@@ -15,7 +15,7 @@ class Dictionary(OrderedDict[K, V]):
 
     This class is a modified version of Python's built-in :py:class:`OrderedDict`
     dictionary.  Most typical dictionary methods function as they do in a
-    :py:class`dict`.  However, additional functionality has been added, such as
+    :py:class:`dict`.  However, additional functionality has been added, such as
     being able to insert items at any position in the dictionary and
     customizations for printing content in the dictionary.
     """
