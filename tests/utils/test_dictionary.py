@@ -1,3 +1,4 @@
+import copy
 import unittest
 
 from mahautils.utils import Dictionary
@@ -234,3 +235,124 @@ class Test_Dictionary_Exceptions(Test_Dictionary):
             with self.subTest(message=message):
                 with self.assertRaises(ValueError):
                     Dictionary(custom_except_msg=message)
+
+
+class Test_Dictionary_Index(Test_Dictionary):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.items = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5}
+        self.dictionary = Dictionary(self.items)
+
+    def test_index(self):
+        # Verifies that dictionary item indices can be retrieved correctly
+        for key, index in self.items.items():
+            with self.subTest(key=key):
+                self.assertEqual(self.dictionary.index(key), index)
+
+    def test_index_invalid(self):
+        # Verifies that an appropriate error is thrown if attempting to find
+        # the index of a key not present in the dictionary
+        with self.assertRaises(KeyError):
+            self.dictionary.index('nonexistent_key')
+
+
+class Test_Dictionary_Insert(Test_Dictionary):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.dictionary = Dictionary({'a': 0, 'b': 1, 'c': 3, 'd': 4, 'e': 5, 'f': 6})
+
+    def test_insert(self):
+        # Verifies that an item can be inserted at a given point in the dictionary
+        with self.subTest(index=-2):
+            dictionary = copy.deepcopy(self.dictionary)
+            dictionary.insert(-2, 'z', 3.14)
+            self.assertDictEqual(
+                dictionary,
+                {'a': 0, 'b': 1, 'c': 3, 'd': 4, 'e': 5, 'z': 3.14, 'f': 6})
+
+        with self.subTest(index=-1):
+            dictionary = copy.deepcopy(self.dictionary)
+            dictionary.insert(-1, 'z', 3.14)
+            self.assertDictEqual(
+                dictionary,
+                {'a': 0, 'b': 1, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'z': 3.14})
+
+        with self.subTest(index=0):
+            dictionary = copy.deepcopy(self.dictionary)
+            dictionary.insert(0, 'z', 3.14)
+            self.assertDictEqual(
+                dictionary,
+                {'z': 3.14, 'a': 0, 'b': 1, 'c': 3, 'd': 4, 'e': 5, 'f': 6})
+
+        with self.subTest(index=1):
+            dictionary = copy.deepcopy(self.dictionary)
+            dictionary.insert(1, 'z', 3.14)
+            self.assertDictEqual(
+                dictionary,
+                {'a': 0, 'z': 3.14, 'b': 1, 'c': 3, 'd': 4, 'e': 5, 'f': 6})
+
+        with self.subTest(index=2):
+            dictionary = copy.deepcopy(self.dictionary)
+            dictionary.insert(2, 'z', 3.14)
+            self.assertDictEqual(
+                dictionary,
+                {'a': 0, 'b': 1, 'z': 3.14, 'c': 3, 'd': 4, 'e': 5, 'f': 6})
+
+        with self.subTest(index=3):
+            dictionary = copy.deepcopy(self.dictionary)
+            dictionary.insert(3, 'z', 3.14)
+            self.assertDictEqual(
+                dictionary,
+                {'a': 0, 'b': 1, 'c': 3, 'z': 3.14, 'd': 4, 'e': 5, 'f': 6})
+
+        with self.subTest(index=4):
+            dictionary = copy.deepcopy(self.dictionary)
+            dictionary.insert(4, 'z', 3.14)
+            self.assertDictEqual(
+                dictionary,
+                {'a': 0, 'b': 1, 'c': 3, 'd': 4, 'z': 3.14, 'e': 5, 'f': 6})
+
+        with self.subTest(index=5):
+            dictionary = copy.deepcopy(self.dictionary)
+            dictionary.insert(5, 'z', 3.14)
+            self.assertDictEqual(
+                dictionary,
+                {'a': 0, 'b': 1, 'c': 3, 'd': 4, 'e': 5, 'z': 3.14, 'f': 6})
+
+        with self.subTest(index=6):
+            dictionary = copy.deepcopy(self.dictionary)
+            dictionary.insert(6, 'z', 3.14)
+            self.assertDictEqual(
+                dictionary,
+                {'a': 0, 'b': 1, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'z': 3.14})
+
+        with self.subTest(index=7):
+            dictionary = copy.deepcopy(self.dictionary)
+            dictionary.insert(7, 'z', 3.14)
+            self.assertDictEqual(
+                dictionary,
+                {'a': 0, 'b': 1, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'z': 3.14})
+
+    def test_insert_after(self):
+        # Verifies that an item can be inserted at a given point in the dictionary
+        self.dictionary.insert_after('c', 'z', 3.14)
+        self.assertDictEqual(
+            self.dictionary,
+            {'a': 0, 'b': 1, 'c': 3, 'z': 3.14, 'd': 4, 'e': 5, 'f': 6})
+
+    def test_insert_before(self):
+        # Verifies that an item can be inserted at a given point in the dictionary
+        self.dictionary.insert_before('c', 'z', 3.14)
+        self.assertDictEqual(
+            self.dictionary,
+            {'a': 0, 'b': 1, 'z': 3.14, 'c': 3, 'd': 4, 'e': 5, 'f': 6})
+
+    def test_invalid_overwrite(self):
+        # Verifies that an error is thrown if attempting to overwrite an item
+        # in the dictionary
+        for method in ('insert', 'insert_after', 'insert_before'):
+            with self.subTest(method=method):
+                with self.assertRaises(KeyError):
+                    getattr(self.dictionary, method)(0, 'c', 3.14)
