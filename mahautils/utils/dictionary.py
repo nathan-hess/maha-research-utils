@@ -20,7 +20,9 @@ class Dictionary(OrderedDict[K, V]):
     customizations for printing content in the dictionary.
     """
 
-    def __init__(self, contents: Optional[dict] = None, str_indent: int = 0,
+    def __init__(self, contents: Optional[dict] = None,
+                 multiline_print: bool = False,
+                 str_indent: int = 0,
                  str_pad_left: int = 1, str_pad_right: int = 2,
                  custom_except_class: Type[Exception] = KeyError,
                  custom_except_msg: str = '%s',
@@ -36,15 +38,20 @@ class Dictionary(OrderedDict[K, V]):
         contents : dict, optional
             Python ``dict`` which, if provided, will immediately populate the
             data in the dictionary upon creation (default is ``None``)
+        multiline_print : bool, optional
+            Whether to print each entry of the dictionary on its own line when
+            converting to a printable string representation (default is
+            ``False``)
         str_indent : int, optional
             Sets the dictionary's :py:attr:`str_indent` attribute
-            (default is ``0``)
+            (default is ``0``).  Only applicable if ``multiline_print`` is
+            ``True``
         str_pad_left : int, optional
             Sets the dictionary's :py:attr:`str_pad_left` attribute (default
-            is ``0``)
+            is ``0``).  Only applicable if ``multiline_print`` is ``True``
         str_pad_right : int, optional
             Sets the dictionary's :py:attr:`str_pad_right` attribute (default
-            is ``0``)
+            is ``0``).  Only applicable if ``multiline_print`` is ``True``
         custom_except_class : class, optional
             An :py:class:`Exception` subclass to raise if a given key is not
             found in the dictionary (default is :py:class:`KeyError`)
@@ -58,6 +65,7 @@ class Dictionary(OrderedDict[K, V]):
         super().__init__()
 
         # Store parameters for representing dictionary as string
+        self.multiline_print = multiline_print
         self.str_indent = str_indent
         self.str_pad_left = str_pad_left
         self.str_pad_right = str_pad_right
@@ -78,9 +86,15 @@ class Dictionary(OrderedDict[K, V]):
                 self.custom_except_msg % key)
 
     def __repr__(self) -> str:
+        if not self._multiline_print:
+            return super().__repr__()
+
         return str(self)
 
     def __str__(self) -> str:
+        if not self._multiline_print:
+            return super().__str__()
+
         if len(self) > 0:
             # Determine maximum string length of keys in dictionary
             _max_key_len = max_list_item_len(self.keys())
@@ -130,10 +144,21 @@ class Dictionary(OrderedDict[K, V]):
         self._custom_except_msg = str(custom_except_msg)
 
     @property
-    def str_indent(self):
+    def multiline_print(self) -> bool:
+        """Whether to print each entry of the dictionary on its own line when
+        converting to a printable string representation"""
+        return self._multiline_print
+
+    @multiline_print.setter
+    def multiline_print(self, multiline_print: bool) -> None:
+        self._multiline_print = bool(multiline_print)
+
+    @property
+    def str_indent(self) -> int:
         """The number of spaces of indentation at the beginning of each line
         when converting a :py:class:`Dictionary` object to a printable
-        string representation"""
+        string representation.  Only applicable if :py:attr:`multiline_print`
+        is ``True``"""
         return self._str_indent
 
     @str_indent.setter
@@ -144,7 +169,8 @@ class Dictionary(OrderedDict[K, V]):
     def str_pad_left(self) -> int:
         """The number of spaces between the printed key and the separator when
         converting a :py:class:`Dictionary` object to a printable string
-        representation"""
+        representation.  Only applicable if :py:attr:`multiline_print` is
+        ``True``"""
         return self._str_pad_left
 
     @str_pad_left.setter
@@ -155,7 +181,8 @@ class Dictionary(OrderedDict[K, V]):
     def str_pad_right(self) -> int:
         """The number of spaces between the separator and printed value when
         converting a :py:class:`Dictionary` object to a printable string
-        representation"""
+        representation.  Only applicable if :py:attr:`multiline_print` is
+        ``True``"""
         return self._str_pad_right
 
     @str_pad_right.setter

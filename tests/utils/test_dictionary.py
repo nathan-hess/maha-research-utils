@@ -4,6 +4,10 @@ from mahautils.utils import Dictionary
 
 
 class Test_Dictionary(unittest.TestCase):
+    pass
+
+
+class Test_Dictionary_General(Test_Dictionary):
     def test_dict_methods(self):
         # Verify that methods for built-in Python dictionaries work
         # for MahaUtils `Dictionary` objects
@@ -37,10 +41,47 @@ class Test_Dictionary(unittest.TestCase):
         dictionary = Dictionary({'key1': 'value1', 'key2': 6.28})
         self.assertDictEqual(dictionary, {'key1': 'value1', 'key2': 6.28})
 
+
+class Test_Dictionary_Print(Test_Dictionary):
     def test_dictionary_str(self):
         # Verify that dictionary can be converted to a string
         # representation correctly
         dictionary = Dictionary({'key1': 'value1', 'key24': 6.28})
+
+        with self.subTest(format='str'):
+            self.assertEqual(
+                str(dictionary),
+                "Dictionary([('key1', 'value1'), ('key24', 6.28)])"
+            )
+
+        with self.subTest(format='__repr__'):
+            self.assertEqual(
+                dictionary.__repr__(),
+                "Dictionary([('key1', 'value1'), ('key24', 6.28)])"
+            )
+
+    def test_dictionary_multiline(self):
+        # Verifies tha the "multiline_print" attribute can be set correctly
+        with self.subTest(method='constructor'):
+            self.assertTrue(Dictionary(multiline_print=True).multiline_print)
+            self.assertFalse(Dictionary(multiline_print=False).multiline_print)
+
+        with self.subTest(method='property'):
+            dictionary = Dictionary()
+
+            dictionary.multiline_print = True
+            self.assertTrue(dictionary.multiline_print)
+
+            dictionary.multiline_print = False
+            self.assertFalse(dictionary.multiline_print)
+
+        with self.subTest(method='default'):
+            self.assertFalse(Dictionary().multiline_print)
+
+    def test_dictionary_multiline_str(self):
+        # Verify that dictionary can be converted to a string
+        # representation correctly
+        dictionary = Dictionary({'key1': 'value1', 'key24': 6.28}, multiline_print=True)
 
         with self.subTest(format='str'):
             self.assertEqual(
@@ -56,10 +97,10 @@ class Test_Dictionary(unittest.TestCase):
                  'key24 :  6.28')
             )
 
-    def test_dictionary_str_empty(self):
+    def test_dictionary_multiline_str_empty(self):
         # Verify that dictionary can be converted to a string
         # representation correctly when dictionary contains no content
-        dictionary = Dictionary()
+        dictionary = Dictionary(multiline_print=True)
 
         with self.subTest(format='str'):
             self.assertEqual(str(dictionary), '')
@@ -67,13 +108,14 @@ class Test_Dictionary(unittest.TestCase):
         with self.subTest(format='__repr__'):
             self.assertEqual(dictionary.__repr__(), '')
 
-    def test_dictionary_indent(self):
+    def test_dictionary_multiline_indent(self):
         # Verify that dictionary can be converted to a string
         # representation correctly with non-default indentation
         with self.subTest(indent=3, method='arguments'):
             dictionary1 = Dictionary(
                 {'key1': 'value1', 'key24': 6.28},
-                str_indent=3
+                str_indent=3,
+                multiline_print=True,
             )
 
             self.assertEqual(
@@ -83,7 +125,7 @@ class Test_Dictionary(unittest.TestCase):
             )
 
         with self.subTest(indent=9, method='properties'):
-            dictionary2 = Dictionary({'key1': 'value1', 'key24': 6.28})
+            dictionary2 = Dictionary({'key1': 'value1', 'key24': 6.28}, multiline_print=True)
             dictionary2.str_indent = 9
 
             self.assertEqual(
@@ -92,13 +134,14 @@ class Test_Dictionary(unittest.TestCase):
                  '         key24 :  6.28')
             )
 
-    def test_dictionary_pad_left(self):
+    def test_dictionary_multiline_pad_left(self):
         # Verify that dictionary can be converted to a string
         # representation correctly with non-default left padding
         with self.subTest(str_pad_left=3, method='arguments'):
             dictionary1 = Dictionary(
                 {'key1': 'value1', 'key24': 6.28},
-                str_pad_left=3
+                str_pad_left=3,
+                multiline_print=True,
             )
 
             self.assertEqual(
@@ -108,7 +151,7 @@ class Test_Dictionary(unittest.TestCase):
             )
 
         with self.subTest(str_pad_left=9, method='properties'):
-            dictionary2 = Dictionary({'key1': 'value1', 'key24': 6.28})
+            dictionary2 = Dictionary({'key1': 'value1', 'key24': 6.28}, multiline_print=True)
             dictionary2.str_pad_left = 9
 
             self.assertEqual(
@@ -117,13 +160,14 @@ class Test_Dictionary(unittest.TestCase):
                  'key24         :  6.28')
             )
 
-    def test_dictionary_pad_right(self):
+    def test_dictionary_multiline_pad_right(self):
         # Verify that dictionary can be converted to a string
         # representation correctly with non-default right padding
         with self.subTest(str_pad_right=3, method='arguments'):
             dictionary1 = Dictionary(
                 {'key1': 'value1', 'key24': 6.28},
-                str_pad_right=3
+                str_pad_right=3,
+                multiline_print=True,
             )
 
             self.assertEqual(
@@ -133,7 +177,7 @@ class Test_Dictionary(unittest.TestCase):
             )
 
         with self.subTest(str_pad_right=9, method='properties'):
-            dictionary2 = Dictionary({'key1': 'value1', 'key24': 6.28})
+            dictionary2 = Dictionary({'key1': 'value1', 'key24': 6.28}, multiline_print=True)
             dictionary2.str_pad_right = 9
 
             self.assertEqual(
@@ -142,13 +186,14 @@ class Test_Dictionary(unittest.TestCase):
                  'key24 :         6.28')
             )
 
-    def test_dictionary_custom_format(self):
+    def test_dictionary_multiline_custom_format(self):
         # Verify that dictionary can be converted to a string
         # representation correctly with non-default formatting
         with self.subTest(method='arguments'):
             dictionary1 = Dictionary(
                 {'key1': 'value1', 'key24': 6.28},
-                str_indent=3, str_pad_left=0, str_pad_right=4
+                str_indent=3, str_pad_left=0, str_pad_right=4,
+                multiline_print=True,
             )
 
             self.assertEqual(
@@ -162,6 +207,7 @@ class Test_Dictionary(unittest.TestCase):
             dictionary2.str_indent = 3
             dictionary2.str_pad_left = 0
             dictionary2.str_pad_right = 4
+            dictionary2.multiline_print = True
 
             self.assertEqual(
                 str(dictionary2),
@@ -169,6 +215,8 @@ class Test_Dictionary(unittest.TestCase):
                  '   key24:    6.28')
             )
 
+
+class Test_Dictionary_Exceptions(Test_Dictionary):
     def test_set_custom_except_class_invalid(self):
         # Verifies that custom exception classes have to be subclasses of
         # `Exception`
