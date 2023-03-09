@@ -28,28 +28,28 @@ def _app_header():
             dbc.Row(
                 dash.html.Div(
                     [
-                        dash.html.Button(
+                        dbc.Button(
                             dash.html.I(className='fa fa-wrench'),
                             id='plot-config-button',
+                            size='sm',
                             style={
-                                'height': '32px',
-                                'width': '32px',
                                 'border-radius': '8px',
-                                'text-align': 'center',
+                                'margin-top': '5px',
                                 'margin-left': '10px',
                                 'margin-right': '2px',
+                                'margin-bottom': '5px',
                             },
                         ),
-                        dash.html.Button(
+                        dbc.Button(
                             dash.html.I(className='fa fa-question-circle'),
                             id='info-button',
+                            size='sm',
                             style={
-                                'height': '32px',
-                                'width': '32px',
                                 'border-radius': '8px',
-                                'text-align': 'center',
+                                'margin-top': '5px',
                                 'margin-left': '2px',
                                 'margin-right': '10px',
+                                'margin-bottom': '5px',
                             },
                         ),
                     ],
