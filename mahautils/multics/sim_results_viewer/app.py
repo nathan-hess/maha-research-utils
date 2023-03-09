@@ -55,6 +55,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument('--debug', action='store_true',
                         help=('enable Dash\'s debug mode (more information: '
                               'https://dash.plotly.com/devtools)'))
+    parser.add_argument('--port', action='store', type=int, default=8050,
+                        help='port on which to serve the app (default is 8050)')
     args = parser.parse_args(argv)
 
     # Create and load Dash app
@@ -65,7 +67,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         _info_box(),
     ])
 
-    app.run_server(debug=bool(args.debug))
+    app.run_server(debug=bool(args.debug), port=int(args.port))
     return 0
 
 
