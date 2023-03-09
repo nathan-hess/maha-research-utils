@@ -257,6 +257,47 @@ class Test_Dictionary_Index(Test_Dictionary):
             self.dictionary.index('nonexistent_key')
 
 
+class Test_Dictionary_Delete(Test_Dictionary):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.dictionary = Dictionary({'a': 0, 'b': 1, 'c': 3, 'd': 4, 'e': 5, 'f': 6})
+
+    def test_delete_key(self):
+        # Verifies that items can be removed from the dictionary by key
+        self.assertDictEqual(
+            self.dictionary,
+            {'a': 0, 'b': 1, 'c': 3, 'd': 4, 'e': 5, 'f': 6})
+
+        del self.dictionary['b']
+        del self.dictionary['f']
+
+        self.assertDictEqual(
+            self.dictionary,
+            {'a': 0, 'c': 3, 'd': 4, 'e': 5})
+
+    def test_delete_index(self):
+        # Verifies that items can be removed from the dictionary by index
+        self.assertDictEqual(
+            self.dictionary,
+            {'a': 0, 'b': 1, 'c': 3, 'd': 4, 'e': 5, 'f': 6})
+
+        self.dictionary.delete_index(3)
+        self.assertDictEqual(
+            self.dictionary,
+            {'a': 0, 'b': 1, 'c': 3, 'e': 5, 'f': 6})
+
+        self.dictionary.delete_index(4)
+        self.assertDictEqual(
+            self.dictionary,
+            {'a': 0, 'b': 1, 'c': 3, 'e': 5})
+
+        self.dictionary.delete_index(-2)
+        self.assertDictEqual(
+            self.dictionary,
+            {'a': 0, 'b': 1, 'e': 5})
+
+
 class Test_Dictionary_Insert(Test_Dictionary):
     def setUp(self) -> None:
         super().setUp()

@@ -189,6 +189,22 @@ class Dictionary(OrderedDict[K, V]):
     def str_pad_right(self, str_pad_right: int):
         self._str_pad_right = int(str_pad_right)
 
+    def delete_index(self, index: int) -> None:
+        """Removes an item from the dictionary based on its index
+
+        Items can easily be removed from the dictionary by key (example: to
+        remove an item with key ``'myKey'`` from a dictionary, simply call
+        ``del dictionary['myKey']``).  This method extends this functionality
+        and allows items to be removed based on their position in the
+        dictionary.
+
+        Parameters
+        ----------
+        index : int
+            The index of the item to remove from the dictionary
+        """
+        del self[list(self.keys())[index]]
+
     def index(self, key: K) -> int:
         """Returns the index of a key in the dictionary
 
