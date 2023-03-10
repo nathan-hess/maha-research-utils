@@ -11,8 +11,10 @@ floating-point numbers.
 import math
 from typing import List, Tuple, Union
 
+import numpy as np
+
 # Type alias for a list or tuple containing two floating-point numbers
-Array_Float2 = Union[List[float], Tuple[float, float]]
+Array_Float2 = Union[List[float], Tuple[float, float], np.ndarray]
 
 
 class Point:
@@ -37,6 +39,9 @@ class Point:
         coordinates to an empty tuple"""
         self._coordinates = ()
 
+        # Iterable index
+        self.__iter_index = 0
+
     def __eq__(self, value) -> bool:
         # Verify that `value` is of the same type of point
         if not isinstance(value, self.__class__):
@@ -53,8 +58,18 @@ class Point:
 
         return True
 
+    def __iter__(self):
+        return self
+
     def __len__(self):
         return len(self._coordinates)
+
+    def __next__(self):
+        if self.__iter_index >= len(self._coordinates):
+            raise StopIteration
+
+        self.__iter_index += 1
+        return self._coordinates[self.__iter_index - 1]
 
     def __repr__(self):
         return f'{self.__class__} {self.__str__()}'

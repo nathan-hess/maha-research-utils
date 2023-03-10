@@ -77,6 +77,12 @@ class Test_Point(unittest.TestCase):
         with self.subTest(dim=3):
             self.assertEqual(str(self.point3D), '(3, 4, 5)')
 
+    def test_iterable(self):
+        # Verifies that it is possible to iterate over the coordinates of
+        # the point
+        self.assertListEqual(list(self.point2D), [1.5, 2.5])
+        self.assertTupleEqual(tuple(self.point3D), (3, 4, 5))
+
     def test_get_coordinates(self):
         # Verifies that "coordinates" attribute correctly retrieves
         # point coordinates
