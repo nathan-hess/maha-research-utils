@@ -40,7 +40,7 @@ class Circle(ClosedShape2D):
 
     Check whether a point is inside the circle:
 
-    >>> circle.is_inside((0,0))
+    >>> circle.is_inside((0, 0))
     True
     >>> circle.is_inside((2.01, 0))
     False

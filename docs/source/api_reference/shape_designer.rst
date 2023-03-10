@@ -39,7 +39,7 @@ Points
 2D Shapes
 ^^^^^^^^^
 
-.. inheritance-diagram:: shapes.Shape2D shapes.ClosedShape2D shapes.OpenShape2D shapes.Circle
+.. inheritance-diagram:: shapes.Shape2D shapes.ClosedShape2D shapes.OpenShape2D shapes.Circle shapes.Polygon
     :parts: 1
 
 |
@@ -52,6 +52,7 @@ Points
     shapes.ClosedShape2D
     shapes.OpenShape2D
     shapes.Circle
+    shapes.Polygon
 
 
 Layers and Canvases
