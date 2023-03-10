@@ -157,15 +157,7 @@ class Circle(ClosedShape2D):
             return distance <= self.radius
         return distance < self.radius
 
-    # Mypy is disabled for this function definition.  Although this method
-    # cannot accept any positional or keyword arguments (as the base class's
-    # method can), this is the intended behavior: the base class should be
-    # adaptable to any arguments, and derived classes should customize it for
-    # their specific shape.  This admittedly violates the Liskov substitution
-    # principle, but it allows the `Shape2D.points()` code to be reused and
-    # avoids the need to check validate input arguments, arguably simplifying
-    # the code and user experience
-    def points(self, num_coordinates: Optional[int] = None,  # type: ignore
+    def points(self, num_coordinates: Optional[int] = None,
                repeat_end: bool = False) -> Tuple[np.ndarray, ...]:
         """Returns a list containing discretized points around the
         circumference of the circle
@@ -196,9 +188,9 @@ class Circle(ClosedShape2D):
             all the y-coordinates aggregated (essentially the transpose of
             :py:meth:`points`)
         """
-        return super().points(
+        return self._convert_xy_coordinates_to_points(
             num_coordinates=num_coordinates,
-            repeat_end=repeat_end
+            repeat_end=repeat_end,
         )
 
     def xy_coordinates(self, num_coordinates: Optional[int] = None,

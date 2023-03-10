@@ -130,16 +130,16 @@ class Test_Shape(unittest.TestCase):
             with self.assertRaises(ValueError):
                 shape._get_num_coordinates()
 
-    def test_points(self):
-        # Verifies that the "points()" method correctly returns the transpose
-        # of the "xy_coordinates()" method
+    def test_convert_points(self):
+        # Verifies that the "xy_coordinates()" output can be correctly
+        # converted to a list of points
         shape = Shape2D(is_closed=True)
         shape.xy_coordinates = Mock(
             return_value=(np.array([1, 2, 3,   4.5, -6.7]),
                           np.array([9, 0, 8.1, 0.6, 7]))
         )
 
-        points = shape.points()
+        points = shape._convert_xy_coordinates_to_points()
         shape.xy_coordinates.assert_called_once()
 
         self.assertTrue(isinstance(points, tuple))

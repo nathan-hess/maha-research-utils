@@ -89,6 +89,11 @@ class Shape2D:
 
             self._default_num_coordinates = int(default_num_coordinates)
 
+    def _convert_xy_coordinates_to_points(self, **kwargs
+                                          ) -> Tuple[np.ndarray, ...]:
+        x_coordinates, y_coordinates = self.xy_coordinates(**kwargs)
+        return tuple(np.transpose(np.array([x_coordinates, y_coordinates])))
+
     def _get_num_coordinates(self, num_coordinates: Optional[int] = None):
         if num_coordinates is not None:
             return num_coordinates
@@ -100,7 +105,7 @@ class Shape2D:
                          '"num_coordinates" argument was be provided nor '
                          'was the "default_num_coordinates" attribute set')
 
-    def points(self, **kwargs) -> Tuple[np.ndarray, ...]:
+    def points(self) -> Tuple[np.ndarray, ...]:
         """Returns a list containing discretized points around the perimeter
         of the shape
 
@@ -115,8 +120,7 @@ class Shape2D:
             all the y-coordinates aggregated (essentially the transpose of
             :py:meth:`points`)
         """
-        x_coordinates, y_coordinates = self.xy_coordinates(**kwargs)
-        return tuple(np.transpose(np.array([x_coordinates, y_coordinates])))
+        raise NotImplementedError  # pragma: no cover
 
     def xy_coordinates(self) -> Tuple[np.ndarray, np.ndarray]:
         """Generates Cartesian coordinates of the shape
