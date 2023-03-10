@@ -114,11 +114,11 @@ class Shape2D:
 
         See Also
         --------
-        points :
-            Returns the same coordinates as :py:meth:`points` except
-            that points are returned with all the x-coordinates aggregated and
-            all the y-coordinates aggregated (essentially the transpose of
-            :py:meth:`points`)
+        xy_coordinates :
+            Returns the same coordinates as :py:meth:`xy_coordinates` except
+            that points are returned as a list, where each entry is a point on
+            the perimeter of the shape (essentially the transpose of
+            :py:meth:`xy_coordinates`)
         """
         raise NotImplementedError  # pragma: no cover
 
