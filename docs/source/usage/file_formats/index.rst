@@ -32,3 +32,4 @@ in the documentation.
     :maxdepth: 1
 
     lookuptable
+    polygonfile
