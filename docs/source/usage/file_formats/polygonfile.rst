@@ -1,3 +1,9 @@
+.. spelling:word-list::
+
+    aren
+    txt
+
+
 .. _fileref-polygon_file:
 
 Polygon File
@@ -100,177 +106,322 @@ File Format
 -----------
 
 A polygon file stores the :math:`x`- and :math:`y`-coordinates of one or more
-polygons, at one or more instants in time.
+polygons, at one or more instants in time.  **The purpose of the file is to store
+whether a point is "inside" the polygon(s) at a specific point in time.**  In the
+event there are multiple polygons, there are several options for specifying how to
+define "inside," as will be discussed below.
 
-The standard format of a polygon file is shown below.  Note that *the numbers
-on the left-hand side are line numbers, and they are not part of the file*.
+.. warning::
 
-.. code-block:: text
-    :linenos:
+    As explained below, the term "time" is used loosely with polygon files.  The
+    measure of time does not necessarily need to be "physical time" (i.e.,
+    measured in seconds).  Rather, it could be "time" measured as, for example,
+    the rotation angle of a pump shaft (in which case ``[TIME_UNIT]`` might be
+    ``degrees``).
 
-    [NUM_TIME_STEPS] [NUM_POLYGONS] [POLYGON_MERGE_METHOD]
-    [TIME_UNIT]: [TIME_BEGIN] [TIME_STEP] [APPROX_METHOD]   <-- (omit if [NUM_TIME_STEPS] == 1)
-    [NUM_COORDINATES] [IS_INSIDE]
-    [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_M]  <-- (polygon 1)
-    [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_M]
-    ...
-    [NUM_COORDINATES] [IS_INSIDE]
-    [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_N]  <-- (polygon [NUM_POLYGONS])
-    [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_N]
-    ... (repeat highlighted lines 3-9 [NUM_TIME_STEPS] times)
 
-Each parameter in the polygon file is explained in detail below.
+General Format
+^^^^^^^^^^^^^^
 
-.. dropdown:: ``[NUM_TIME_STEPS]``
+There are **two primary parts of a polygon file**: (1) the *header* and (2) the
+*polygon coordinates*.  The header lines in the files below are highlighted to
+distinguish the two parts of the file.
+
+The standard format of a full polygon file is shown below.  It can seem confusing
+at first, so if you aren't sure about the format, skip to the later sections in
+which the format is broken down in more detail.  The format is slightly different
+if storing one instant in time or multiple instants, and each is described under
+the tabs below.
+
+.. tab-set::
+
+    .. tab-item:: Single Time Step
+        :sync: polygon-file-single
+
+        .. code-block:: shell
+            :emphasize-lines: 1
+            :linenos:
+
+            1 [Np] [POLYGON_MERGE_METHOD]
+            [NUM_COORD_1] [IS_INSIDE_1]  # <-- polygon 1
+            [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_1}]
+            [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_1}]
+            [NUM_COORD_2] [IS_INSIDE_2]  # <-- polygon 2
+            [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_2}]
+            [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_2}]
+            ...
+            [NUM_COORD_j] [IS_INSIDE_j]  # <-- polygon j
+            [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_j}]
+            [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_j}]
+            ...
+            [NUM_COORD_Np] [IS_INSIDE_Np]  # <-- polygon NUM_POLYGONS
+            [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_Np}]
+            [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_Np}]
+
+    .. tab-item:: Multiple Time Steps
+        :sync: polygon-file-multiple
+
+        .. code-block:: shell
+            :emphasize-lines: 1-2
+            :linenos:
+
+            [Nt] [Np] [POLYGON_MERGE_METHOD]
+            [TIME_UNIT]: [TIME_BEGIN] [TIME_STEP] [TIME_EXTRAP_METHOD]
+            [NUM_COORD_1_1] [IS_INSIDE_1_1]  # <-- time step 1, polygon 1
+            [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_1_1}]
+            [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_1_1}]
+            [NUM_COORD_1_2] [IS_INSIDE_1_2]  # <-- time step 1, polygon 2
+            [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_1_2}]
+            [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_1_2}]
+            ...
+            [NUM_COORD_1_Np] [IS_INSIDE_1_Np]  # <-- time step 1, polygon NUM_POLYGONS
+            [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_1_Np}]
+            [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_1_Np}]
+            [NUM_COORD_2_1] [IS_INSIDE_2_1]  # <-- time step 2, polygon 1
+            [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_2_1}]
+            [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_2_1}]
+            ...
+            [NUM_COORD_i_j] [IS_INSIDE_i_j]  # <-- time step i, polygon j
+            [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_i_j}]
+            [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_i_j}]
+            ...
+            [NUM_COORD_Nt_Np] [IS_INSIDE_Nt_Np]  # <-- time step NUM_TIME_STEPS, polygon NUM_POLYGONS
+            [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_Nt_Np}]
+            [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_Nt_Np}]
+
+Note that *the numbers on the left-hand side are line numbers, and they
+are not part of the file*.
+
+
+.. _fileref-polygon_file-header:
+
+Section 1: Header
+^^^^^^^^^^^^^^^^^
+
+The header contains metadata about the polygon file, formatted as follows:
+
+.. tab-set::
+
+    .. tab-item:: Single Time Step
+        :sync: polygon-file-single
+
+        .. code-block:: shell
+            :linenos:
+
+            1 [Np] [POLYGON_MERGE_METHOD]
+
+    .. tab-item:: Multiple Time Steps
+        :sync: polygon-file-multiple
+
+        .. code-block:: shell
+            :linenos:
+
+            [Nt] [Np] [POLYGON_MERGE_METHOD]
+            [TIME_UNIT]: [TIME_BEGIN] [TIME_STEP] [TIME_EXTRAP_METHOD]
+
+All parameters must be **whitespace-separated**.
+
+
+Header Parameters for All Polygon Files
+"""""""""""""""""""""""""""""""""""""""
+
+These parameters should be included in **all** polygon files.
+
+.. dropdown:: ``[Nt]``: Number of Time Steps
     :animate: fade-in
 
-    - **Type:** Integer
-    - **Restrictions:** Must be greater than or equal to 1
-    - **Required**: Yes
+    The **number of time steps in the file**.  Note that for files with a single
+    time step, ``Nt`` must be 1 (as shown in the code block above).
 
-    Number of time steps stored in the polygon file.
+    Must be an integer greater than or equal to 1.
 
-    As explained, polygon files store data about polygon coordinates at one or
-    more instants in time.  This parameter describes the number of time steps
-    included in the file.
-
-.. dropdown:: ``[NUM_POLYGONS]``
+.. dropdown:: ``[Np]``: Number of Polygons per Time Step
     :animate: fade-in
 
-    - **Type:** Integer
-    - **Restrictions:** Must be greater than or equal to 1
-    - **Required**: No (default is 1 if not specified)
+    The **number of polygons per time step** in the file, which **must** be the
+    same for **all** time steps.
 
-    Number of polygons at every time step.
+    Must be an integer greater than or equal to 1.
 
-    **The Maha Multics software requires that the same number of polygons are
-    present at each time step**.  This parameter describes how many polygons
-    are included for each time step.
+    .. important::
 
-.. dropdown:: ``[TIME_UNIT]``
+        The Maha Multics software requires that the number of polygons is the
+        same for all time steps.  This is an internal limitation of the software.
+
+.. dropdown:: ``[POLYGON_MERGE_METHOD]``: Method for Combining Disjoint Polygons
     :animate: fade-in
 
-    - **Type:** String
-    - **Restrictions:** Must be a unit recognized by the Maha Multics software
-    - **Required**: Yes if ``[NUM_TIME_STEPS] = 1``; otherwise omit this line
+    In the event that there are multiple polygons per time step (i.e., ``Np > 1``),
+    there are a variety of ways they could be combined.  We might want to know
+    whether a point is inside of *all* of the specified polygons, or *any* of
+    them, as a few examples.
 
-    Units of time for the polygon file.
+    There are three supported options for combining multiple disjoint polygons:
 
-    This parameter specifies the units which will be applied to the
-    ``[TIME_BEGIN]`` and ``[TIME_STEP]`` parameters.
+    .. list-table::
+        :header-rows: 1
+        :widths: 1 3
 
-.. dropdown:: ``[TIME_BEGIN]``
+        * - ``[POLYGON_MERGE_METHOD]``
+          - Description
+        * - ``0``
+          - If a point is considered "inside" of the union of polygons in the
+            file if it is inside of *any* of the ``Np`` polygons.
+        * - ``1``
+          - If a point is considered "inside" of the union of polygons in the
+            file if it is inside of *all* of the ``Np`` polygons.
+        * - ``2``
+          - If a point is considered "inside" of the union of polygons in the
+            file if it is inside of *exactly one* of the ``Np`` polygons.
+
+    Note that whether a point is inside of each of the ``Np`` polygons will
+    be defined by the ``IS_INSIDE`` parameter, discussed in the
+    :ref:`fileref-polygon_file-coordinates` section.
+
+    This parameters is only relevant for polygon files in which ``Np > 1``
+    but a value should be included in all polygon files (if ``Np = 1``, this
+    parameter is simply ignored).
+
+
+Header Parameters for Files with Multiple Time Steps
+""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+These parameters should be included **only** for polygon files multiple time steps (``Nt > 1``).
+
+.. dropdown:: ``[TIME_UNIT]``: Time Unit
     :animate: fade-in
 
-    - **Type:** Floating-point number
-    - **Restrictions:** Must be a real number
-    - **Required**: Yes if ``[NUM_TIME_STEPS] = 1``; otherwise omit this line
+    A string describing the units in which the ``[TIME_BEGIN]`` and ``[TIME_STEP]``
+    parameters are defined.
 
-    Initial time.
+    .. note::
+        Recall that the Maha Multics software uses "time" loosely, and the "time" can
+        also be defined in terms of quantities such as "degrees of rotation of the
+        pump shaft" or similar.
 
-    This parameter specifies the time for the first set of polygons stored in
-    the file.
+.. dropdown:: ``[TIME_BEGIN]``: Initial Time
+    :animate: fade-in
 
-.. dropdown:: ``[TIME_STEP]``
+    An integer or decimal number specifying the time for the first set of
+    polygons stored in the file.
+
+.. dropdown:: ``[TIME_STEP]``: Constant Time Step
     :animate: fade-in
 
     - **Type:** Floating-point number
     - **Restrictions:** Must be a real number greater than 0
 
-    Time step between each of the ``[NUM_POLYGONS]`` specified polygons.
+    An integer or decimal number specifying the time step between each of
+    the ``[NUM_POLYGONS]`` specified polygons.
 
-    **The Maha Multics software assumes that there is a constant time step
-    between each time step stored in polygon files.**  This parameter specifies
-    this constant time step.
+    .. important::
 
-.. dropdown:: ``[APPROX_METHOD]``
+        The Maha Multics software requires that the time step is constant.  This
+        is an internal limitation of the software.
+
+.. dropdown:: ``[TIME_EXTRAP_METHOD]``: Extrapolation for Time Values
     :animate: fade-in
-
-    - **Type:** Integer
-    - **Restrictions:** Must be one of: 0, 2, 3
-
-    Describes how interpolation between time steps and extrapolation outside
-    the defined time range are performed.
 
     The parameters ``[NUM_TIME_STEPS]``, ``[TIME_BEGIN]``, and ``[TIME_STEP]``
     specify a range of times over which polygons will be provided; let us
-    denote this range :math:`t \in [t_{min}, t_{max}]`.  There are two issues
-    that need to be addressed.  First, polygons are specified at a *discrete*
-    number of time steps -- how do we *interpolate* between time steps?
-    Second, suppose the time :math:`t` falls outside the range
-    :math:`[t_{min}, t_{max}]` -- how do we *extrapolate*?
+    denote this range :math:`t \in [t_{min}, t_{max}]`.  This poses an
+    issue: what should be done if the time :math:`t` falls outside this range?
 
-    **The Maha Multics software uses the same option to specify both
-    interpolation and extrapolation behavior**.  Users can choose between
-    the options in the table below.
+    It is not straightforward to "interpolate" or "extrapolate" polygons,
+    since they can have an arbitrary number of coordinates that change in
+    arbitrary ways each time step.  Therefore, if :math:`t` falls outside
+    :math:`[t_{min}, t_{max}]`, it must be "rescaled" to fall in this range.
+
+    Two options are provided for this "rescaling," described below:
 
     .. list-table::
         :header-rows: 1
-        :widths: 5 7 8
+        :widths: 1 3
 
-        - * ``[APPROX_METHOD]``
-          * Interpolation Behavior
-          * Extrapolation Behavior
-        - * **0** or **2** (nearest neighbor)
-          * No interpolation, nearest neighbor
-          * No extrapolation, nearest neighbor
-        - * **3** (periodic)
-          * No interpolation, nearest neighbor
-          * Assume data are periodic.  See more detailed explanation below.
-
-    **Periodic Extrapolation:** To perform "periodic" extrapolation, it is
-    assumed that the data between :math:`t_{min}` and :math:`t_{max}` form
-    a repeating cycle with period :math:`t_{max} - t_{max}`.  Thus, when
-    attempting to extrapolate a value for time :math:`t`, the value of
-    :math:`t` is modified as follows:
-
-    .. math:: t = ((t - t_{min}) \% (t_{max} - t_{min})) + t_{min}
-    
-    Where :math:`\%` denotes the modulo operator.
+        * - ``[TIME_EXTRAP_METHOD]``
+          - Description
+        * - **0** or **2** (saturation)
+          - When reading data from the polygon file, if :math:`t \lt t_{min}`,
+            it is rescaled by :math:`t = t_{min}`, and if :math:`t \gt t_{max}`,
+            it is rescaled by :math:`t = t_{max}`.
+        * - **3** (periodic)
+          - Assumes that the polygon data are periodic with period
+            :math:`t_{min} - t_{max}`.  If :math:`t` falls outside the range
+            :math:`[t_{min}, t_{max}]`, it is rescaled by
+            :math:`t = ((t - t_{min}) \% (t_{max} - t_{min})) + t_{min}`,
+            where :math:`\%` denotes the modulo operator.
 
     .. note::
 
-        These options may seem illogical, but the reason is that these options
-        are shared with other interpolation/extrapolation Maha Multics code.
-        Thus, although values of ``0`` and ``2`` produce identical behavior
-        for polygon files, for other applications these produce different
-        results.  Similarly, this is why ``1`` is not an option -- it is an
-        option for other code that performs interpolation/extrapolation, but
-        not polygon files.
+        Why is ``1`` not an option?  This is unfortunately a limitation hard-coded
+        in the Maha Multics source code.
 
-.. dropdown:: ``[NUM_COORDINATES]``
+
+.. _fileref-polygon_file-coordinates:
+
+Section 2: Polygon Coordinates
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This section contains the :math:`x`- and :math:`y`-coordinates for all polygons
+in the file, for every time step.  The general structure for specifying these
+points (for a single polygon) is shown below:
+
+.. code-block:: text
+
+    [NUM_COORD] [IS_INSIDE]
+    [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD}]
+    [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD}]
+
+Note that Section 2 of a polygon file typically contains a number of code blocks
+similar to above.  However, each has the same format, so only a single such block
+will be discussed here.  To see how to use multiple such blocks, refer to the
+:ref:`fileref-polygon_file-examples` section.
+
+The following parameters must be included in this section:
+
+.. dropdown:: ``[NUM_COORD]``: Number of Points on Polygon Perimeter
     :animate: fade-in
 
-    - **Type:** Integer
-    - **Restrictions:** Must be greater than or equal to 3
+    The number of :math:`x`- and :math:`y`-coordinates specifying the polygon
+    perimeter.
 
-    The number of x- and y-coordinates that specifies each polygon at the
-    given time step.
+    Must be an integer greater than or equal to 3.
 
-    This parameter should be provided at the beginning of data for each
-    time step.  Polygons can be specified by an arbitrary number of points,
-    and this parameter describes the number of x- and y-coordinates that will
-    be used to define the boundary of all polygons for the corresponding time
-    step.
+    .. note::
 
-    **The Maha Multics software requires that all polygons have the same number
-    of coordinates at any given time step**.  There are cases when this is not
-    advantageous, such as if polygons are of significantly different size;
-    however, this is currently a limitation of Maha Multics.  It is possible to
-    vary ``[NUM_COORDINATES]`` for different time steps, but it must be the same
-    for all polygons at any given time step.
+        This information is technically redundant since the coordinates themselves
+        are given.  This is an internal limitation of the Maha Multics software.
 
-    Note that this information is technically redundant since the coordinates
-    themselves are given.  However, this is a limitation of the Maha Multics
-    software and must be included for the software to function.
+.. dropdown:: ``[IS_INSIDE]``: How to Define Area "Inside" the Polygon
+    :animate: fade-in
 
-.. warning::
+    This input clarifies, for every polygon, what area is considered to be "inside"
+    the polygon.  A polygon encloses a given geometric region, and this area is
+    typically considered to be "inside" the polygon if ``IS_INSIDE`` is set to 1.
+    However, setting ``IS_INSIDE`` to 0 will reverse this convention.  The figure
+    below illustrates these conventions visually.
 
-    As explained above, the term "time" is used loosely with polygon files.  The
-    measure of time does not necessarily need to be "physical time" (i.e.,
-    measured in seconds).  Rather, it could be "time" measured as, for example,
-    the rotation angle of a pump shaft (in which case ``[TIME_UNIT]`` might be
-    ``degrees``).
+    .. figure:: ./images/polygon_file_is_inside.png
+        :width: 75%
+
+    .. note::
+
+        This value should almost always be ``1``.  It is primarily included in
+        the Maha Multics software for backwards compatibility.
+
+.. dropdown:: ``[X_COORDINATE_UNIT]`` and ``[Y_COORDINATE_UNIT]``: Units
+    :animate: fade-in
+
+    These parameters specify the units for the :math:`x`- and
+    :math:`y`-coordinates specified **on the same line as the unit**.
+
+.. dropdown:: ``[X_1], [Y_1], ..., [X_N], [Y_N]``: Perimeter Coordinates
+    :animate: fade-in
+
+    The :math:`x`- and :math:`y`-coordinates of the polygon perimeter must be
+    provided on two separate lines.  All coordinates should be **whitespace-separated**,
+    and there should be a total of ``NUM_COORD`` :math:`x`-coordinates and
+    ``NUM_COORD`` :math:`y`-coordinates.
 
 
 Comments, Whitespace, and Line Endings
@@ -287,16 +438,119 @@ On Linux and MacOS, LF line endings (``\n``) must be used.  On Windows,
 either LF (``\n``) or CRLF (``\r\n``) line endings may be used.
 
 
+.. _fileref-polygon_file-examples:
+
 Examples
 --------
 
 Single, Stationary Polygon
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Consider perhaps the simplest possible polygon file: a single polygon, at a single
+time step.  Suppose that we want to describe a rectangle with vertices :math:`(1, 0)`,
+:math:`(5, 0)`, :math:`(5, 2.5)`, :math:`(1, 2.5)`.
 
-Single, Moving Polygon
-^^^^^^^^^^^^^^^^^^^^^^
+.. figure:: ./images/polygon_file_example1.png
+    :width: 75%
+
+In this case, there is one time step (``Nt = 1``) and a single polygon (``Np = 1``).
+Since there is only one polygon, ``POLYGON_MERGE_METHOD`` is not relevant (we'll
+set it to 0 for this example).  We'll assume that all coordinates are in units of
+``m`` and that the area enclosed by the rectangle is "inside" the polygon
+(``IS_INSIDE = 1``).
+
+Taken together, these parameters result in the following polygon file:
+
+.. code-block:: text
+    :caption: polygon_file_single_stationary.txt
+
+    1 1 0
+    4 1
+    m: 1  5  5    1
+    m: 0  0  2.5  2.5
 
 
 Multiple, Stationary Polygons
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Let's extend the previous example to describe the area inside of a union of two polygons:
+
+1. A rectangle with vertices :math:`(1, 0)`, :math:`(5, 0)`, :math:`(5, 2.5)`, :math:`(1, 2.5)`
+2. A triangle with vertices :math:`(5, 0)`, :math:`(5, 2.5)`, :math:`(7.5, 0)`
+
+Visually, this union is the following pentagon:
+
+.. figure:: ./images/polygon_file_example2.png
+
+In this example, there is one time step (``Nt = 1``) and two polygons (``Np = 2``).  Since
+we want to consider the area enclosed by either of the two polygons as "inside" their
+union, ``POLYGON_MERGE_METHOD`` should be 0.  We'll assume that all coordinates are in
+units of ``cm`` and that the area enclosed by both the rectangle and triangle is "inside"
+the polygon union (``IS_INSIDE = 1``).
+
+Taken together, these parameters result in the following polygon file:
+
+.. code-block:: text
+    :caption: polygon_file_multiple_stationary.txt
+
+    1 2 0
+    4 1
+    cm: 1  5  5    1
+    cm: 0  0  2.5  2.5
+    3 1
+    cm: 5  5    7.5
+    cm: 0  2.5  0
+
+
+Single, Moving Polygon
+^^^^^^^^^^^^^^^^^^^^^^
+
+Finally, consider a case in which a polygon is moving.  This is particularly
+applicable to fluid power applications, as this may reflect the moving
+boundary conditions in lubricating films.
+
+As a simple example, consider a rectangular polygon that moves between
+:math:`t = 0\ ms` and :math:`t = 2\ ms` as shown below.
+
+.. figure:: ./images/polygon_file_example3.gif
+    :width: 75%
+
+Thus, the rectangle has the following vertices at each time step:
+
+.. list-table::
+    :header-rows: 1
+    :widths: 1 3
+
+    * - :math:`t`
+      - Vertices
+    * - :math:`0\ ms`
+      - :math:`(1, 1)`, :math:`(3, 1)`, :math:`(3, 2)`, :math:`(1, 2)`
+    * - :math:`1\ ms`
+      - :math:`(2, 1)`, :math:`(4, 1)`, :math:`(4, 2)`, :math:`(2, 2)`
+    * - :math:`2\ ms`
+      - :math:`(3, 1)`, :math:`(5, 1)`, :math:`(5, 2)`, :math:`(3, 2)`
+
+In this case, there are three time steps (``Nt = 3``) and one polygon (``Np = 1``).
+Since there is only one polygon, ``POLYGON_MERGE_METHOD`` is not relevant (we'll
+set it to 0 for this example).  The units of time are ``ms`` (``[TIME_UNITS] = ms``),
+and since the time begins at zero and advances in :math:`1\ ms` increments,
+``[TIME_BEGIN] = 0`` and ``[TIME_STEP] = 1``.  Assuming that we want to use
+"saturation" for time extrapolation, ``[TIME_EXTRAP_METHOD] = 0``.
+
+Based on the parameters described above and assuming that the coordinates are in
+units of ``ft``, these parameters result in the following polygon file:
+
+.. code-block:: text
+    :caption: polygon_file_single_moving.txt
+
+    3 1 0
+    ms: 0 1 0
+    4 1
+    cm: 1  3  3  1
+    cm: 1  1  2  2
+    4 1
+    cm: 2  4  4  2
+    cm: 1  1  2  2
+    4 1
+    cm: 3  5  5  3
+    cm: 1  1  2  2

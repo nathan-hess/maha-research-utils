@@ -22,6 +22,8 @@ parsers
 piecewise
 pre
 programmatically
+rescaled
+rescaling
 subclasses
 Subclasses
 Whitespace
