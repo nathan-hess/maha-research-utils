@@ -26,7 +26,7 @@ class Circle(ClosedShape2D):
     --------
     Create a circle centered at :math:`(0,0)` with radius :math:`2`:
 
-    >>> circle = mahautils.shape_designer.shapes.Circle((0,0), radius=2)
+    >>> circle = mahautils.shapes.Circle((0,0), radius=2)
 
     Generate points around the circle's circumference (output is rounded here
     for more easily understandable display):
@@ -231,7 +231,7 @@ class Circle(ClosedShape2D):
         Create a :py:class:`Circle` object and plot it with Matplotlib:
 
         >>> import matplotlib.pyplot as plt
-        >>> circle = mahautils.shape_designer.shapes.Circle((0,0), radius=2)
+        >>> circle = mahautils.shapes.Circle((0,0), radius=2)
         >>> fig = plt.plot(*circle.xy_coordinates(num_coordinates=1000))
         """
         # Determine the number of coordinates to output

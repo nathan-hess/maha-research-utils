@@ -3,8 +3,8 @@ import unittest
 import matplotlib.pyplot as plt
 import pyxx
 
-from mahautils.shape_designer import Layer
-from mahautils.shape_designer.shapes import Circle, ClosedShape2D, Shape2D
+from mahautils.shapes import Layer
+from mahautils.shapes.geometry import Circle, ClosedShape2D, Shape2D
 
 
 class Test_Layer(unittest.TestCase):

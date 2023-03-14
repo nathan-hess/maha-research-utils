@@ -35,7 +35,7 @@ general-purpose research tasks as well as simplify interaction with the
 
     Overview <api_reference/index>
     api_reference/multics
-    api_reference/shape_designer
+    api_reference/shapes
     api_reference/utils
 
 

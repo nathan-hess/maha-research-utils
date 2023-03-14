@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple, Union
 import matplotlib.pyplot as plt
 import pyxx
 
-from mahautils.shape_designer.shapes.shape import Shape2D
+from mahautils.shapes.geometry.shape import Shape2D
 
 
 class Layer(pyxx.arrays.TypedListWithID[Shape2D]):

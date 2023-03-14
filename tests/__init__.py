@@ -34,5 +34,5 @@ def max_array_diff(array1, array2):
 
 # Import and run tests
 from .multics import *
-from .shape_designer import *
+from .shapes import *
 from .utils import *

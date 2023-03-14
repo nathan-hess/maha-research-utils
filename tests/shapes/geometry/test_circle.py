@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from mahautils.shape_designer.shapes import (
+from mahautils.shapes import (
     CartesianPoint2D,
     Circle,
 )
@@ -46,7 +46,7 @@ class Test_Circle(unittest.TestCase):
         # generated correctly
         self.assertEqual(
             self.circle.__repr__(),
-            "<class 'mahautils.shape_designer.shapes.circle.Circle'> center=(1.2, 3.5), radius=5.0"
+            "<class 'mahautils.shapes.geometry.circle.Circle'> center=(1.2, 3.5), radius=5.0"
         )
 
     def test_str(self):
@@ -54,7 +54,7 @@ class Test_Circle(unittest.TestCase):
         # generated correctly
         self.assertEqual(
             str(self.circle),
-            "<class 'mahautils.shape_designer.shapes.circle.Circle'> center=(1.2, 3.5), radius=5.0"
+            "<class 'mahautils.shapes.geometry.circle.Circle'> center=(1.2, 3.5), radius=5.0"
         )
 
     def test_set_center(self):

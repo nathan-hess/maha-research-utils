@@ -32,7 +32,7 @@ class Polygon(ClosedShape2D):
     Create a triangle:
 
     >>> vertices = [[0, 0], [1, 0], [1, 2]]
-    >>> triangle = mahautils.shape_designer.shapes.Polygon(vertices)
+    >>> triangle = mahautils.shapes.Polygon(vertices)
 
     View the points on the boundary of the polygon, optionally repeating the
     start/end point of the polygon:

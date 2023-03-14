@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 import numpy as np
 
-from mahautils.shape_designer.shapes import (
+from mahautils.shapes import (
     ClosedShape2D,
     OpenShape2D,
     Shape2D,

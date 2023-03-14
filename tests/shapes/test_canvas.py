@@ -1,7 +1,7 @@
 import unittest
 
-from mahautils.shape_designer import Canvas, Layer
-from mahautils.shape_designer.shapes import Shape2D
+from mahautils.shapes import Canvas, Layer
+from mahautils.shapes.geometry import Shape2D
 
 
 class Test_Canvas(unittest.TestCase):

@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from mahautils.shape_designer.shapes import (
+from mahautils.shapes import (
     CartesianPoint2D,
     Point,
 )
@@ -54,7 +54,7 @@ class Test_Point(unittest.TestCase):
     def test_repr(self):
         # Verifies that printable string representation of `Point` objects
         # is returned correctly
-        class_name = "<class 'mahautils.shape_designer.shapes.point.Point'>"
+        class_name = "<class 'mahautils.shapes.geometry.point.Point'>"
 
         with self.subTest(dim=0):
             self.assertEqual(self.point.__repr__(), f'{class_name} ()')

@@ -14,6 +14,7 @@ Package Modules
 ---------------
 
 - :py:mod:`mahautils.multics` -- Classes for parsing Maha Multics input and output files
+- :py:mod:`mahautils.shapes` -- Tools for creating patterns of geometric shapes
 - :py:mod:`mahautils.utils` -- Utilities to support other code in the MahaUtils package
 
 

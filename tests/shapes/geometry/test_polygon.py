@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from mahautils.shape_designer.shapes import Polygon
+from mahautils.shapes import Polygon
 
 
 class Test_Polygon(unittest.TestCase):

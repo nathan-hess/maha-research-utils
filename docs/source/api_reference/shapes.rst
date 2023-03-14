@@ -5,25 +5,25 @@
    kwargs
 
 
-mahautils.shape_designer
-========================
+mahautils.shapes
+================
 
-.. automodule:: mahautils.shape_designer
+.. automodule:: mahautils.shapes
 
-.. currentmodule:: mahautils.shape_designer
+.. currentmodule:: mahautils.shapes
 
 
 Shapes
 ------
 
 The classes below can be used to specify and generate geometric shapes.  These
-objects provide the "backend" of the :py:mod:`mahautils.shape_designer` module,
+objects provide the "backend" of the :py:mod:`mahautils.shapes` module,
 and they are used by other tools in this module when generating geometry.
 
 Points
 ^^^^^^
 
-.. inheritance-diagram:: shapes.Point shapes.CartesianPoint2D
+.. inheritance-diagram:: Point CartesianPoint2D
     :parts: 1
 
 |
@@ -32,14 +32,14 @@ Points
     :toctree: ./api
     :template: ../_templates/api_reference_class_template.rst
 
-    shapes.Point
-    shapes.CartesianPoint2D
+    Point
+    CartesianPoint2D
 
 
 2D Shapes
 ^^^^^^^^^
 
-.. inheritance-diagram:: shapes.Shape2D shapes.ClosedShape2D shapes.OpenShape2D shapes.Circle shapes.Polygon
+.. inheritance-diagram:: Shape2D ClosedShape2D OpenShape2D Circle Polygon
     :parts: 1
 
 |
@@ -48,11 +48,11 @@ Points
     :toctree: ./api
     :template: ../_templates/api_reference_class_template.rst
 
-    shapes.Shape2D
-    shapes.ClosedShape2D
-    shapes.OpenShape2D
-    shapes.Circle
-    shapes.Polygon
+    Shape2D
+    ClosedShape2D
+    OpenShape2D
+    Circle
+    Polygon
 
 
 Layers and Canvases
