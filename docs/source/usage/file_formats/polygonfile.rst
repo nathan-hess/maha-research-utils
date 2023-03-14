@@ -74,9 +74,8 @@ Definitions
     :animate: fade-in
 
     As discussed by `Wolfram MathWorld <https://mathworld.wolfram.com/Polygon.html>`__,
-    there is no universally-accepted definition of a polygon.  The definition
-    that the Maha Multics software uses a combination of elements of different
-    definitions of a polygon from multiple sources.
+    there is no universally-accepted definition of a polygon.  The Maha Multics software
+    uses a combination of elements of different definitions from multiple sources.
 
     In general terms, the Maha Multics software defines a polygon as a closed,
     two-dimensional (2D) region bounded by a series of connected line segments

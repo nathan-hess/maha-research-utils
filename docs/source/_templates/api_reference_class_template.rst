@@ -1,9 +1,12 @@
 .. spelling:word-list::
 
    args
+   CartesianPoint
+   ClosedShape
    DataFrame
    exps
    FluidPropertyFile
+   kwargs
    maha
    MahaMulticsConfigFile
    MahaMulticsUnit
@@ -12,6 +15,8 @@
    multics
    ndarray
    np
+   num
+   OpenShape
    printDict
    SimResults
    str
