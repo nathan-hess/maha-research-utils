@@ -524,9 +524,9 @@ class SimResults(MahaMulticsConfigFile):
         # Extract list of variables in "printDict"
         sim_results_vars, comments, _, _ = self.extract_section_by_keyword(
             section_label      = 'printDict',
-            begin_regex        = r'\s*printDict\s*{\s*',
-            end_regex          = r'\s*}\s*',
-            section_line_regex = r'\s*([@?])\s*([\w\d\._]+)\s+\[([^\s]+)\]\s*',
+            begin_regex        = r'^\s*printDict\s*{\s*',
+            end_regex          = r'^\s*}\s*$',
+            section_line_regex = r'^\s*([@?])\s*([\w\d\._]+)\s+\[([^\s]+)\]\s*$',
             max_sections       = 1,
         )
 
