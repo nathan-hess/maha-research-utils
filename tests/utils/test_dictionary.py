@@ -397,3 +397,44 @@ class Test_Dictionary_Insert(Test_Dictionary):
             with self.subTest(method=method):
                 with self.assertRaises(KeyError):
                     getattr(self.dictionary, method)(0, 'c', 3.14)
+
+
+class Test_Dictionary_Types(Test_Dictionary):
+    def test_required_key_type(self):
+        # Checks that required key type can be enforced
+        test_cases = [
+            str,
+            (float, str),
+        ]
+
+        for types in test_cases:
+            with self.subTest(types=types):
+                d = Dictionary(required_key_type=types)
+
+                with self.subTest(valid=True):
+                    d['myKey'] = True
+                    self.assertDictEqual(d, {'myKey': True})
+
+                with self.subTest(valid=False):
+                    with self.assertRaises(TypeError):
+                        d[0] = True
+
+    def test_required_value_type(self):
+        # Checks that required value type can be enforced
+        test_cases = [
+            str,
+            (float, str),
+        ]
+
+        for types in test_cases:
+            with self.subTest(types=types):
+                d = Dictionary(required_value_type=types)
+
+                with self.subTest(valid=True):
+                    d['myKey1'] = 'abcd'
+                    d['myKey2'] = 'efgh'
+                    self.assertDictEqual(d, {'myKey1': 'abcd', 'myKey2': 'efgh'})
+
+                with self.subTest(valid=False):
+                    with self.assertRaises(TypeError):
+                        d['myKey'] = True
