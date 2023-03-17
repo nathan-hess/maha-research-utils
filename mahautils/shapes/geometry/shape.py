@@ -23,7 +23,7 @@ class Shape2D:
 
     def __init__(self, is_closed: bool,
                  default_num_coordinates: Optional[int] = None,
-                 construction: bool = False):
+                 construction: bool = False) -> None:
         """Creates an object representing a 2D geometric shape
 
         Defines an object which represents a general shape and can return
@@ -150,7 +150,8 @@ class ClosedShape2D(Shape2D):
     """
 
     def __init__(self, default_num_coordinates: Optional[int] = None,
-                 construction: bool = False):
+                 construction: bool = False,
+                 polygon_file_enclosed_conv: int = 1) -> None:
         """Creates an object representing a closed, 2D geometric shape
 
         Defines an object which represents a closed shape in the 2D Cartesian
@@ -164,12 +165,48 @@ class ClosedShape2D(Shape2D):
         construction : bool, optional
             Whether the shape is a "construction shape" meant for visual
             display but not functional geometry (default is ``False``)
+        polygon_file_enclosed_conv : int, optional
+            Convention for considering enclosed area when generating a polygon
+            file from :py:class:`ClosedShape2D` objects (default is ``1``)
         """
         super().__init__(
             is_closed=True,
             default_num_coordinates=default_num_coordinates,
-            construction=construction
+            construction=construction,
         )
+
+        self.polygon_file_enclosed_conv = polygon_file_enclosed_conv
+
+    @property
+    def polygon_file_enclosed_conv(self) -> int:
+        """Convention for considering enclosed area when generating a polygon
+        file from :py:class:`ClosedShape2D` objects
+
+        **This property is exclusively intended for use when generating Maha
+        Multics polygon files.**  As discussed on the :ref:`fileref-polygon_file`
+        page, when generating Maha Multics polygon files, the ``ENCLOSED_CONV``
+        option can be set for any given closed shape to indicate whether the
+        area inside the shape (as determined by the winding number algorithm) is
+        considered by the polygon file to to be "enclosed" area.  This property
+        is designed to store the value of this ``ENCLOSED_CONV`` option for any
+        :py:class:`ClosedShape2D` objects that are to be incorporated into a
+        polygon file.
+
+        .. note::
+
+            For more information about the interpretation of this option, refer
+            to the :ref:`Polygon File Format <fileref-polygon_file-enclosed_conv>`
+            page.
+        """
+        return self._polygon_file_enclosed_conv
+
+    @polygon_file_enclosed_conv.setter
+    def polygon_file_enclosed_conv(self, polygon_file_enclosed_conv: int) -> None:
+        if polygon_file_enclosed_conv not in (0, 1):
+            raise ValueError('Polygon file enclosed area convention must be '
+                             'equal to 1 or 0')
+
+        self._polygon_file_enclosed_conv = polygon_file_enclosed_conv
 
     def is_inside(self, point: Union[Array_Float2, CartesianPoint2D],
                   perimeter_is_inside: bool = True) -> bool:
@@ -206,7 +243,7 @@ class OpenShape2D(Shape2D):
     """
 
     def __init__(self, default_num_coordinates: Optional[int] = None,
-                 construction: bool = False):
+                 construction: bool = False) -> None:
         """Creates an object representing an open, 2D geometric shape
 
         Defines an object which represents an open shape in the 2D Cartesian

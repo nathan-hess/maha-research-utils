@@ -49,7 +49,8 @@ class Circle(ClosedShape2D):
     def __init__(self, center: Union[Array_Float2, CartesianPoint2D],
                  radius: Optional[float] = None, diameter: Optional[float] = None,
                  default_num_coordinates: Optional[int] = None,
-                 construction: bool = False):
+                 construction: bool = False,
+                 polygon_file_enclosed_conv: int = 1) -> None:
         """Creates an object representing a circle
 
         Defines a circle in the 2D Cartesian plane, locating it based on the
@@ -69,6 +70,9 @@ class Circle(ClosedShape2D):
         construction : bool, optional
             Whether the shape is a "construction shape" meant for visual
             display but not functional geometry (default is ``False``)
+        polygon_file_enclosed_conv : int, optional
+            Convention for considering enclosed area when generating a polygon
+            file from :py:class:`ClosedShape2D` objects (default is ``1``)
 
         Notes
         -----
@@ -78,7 +82,8 @@ class Circle(ClosedShape2D):
         """
         super().__init__(
             default_num_coordinates=default_num_coordinates,
-            construction=construction
+            construction=construction,
+            polygon_file_enclosed_conv=polygon_file_enclosed_conv,
         )
 
         # Store circle center.  Mypy is disabled for this line because it

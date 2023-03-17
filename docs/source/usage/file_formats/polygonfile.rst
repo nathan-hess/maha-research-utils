@@ -408,6 +408,8 @@ The following parameters must be included in this section:
         This information is technically redundant since the coordinates themselves
         are given.  This is an internal limitation of the Maha Multics software.
 
+.. _fileref-polygon_file-enclosed_conv:
+
 .. dropdown:: ``[ENCLOSED_CONV]``: How to Define Area "Enclosed By" the Polygon
     :animate: fade-in
 
