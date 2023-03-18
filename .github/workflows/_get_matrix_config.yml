@@ -29,4 +29,4 @@ jobs:
 
       - name: Set up Workflow Matrix
         id: set-matrix
-        run: echo "::set-output name=matrix::${{ env.WORKFLOW_MATRIX_CONFIG }}"
+        run: echo "matrix=${{ env.WORKFLOW_MATRIX_CONFIG }}" >> $GITHUB_OUTPUT

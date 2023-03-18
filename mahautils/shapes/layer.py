@@ -5,7 +5,8 @@ shapes.
 import itertools
 from typing import List, Optional, Tuple, Union
 
-import matplotlib.pyplot as plt
+# Mypy type checking disabled for packages that are not PEP 561-compliant
+import matplotlib.pyplot as plt  # type: ignore
 import pyxx
 
 from mahautils.shapes.geometry.shape import Shape2D
@@ -63,7 +64,7 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
         self.name = f'layer{self.id}' if name is None else name
 
     @property
-    def color(self):
+    def color(self) -> Union[str, Tuple[float, float, float]]:
         """The color with which to display the layer in plots
 
         Notes
@@ -84,7 +85,8 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
 
         # Set layer color
         if color == 'default':
-            self._color = matplotlib_colors[self.id % len(matplotlib_colors)]
+            self._color: Union[str, Tuple[float, float, float]] \
+                = matplotlib_colors[self.id % len(matplotlib_colors)]
         else:
             self._color = color
 

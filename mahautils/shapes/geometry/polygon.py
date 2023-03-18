@@ -7,7 +7,8 @@ Cartesian coordinate system.
 import copy
 from typing import List, Tuple, Union
 
-import matplotlib.path
+# Mypy type checking disabled for packages that are not PEP 561-compliant
+import matplotlib.path  # type: ignore
 import numpy as np
 
 from .point import Array_Float2, CartesianPoint2D, Point

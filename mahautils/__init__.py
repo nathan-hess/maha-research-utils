@@ -6,7 +6,7 @@ research work and interacting with the Maha Multics software.
 
 
 # PROGRAM VERSION ------------------------------------------------------------
-__version__ = '1.0.0'
+__version__ = '0.1.0'
 
 
 # PACKAGE MODULES ------------------------------------------------------------

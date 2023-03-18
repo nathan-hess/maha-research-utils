@@ -29,4 +29,4 @@ jobs:
     steps:
       - name: Output Workflow Success
         id: set-output
-        run: echo "::set-output name=success::true"
+        run: echo "success=true" >> $GITHUB_OUTPUT
