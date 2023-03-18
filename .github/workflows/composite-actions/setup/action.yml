@@ -31,7 +31,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
 
-    - name: Set up Python Release Version
+    - name: Set up Python (Version Used for Packaging Releases)
       uses: actions/setup-python@v4
       if: ${{ inputs.python-version == 'release' }}
       with:
@@ -46,6 +46,9 @@ runs:
       shell: bash
       run: |
         python3 -m pip install --upgrade pip
-        python3 -m pip install wheel numpy sympy
-        python3 -m pip install --index-url https://test.pypi.org/simple/ pyxx
+        python3 -m pip install wheel
         python3 -m pip install -r "${GITHUB_WORKSPACE}/${{ inputs.pip-requirements-file }}"
+
+    - name: List Installed Python Packages
+      shell: bash
+      run: python3 -m pip list
