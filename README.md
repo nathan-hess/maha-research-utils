@@ -1,6 +1,6 @@
 # MahaUtils
 
-**Python Tools for Research Tasks at the Maha Fluid Power Research Center at Purdue University**
+**Python Tools for Research at the Maha Fluid Power Research Center at Purdue University**
 
 ## Overview
 
