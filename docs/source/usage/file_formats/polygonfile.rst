@@ -264,6 +264,8 @@ These parameters should be included in **all** polygon files.
         The Maha Multics software requires that the number of polygons is the
         same for all time steps.  This is an internal limitation of the software.
 
+.. _fileref-polygon_file-polygon_merge:
+
 .. dropdown:: ``[POLYGON_MERGE_METHOD]``: Method for Combining Disjoint Polygons
     :animate: fade-in
 
@@ -297,6 +299,11 @@ These parameters should be included in **all** polygon files.
     This parameters is only relevant for polygon files in which ``Np > 1``
     but a value should be included in all polygon files (if ``Np = 1``, this
     parameter is simply ignored).
+
+    .. note::
+
+        The same ``[POLYGON_MERGE_METHOD]`` must be used for all time steps.  This
+        is a limitation hard-coded in the Maha Multics software.
 
 
 Header Parameters for Files with Multiple Time Steps
@@ -334,6 +341,8 @@ These parameters should be included **only** for polygon files multiple time ste
 
         The Maha Multics software requires that the time step is constant.  This
         is an internal limitation of the software.
+
+.. _fileref-polygon_file-time_extrap:
 
 .. dropdown:: ``[TIME_EXTRAP_METHOD]``: Extrapolation for Time Values
     :animate: fade-in

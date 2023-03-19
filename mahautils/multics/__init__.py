@@ -7,6 +7,7 @@ and post-processing tasks.
 
 from .configfile import MahaMulticsConfigFile
 from .fluidprop import FluidPropertyFile
+from .polygonfile import PolygonFile
 from .units import (
     MahaMulticsUnit,
     MahaMulticsUnitConverter,
