@@ -29,7 +29,8 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
     _id = itertools.count(0)
 
     def __init__(self, *shapes: Shape2D, name: Optional[str] = None,
-                 color: Union[str, Tuple[float, float, float]] = 'default'
+                 color: Union[str, Tuple[float, float, float]] = 'default',
+                 print_multiline: bool = True,
                  ) -> None:
         """Creates a new layer to store shapes
 
@@ -48,6 +49,10 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
             The color with which to display the layer in plots.  If not
             provided or set to ``'default'``, the colors from Matplotlib's
             default color order are used
+        print_multiline : bool, optional
+            Whether to return a printable string representation of the list in
+            multiline format (default is ``True``).  Multiline format places
+            each item in the list on its own line
 
         Notes
         -----
@@ -57,8 +62,8 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
         on `this page <https://matplotlib.org/stable/gallery/color
         /named_colors.html>`__.
         """
-        super().__init__(*shapes, list_type=Shape2D, print_multiline=True,
-                         multiline_padding=1)
+        super().__init__(*shapes, list_type=Shape2D,
+                         print_multiline=print_multiline, multiline_padding=1)
 
         self.color = color
         self.name = f'layer{self.id}' if name is None else name
