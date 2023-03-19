@@ -1,3 +1,4 @@
+import copy
 import unittest
 
 import numpy as np
@@ -40,6 +41,12 @@ class Test_Circle(unittest.TestCase):
             self.assertNotEqual(
                 Circle(center=(0, 1), radius=2),
                 Circle(center=(0, 1), diameter=4.5))
+
+        with self.subTest(cause='different_units'):
+            circle_units = copy.deepcopy(self.circle)
+            circle_units.units = 'm'
+
+            self.assertNotEqual(self.circle, circle_units)
 
     def test_repr(self):
         # Verifies that printable string representation of `Circle` objects is

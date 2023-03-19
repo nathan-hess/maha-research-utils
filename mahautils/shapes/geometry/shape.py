@@ -9,10 +9,11 @@ from typing import Optional, Tuple, Union
 
 import numpy as np
 
+from .geometry import Geometry
 from .point import Array_Float2, CartesianPoint2D
 
 
-class Shape2D:
+class Shape2D(Geometry):
     """Represents an arbitrary, two-dimensional shape
 
     This class is intended to represent an arbitrary 2D shape.  Note that
@@ -23,7 +24,8 @@ class Shape2D:
 
     def __init__(self, is_closed: bool,
                  default_num_coordinates: Optional[int] = None,
-                 construction: bool = False) -> None:
+                 construction: bool = False,
+                 units: Optional[str] = None) -> None:
         """Creates an object representing a 2D geometric shape
 
         Defines an object which represents a general shape and can return
@@ -40,7 +42,13 @@ class Shape2D:
         construction : bool, optional
             Whether the shape is a "construction shape" meant for visual
             display but not functional geometry (default is ``False``)
+        units : str, optional
+            The units in which the geometry is defined, or ``None`` to
+            indicate dimensionless geometry or that units are to be ignored
+            (default is ``None``)
         """
+        super().__init__(units=units)
+
         self._is_closed = bool(is_closed)
         self.construction = construction
         self.default_num_coordinates = default_num_coordinates
@@ -151,7 +159,8 @@ class ClosedShape2D(Shape2D):
 
     def __init__(self, default_num_coordinates: Optional[int] = None,
                  construction: bool = False,
-                 polygon_file_enclosed_conv: int = 1) -> None:
+                 polygon_file_enclosed_conv: int = 1,
+                 units: Optional[str] = None) -> None:
         """Creates an object representing a closed, 2D geometric shape
 
         Defines an object which represents a closed shape in the 2D Cartesian
@@ -168,11 +177,16 @@ class ClosedShape2D(Shape2D):
         polygon_file_enclosed_conv : int, optional
             Convention for considering enclosed area when generating a polygon
             file from :py:class:`ClosedShape2D` objects (default is ``1``)
+        units : str, optional
+            The units in which the geometry is defined, or ``None`` to
+            indicate dimensionless geometry or that units are to be ignored
+            (default is ``None``)
         """
         super().__init__(
             is_closed=True,
             default_num_coordinates=default_num_coordinates,
             construction=construction,
+            units=units,
         )
 
         self.polygon_file_enclosed_conv = polygon_file_enclosed_conv
@@ -243,7 +257,8 @@ class OpenShape2D(Shape2D):
     """
 
     def __init__(self, default_num_coordinates: Optional[int] = None,
-                 construction: bool = False) -> None:
+                 construction: bool = False, units: Optional[str] = None,
+                 ) -> None:
         """Creates an object representing an open, 2D geometric shape
 
         Defines an object which represents an open shape in the 2D Cartesian
@@ -261,7 +276,8 @@ class OpenShape2D(Shape2D):
         super().__init__(
             is_closed=False,
             default_num_coordinates=default_num_coordinates,
-            construction=construction
+            construction=construction,
+            units=units,
         )
 
     def xy_coordinates(self, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:

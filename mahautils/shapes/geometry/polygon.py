@@ -5,7 +5,7 @@ Cartesian coordinate system.
 """
 
 import copy
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import matplotlib.path  # type: ignore
@@ -53,7 +53,8 @@ class Polygon(ClosedShape2D):
 
     def __init__(self, vertices: ListOfPoints2D,
                  construction: bool = False,
-                 polygon_file_enclosed_conv: int = 1) -> None:
+                 polygon_file_enclosed_conv: int = 1,
+                 units: Optional[str] = None) -> None:
         """Creates an object representing a polygon
 
         Parameters
@@ -67,6 +68,10 @@ class Polygon(ClosedShape2D):
         polygon_file_enclosed_conv : int, optional
             Convention for considering enclosed area when generating a polygon
             file from :py:class:`ClosedShape2D` objects (default is ``1``)
+        units : str, optional
+            The units in which the geometry is defined, or ``None`` to
+            indicate dimensionless geometry or that units are to be ignored
+            (default is ``None``)
         """
         # Mypy disabled as a workaround for python/mypy#3004
         self.vertices = vertices  # type: ignore
@@ -75,6 +80,7 @@ class Polygon(ClosedShape2D):
             default_num_coordinates=None,
             construction=construction,
             polygon_file_enclosed_conv=polygon_file_enclosed_conv,
+            units=units,
         )
 
     @property

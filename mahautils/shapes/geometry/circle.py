@@ -50,7 +50,8 @@ class Circle(ClosedShape2D):
                  radius: Optional[float] = None, diameter: Optional[float] = None,
                  default_num_coordinates: Optional[int] = None,
                  construction: bool = False,
-                 polygon_file_enclosed_conv: int = 1) -> None:
+                 polygon_file_enclosed_conv: int = 1,
+                 units: Optional[str] = None) -> None:
         """Creates an object representing a circle
 
         Defines a circle in the 2D Cartesian plane, locating it based on the
@@ -73,6 +74,10 @@ class Circle(ClosedShape2D):
         polygon_file_enclosed_conv : int, optional
             Convention for considering enclosed area when generating a polygon
             file from :py:class:`ClosedShape2D` objects (default is ``1``)
+        units : str, optional
+            The units in which the geometry is defined, or ``None`` to
+            indicate dimensionless geometry or that units are to be ignored
+            (default is ``None``)
 
         Notes
         -----
@@ -84,6 +89,7 @@ class Circle(ClosedShape2D):
             default_num_coordinates=default_num_coordinates,
             construction=construction,
             polygon_file_enclosed_conv=polygon_file_enclosed_conv,
+            units=units,
         )
 
         # Store circle center.  Mypy is disabled for this line because it
@@ -110,6 +116,10 @@ class Circle(ClosedShape2D):
     def __eq__(self, value: object) -> bool:
         # Check that operand is of type "Circle"
         if not isinstance(value, Circle):
+            return False
+
+        # Check that units are the same
+        if not self._has_identical_units(value):
             return False
 
         # If circles have the same center and radius, they are considered equal

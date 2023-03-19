@@ -9,15 +9,17 @@ floating-point numbers.
 """
 
 import math
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
+
+from .geometry import Geometry
 
 # Type alias for a list or tuple containing two floating-point numbers
 Array_Float2 = Union[List[float], Tuple[float, float], np.ndarray]
 
 
-class Point:
+class Point(Geometry):
     """Base class representing an arbitrary point in space
 
     This is a generic class that represents an arbitrary point in any
@@ -34,10 +36,20 @@ class Point:
     :py:attr:`coordinates` attributes of the same shape and values.
     """
 
-    def __init__(self):
+    def __init__(self, units: Optional[str] = None):
         """Creates an instance of a :py:class:`Point` class and sets the point
-        coordinates to an empty tuple"""
-        self._coordinates = ()
+        coordinates to an empty tuple
+
+        Parameters
+        ----------
+        units : str, optional
+            The units in which the geometry is defined, or ``None`` to
+            indicate dimensionless geometry or that units are to be ignored
+            (default is ``None``)
+        """
+        super().__init__(units=units)
+
+        self._coordinates: Tuple[float, ...] = ()
 
         # Iterable index
         self.__iter_index = 0
@@ -45,6 +57,10 @@ class Point:
     def __eq__(self, value) -> bool:
         # Verify that `value` is of the same type of point
         if not isinstance(value, self.__class__):
+            return False
+
+        # Check that units are the same
+        if not self._has_identical_units(value):
             return False
 
         # If points don't have the same number of coordinates, they aren't equal
@@ -129,7 +145,7 @@ class CartesianPoint2D(Point):
     """
 
     def __init__(self, *args: Union[Array_Float2, 'CartesianPoint2D', float],
-                 **kwargs):
+                 units: Optional[str] = None, **kwargs):
         """Defines a point in the 2D Cartesian coordinate system
 
         Creates a :py:class:`CartesianPoint2D` instance and optionally allows
@@ -141,6 +157,10 @@ class CartesianPoint2D(Point):
             Positional arguments provided when creating the point object.  See
             the "Notes" section for information on how to use positional
             arguments to specify the point location
+        units : str, optional
+            The units in which the geometry is defined, or ``None`` to
+            indicate dimensionless geometry or that units are to be ignored
+            (default is ``None``)
         kwargs : Any, optional
             Keyword arguments provided when creating the point object.  See
             the "Notes" section for information on how to use keyword arguments
@@ -163,7 +183,7 @@ class CartesianPoint2D(Point):
         arguments *must* be specified: ``x`` and ``y``.  Both arguments must
         be numeric types (integer or floating-point values).
         """
-        super().__init__()
+        super().__init__(units=units)
 
         # Variable that indicates whether the point coordinates have already
         # been stored
