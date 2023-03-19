@@ -113,7 +113,56 @@ directory with the following content:
     }
 
 
+Grouping Simulation Results Parameters
+--------------------------------------
+
+It can also be helpful to group similar simulation results variables to keep
+your simulation results file organized.  This can be accomplished by assigning
+a "group" to parameters using the :py:class:`mahautils.multics.SimResults.set_group`
+method.
+
+For instance, to create a group for parameters related to position, run:
+
+>>> sim_results.set_group('position_x', 'Position')
+>>> sim_results.set_group('position_y', 'Position')
+>>> sim_results.set_group('position_z', 'Position')
+
+And to create a group for parameters related to speed, run:
+
+>>> sim_results.set_group('speed_x', 'Speed')
+>>> sim_results.set_group('speed_y', 'Speed')
+>>> sim_results.set_group('speed_z', 'Speed')
+
+Finally, write your simulation results file to the disk:
+
+>>> sim_results.write('simulation_results_grouped.txt')
+
+A file named ``simulation_results_grouped.txt`` should have been created in
+your working directory with the following content:
+
+.. code-block:: ini
+    :caption: simulation_results_grouped.txt
+    :linenos:
+
+    # Title: Tutorial Simulation Results File
+
+    printDict{
+        @t             [s]
+
+        # Position
+        @position_x    [m]
+        @position_y    [micron]
+        @position_z    [micron]
+
+        # Speed
+        ?speed_x       [m/s]
+        ?speed_y       [mm/s]
+        ?speed_z       [mm/s]
+    }
+
+
 .. testcleanup::
 
     import os
     os.remove('simulation_results.txt')
+    os.remove('simulation_results_grouped.txt')

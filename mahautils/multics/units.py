@@ -483,6 +483,9 @@ class MahaMulticsUnitConverter(pyxx.units.UnitConverter):
     5. Amount of substance: mole [:math:`mol`]
     6. Electric current: ampere [:math:`A`]
     7. Luminous intensity: candela [:math:`cd`]
+
+    For a list of units available by default, please refer to the
+    :ref:`section-unitconverter_units` page.
     """
 
     def __init__(self):
