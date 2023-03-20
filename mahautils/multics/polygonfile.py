@@ -223,7 +223,7 @@ class PolygonFile(MahaMulticsConfigFile):
             except (TypeError, ValueError) as exception:
                 raise PolygonFileFormatError(
                     f'Error parsing polygon file (line {line_idx+1}): initial '
-                    'time and number of time steps must be numbers'
+                    'time and time step must be numbers'
                 ) from exception
 
             try:
@@ -250,6 +250,11 @@ class PolygonFile(MahaMulticsConfigFile):
             layer = Layer(print_multiline=False)
 
             for _ in range(polygons_per_time_step):
+                if len(self.contents) < (line_idx + 2):
+                    raise PolygonFileFormatError(
+                        'Polygon file appears to be missing data for '
+                        'some polygons')
+
                 # Extract polygon metadata
                 line_idx += 1
 
@@ -334,6 +339,10 @@ class PolygonFile(MahaMulticsConfigFile):
                 )
 
             self._polygon_data[time_vals[i]] = layer
+
+        if line_idx != (len(self.contents) - 1):
+            raise PolygonFileFormatError(
+                'Polygon file contains more polygons than expected')
 
         self.contents.clear()
         self.contents.extend(original_contents)
