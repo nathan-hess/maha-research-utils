@@ -60,43 +60,6 @@ class PolygonFile(MahaMulticsConfigFile):
         return len(self._polygon_data)
 
     @property
-    def polygon_data(self) -> Dictionary[float, Layer]:
-        """A reference to the dictionary containing the polygon data in the
-        file
-
-        This is a :py:class:`mahautils.utils.Dictionary` instance containing
-        the polygon data in the file.  The keys in the dictionary are the time
-        values (with units given by :py:attr:`time_units`) and the values
-        should be :py:class:`mahautils.shapes.Layer` instances containing
-        :py:class:`mahautils.shapes.Polygon` objects corresponding to each
-        time step.
-
-        Warnings
-        --------
-        This dictionary is returned **by reference**, so modifying it will
-        alter the data in the :py:class:`PolygonFile` object.
-
-        Notes
-        -----
-        This attribute can only be accessed if :py:attr:`polygon_merge_method`,
-        :py:attr:`time_extrap_method`, and :py:attr:`time_units` are all set
-        to values other than ``None``.
-        """
-        if (
-            self.polygon_merge_method is None
-            or (
-                self.num_time_steps > 1
-                and None in [self.time_extrap_method, self.time_units]
-            )
-        ):
-            raise PolygonFileMissingDataError(
-                'In order to edit or view the "polygon_data" dictionary, the '
-                'following attributes must be set: (\'polygon_merge_method\', '
-                '\'time_extrap_method\', \'time_units\')')
-
-        return self._polygon_data
-
-    @property
     def polygon_merge_method(self) -> int:
         """The method used to combine disjoint polygons
 
@@ -374,3 +337,50 @@ class PolygonFile(MahaMulticsConfigFile):
 
         self.contents.clear()
         self.contents.extend(original_contents)
+
+    def polygon_data(self, writable: bool = False) -> Dictionary[float, Layer]:
+        """A copy of or a reference to the dictionary containing the polygon
+        data in the file
+
+        This method returns a :py:class:`mahautils.utils.Dictionary` instance
+        containing the polygon data in the file.  The keys in the dictionary
+        are the time values (with units given by :py:attr:`time_units`) and
+        the values should be :py:class:`mahautils.shapes.Layer` instances
+        containing :py:class:`mahautils.shapes.Polygon` objects corresponding
+        to each time step.
+
+        .. important::
+
+            The dictionary can either be returned **by copy** or **by
+            reference**, depending on the value of the ``writable`` argument.
+            If returned by reference, then the dictionary can be directly
+            edited to modify the polygon file (adding new time steps, removing
+            time steps, changing polygon properties, etc.).
+
+        Parameters
+        ----------
+        writable : bool, optional
+            Whether to return a reference to the object's polygon data
+            dictionary (default is ``False``)
+
+        Notes
+        -----
+        If ``writable`` is ``True``, this method can only be accessed if
+        :py:attr:`polygon_merge_method`, :py:attr:`time_extrap_method`, and
+        :py:attr:`time_units` are all defined.  This ensures consistency of
+        the data stored in the :py:class:`PolygonFile` object.
+        """
+        if not writable:
+            return copy.deepcopy(self._polygon_data)
+
+        if None in [
+            self._polygon_merge_method,
+            self._time_extrap_method,
+            self._time_units,
+        ]:
+            raise PolygonFileMissingDataError(
+                'In order to edit or view the "polygon_data" dictionary, the '
+                'following attributes must be set: (\'polygon_merge_method\', '
+                '\'time_extrap_method\', \'time_units\')')
+
+        return self._polygon_data
