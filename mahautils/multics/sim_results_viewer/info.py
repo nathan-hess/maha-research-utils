@@ -1,8 +1,7 @@
 """Information box showing software version and credits.
 """
 
-# Mypy type checking is disabled for several packages because they are not
-# PEP 561-compliant
+# Mypy type checking disabled for packages that are not PEP 561-compliant
 import dash                              # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 import numpy as np
@@ -18,7 +17,8 @@ from .constants import (
 )
 
 
-def _info_box():
+def info_box():
+    """Creates an "about" box showing program version and acknowledgements"""
     contents = [
         dbc.ModalHeader(
             dbc.ModalTitle(f'{PROJECT_NAME} SimViewer v{VERSION}'),

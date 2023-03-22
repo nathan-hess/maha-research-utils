@@ -8,22 +8,29 @@ results.
 # pylint: disable=unused-argument
 
 import argparse
-import base64
 import sys
-from typing import Dict, List, Optional, Union
+from typing import List, Optional
 
-# Mypy type checking is disabled for several packages because they are not
-# PEP 561-compliant
+# Mypy type checking disabled for packages that are not PEP 561-compliant
 import dash                              # type: ignore
 from dash import Input, Output, State    # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 
-from mahautils.multics import SimResults
 from mahautils.utils import Dictionary
-from .constants import PROJECT_NAME, GUI_SHORT_NAME, VERSION
-from .header import _app_header
-from .info import _info_box
-from .plotting import _graph, _plot_controls
+from .constants import (
+    PROJECT_NAME,
+    GUI_SHORT_NAME,
+    SIM_RESULTS_FILE_T,
+    VERSION,
+)
+from .header import app_header
+from .info import info_box
+from .panel import (
+    generate_file_table_body,
+    simviewer_config_panel,
+)
+from .plotting import graph
+from .utils import load_simresults
 
 
 app = dash.Dash(
@@ -34,7 +41,7 @@ app = dash.Dash(
     ],
     update_title=None,
 )
-app.title = f'{PROJECT_NAME} {GUI_SHORT_NAME} v{VERSION}'
+app.title = f'{PROJECT_NAME} {GUI_SHORT_NAME}'
 
 
 # Global variables for data storage
@@ -55,8 +62,7 @@ app.title = f'{PROJECT_NAME} {GUI_SHORT_NAME} v{VERSION}'
 #    tabs/windows.  By using a global variable, the same files will be
 #    displayed in all browser tabs/windows.
 
-_sim_results_files: Dictionary[str, Dict[str, Union[SimResults, bool]]] \
-    = Dictionary()
+_sim_results_files: SIM_RESULTS_FILE_T = Dictionary()
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -82,10 +88,10 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # Create and load Dash app
     app.layout = dash.html.Div([
-        _app_header(),
-        _graph(),
-        _plot_controls(),
-        _info_box(),
+        app_header(),
+        graph(),
+        simviewer_config_panel(),
+        info_box(),
     ])
 
     app.run_server(debug=bool(args.debug), port=int(args.port))
@@ -103,31 +109,9 @@ def main(argv: Optional[List[str]] = None) -> int:
 def generate_file_table(n_clicks: int, contents: Optional[str], name: Optional[str]):
     """Reads uploaded simulation results from a file"""
     if (contents is not None) and (name is not None):
-        content_data = contents.split(',', maxsplit=1)[1]
-        decoded_data = base64.b64decode(content_data).decode('utf_8')
+        _sim_results_files[name] = {'file': load_simresults(contents), 'enabled': True}
 
-        sim_results = SimResults()
-        sim_results.set_contents(decoded_data.split('\n'), trailing_newline=True)
-        sim_results.parse()
-
-        _sim_results_files[name] = {'file': sim_results, 'enabled': True}
-
-    children = []
-    for i, (key, data) in enumerate(_sim_results_files.items()):
-        children.append(dash.html.Tr([
-            dash.html.Td(dbc.Switch(
-                value=data['enabled'],
-                id={'component': 'file-table-switch', 'index': i},
-            )),
-            dash.html.Td(dash.html.H6(key)),
-            dash.html.Td(dbc.Button(
-                dash.html.I(className='bi bi-trash'),
-                color='danger',
-                id={'component': 'file-table-delete-button', 'index': i},
-            )),
-        ]))
-
-    return children, None
+    return generate_file_table_body(_sim_results_files), None
 
 
 @app.callback(
@@ -188,8 +172,7 @@ def toggle_plot_config_panel(n_clicks, is_open):
 
 
 @app.callback(
-    Output('user-file-name', 'invalid'),
-    Output('load-file-button', 'disabled'),
+    Output('file-overwrite-alert', 'is_open'),
     Input('user-file-name', 'value'),
     prevent_initial_call=True,
 )
@@ -197,6 +180,6 @@ def validate_upload_file_name(name: Optional[str]):
     """Checks that the user provided a valid file description for a simulation
     results file"""
     if (name is None) or (len(name) <= 0) or (name in _sim_results_files):
-        return True, True
+        return True
 
-    return False, False
+    return False
