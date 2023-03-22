@@ -27,9 +27,9 @@ def _plot_controls():
 
     contents = [
         dash.html.H5('Data Upload'),
-        dash.html.P('Upload your simulation results file here'),
+        dash.html.P('Upload a new simulation results file here.'),
         dash.dcc.Upload(
-            'Drag and Drop a File',
+            'Drag and Drop or Click to Browse',
             id='upload-data',
             style={
                 'width': '100%',
@@ -43,7 +43,35 @@ def _plot_controls():
                 'margin-right': '0px',
             },
         ),
+        dash.html.Div(
+            dbc.Row([
+                dbc.Col(
+                    dbc.Input(
+                        placeholder='Enter a name for your file...',
+                        id='user-file-name',
+                    ),
+                    width=9, style={'margin-top': '10px'},
+                ),
+                dbc.Col(
+                    dbc.Button('Load', id='load-file-button'),
+                    width=3, style={'margin-top': '10px'},
+                ),
+            ]),
+            id='div-user-file-name',
+        ),
         dash.html.Hr(),
+        dash.html.H5('Current Files'),
+        dash.html.P('Manage your uploaded simulation results files here.'),
+        dbc.Table(
+            [
+                dash.html.Thead(dash.html.Tr([
+                    dash.html.Th('Enabled', style={'width': '15%'}),
+                    dash.html.Th('Name', style={'width': '70%'}),
+                    dash.html.Th('Delete', style={'width': '15%'}),
+                ])),
+                dash.html.Tbody(id='file-list-table-body'),
+            ],
+        ),
     ]
 
     return dbc.Offcanvas(
