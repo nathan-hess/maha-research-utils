@@ -109,15 +109,16 @@ class CartesianPoint2D(Point):
     This class can be used to represent a point in the 2D Cartesian coordinate
     system.  Note that although the axes for such a coordinate system can be
     arbitrary (:math:`xy`-coordinates, :math:`xz`-coordinates, etc.) in this
-    documentation the axes are always referred to as :math:`x` and :math:`y`
-    for simplicity and clarity.
+    class the axes are always referred to as :math:`x` and :math:`y` for
+    simplicity and clarity.
 
     Notes
     -----
     The equality operator (``==``) is defined for points.  Points are
     considered equal if they are of the same type (:py:class:`Point`,
-    :py:class:`CartesianPoint2D`, etc.) and if the points' have
-    :py:attr:`coordinates` attributes of the same shape and values.
+    :py:class:`CartesianPoint2D`, etc.), have :py:attr:`coordinates`
+    attributes of the same shape and values, and have the same value of
+    :py:attr:`units`.
 
     Examples
     --------

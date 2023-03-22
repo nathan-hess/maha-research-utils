@@ -104,7 +104,7 @@ Definitions
 .. dropdown:: Enclosed vs. Inside
     :animate: fade-in
 
-    **This terminology is specific to this documentation.**
+    **This terminology is specific to the MahaUtils project and documentation.**
 
     The key purpose of Maha Multics polygon files is to determine whether points are
     considered "enclosed by" or within a given region of space (typically, so a boundary
