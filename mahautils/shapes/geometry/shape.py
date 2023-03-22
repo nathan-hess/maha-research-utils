@@ -247,6 +247,60 @@ class ClosedShape2D(Shape2D):
         """
         raise NotImplementedError  # pragma: no cover
 
+    def points(self, repeat_end: bool = False) -> Tuple[np.ndarray, ...]:
+        """Returns a list containing discretized points around the perimeter
+        of the shape
+
+        This method returns a tuple, of which each element is a point along
+        the perimeter of the shape.
+
+        Parameters
+        ----------
+        repeat_end : bool, optional
+            Whether the first and last coordinate returned should be the same
+            point (default is ``False``).  This is useful, for instance, when
+            plotting the shape with Matplotlib: if ``repeat_end`` is set to
+            ``False``, there may be a slight gap visible between the end points
+            of the shape
+
+        See Also
+        --------
+        xy_coordinates :
+            Returns the same coordinates as :py:meth:`xy_coordinates` except
+            that points are returned as a list, where each entry is a point on
+            the perimeter of the shape (essentially the transpose of
+            :py:meth:`xy_coordinates`)
+        """
+        raise NotImplementedError  # pragma: no cover
+
+    def xy_coordinates(self, repeat_end: bool = False
+                       ) -> Tuple[np.ndarray, np.ndarray]:
+        """Generates Cartesian coordinates of the shape
+
+        This method generates a set of discretized points around the perimeter
+        of the shape.  Points are returned as a tuple of two NumPy arrays: the
+        first NumPy array contains the x-coordinates of the points, and the
+        second NumPy array contains the y-coordinates.  This format makes it
+        relatively easy to plot the shape using packages like Matplotlib.
+
+        Parameters
+        ----------
+        repeat_end : bool, optional
+            Whether the first and last coordinate returned should be the same
+            point (default is ``False``).  This is useful, for instance, when
+            plotting the shape with Matplotlib: if ``repeat_end`` is set to
+            ``False``, there may be a slight gap visible between the end points
+            of the shape
+
+        See Also
+        --------
+        points :
+            Returns the same coordinates as :py:meth:`xy_coordinates` except
+            that points are returned with the x- and y-coordinates grouped for
+            each point (essentially the transpose of :py:meth:`xy_coordinates`)
+        """
+        raise NotImplementedError  # pragma: no cover
+
 
 class OpenShape2D(Shape2D):
     """A class that represents an open, two-dimensional shape
