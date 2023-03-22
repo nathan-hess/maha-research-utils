@@ -29,7 +29,8 @@ class Canvas(pyxx.arrays.TypedListWithID[Layer]):
 
     _id = itertools.count(0)
 
-    def __init__(self, *layers: Layer, name: Optional[str] = None) -> None:
+    def __init__(self, *layers: Layer, name: Optional[str] = None,
+                 print_multiline: bool = True) -> None:
         """Creates a new canvas to store layers
 
         Creates a new :py:class:`Canvas` object in which a set of
@@ -43,11 +44,15 @@ class Canvas(pyxx.arrays.TypedListWithID[Layer]):
         name : str, optional
             A descriptive name to identify the canvas.  If not provided, the
             canvas name is generated automatically
+        print_multiline : bool, optional
+            Whether to return a printable string representation of the list in
+            multiline format (default is ``True``).  Multiline format places
+            each item in the list on its own line
         """
         super().__init__(
             *layers,
             list_type=Layer,
-            print_multiline=True,
+            print_multiline=print_multiline,
             multiline_padding=1
         )
 

@@ -2,7 +2,7 @@
 data in a key-value format.
 """
 
-from typing import Optional, OrderedDict, Type, TypeVar
+from typing import List, Optional, OrderedDict, Tuple, Type, TypeVar, Union
 
 from pyxx.arrays import max_list_item_len
 
@@ -21,6 +21,10 @@ class Dictionary(OrderedDict[K, V]):
     """
 
     def __init__(self, contents: Optional[dict] = None,
+                 required_key_type: Optional[
+                     Union[Type[K], List[Type[K]], Tuple[Type[K], ...]]] = None,
+                 required_value_type: Optional[
+                     Union[Type[V], List[Type[V]], Tuple[Type[V], ...]]] = None,
                  multiline_print: bool = False,
                  str_indent: int = 0,
                  str_pad_left: int = 1, str_pad_right: int = 2,
@@ -38,6 +42,14 @@ class Dictionary(OrderedDict[K, V]):
         contents : dict, optional
             Python ``dict`` which, if provided, will immediately populate the
             data in the dictionary upon creation (default is ``None``)
+        required_key_type : type or list or tuple, optional
+            One or more required type(s) of which all keys in the dictionary
+            must be a subclass.  Set to ``None`` to allow any type (default is
+            ``None``)
+        required_value_type : type or list or tuple, optional
+            One or more required type(s) of which all values in the dictionary
+            must be a subclass.  Set to ``None`` to allow any type (default is
+            ``None``)
         multiline_print : bool, optional
             Whether to print each entry of the dictionary on its own line when
             converting to a printable string representation (default is
@@ -63,6 +75,10 @@ class Dictionary(OrderedDict[K, V]):
             is ``'%s'``)
         """
         super().__init__()
+
+        # Store required key and value types
+        self._required_key_type = required_key_type
+        self._required_value_type = required_value_type
 
         # Store parameters for representing dictionary as string
         self.multiline_print = multiline_print
@@ -90,6 +106,25 @@ class Dictionary(OrderedDict[K, V]):
             return super().__repr__()
 
         return str(self)
+
+    def __setitem__(self, key, value):
+        if (
+            self._required_key_type is not None
+            and not isinstance(key, self._required_key_type)
+        ):
+            raise TypeError(
+                'Dictionary keys must be of one of the following '
+                f'types: {self._required_key_type}')
+
+        if (
+            self._required_value_type is not None
+            and not isinstance(value, self._required_value_type)
+        ):
+            raise TypeError(
+                'Dictionary values must be of one of the following '
+                f'types: {self._required_value_type}')
+
+        super().__setitem__(key, value)
 
     def __str__(self) -> str:
         if not self._multiline_print:

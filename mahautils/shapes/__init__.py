@@ -11,6 +11,7 @@ from .geometry import (
     CartesianPoint2D,
     Circle,
     ClosedShape2D,
+    Geometry,
     OpenShape2D,
     Point,
     Polygon,

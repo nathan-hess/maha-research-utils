@@ -48,3 +48,15 @@ class VTKInvalidIdentifierError(IndexError):
     """Error thrown if attempting to retrieve data from a VTK file, but the
     identifier provided by the user does not correspond to a single column
     in the VTK data DataFrame"""
+
+
+# POLYGON FILES
+class PolygonFileError(MahaMulticsFileFormatError):
+    """General class for errors involving Maha Multics polygon files"""
+
+class PolygonFileFormatError(PolygonFileError):
+    """Error thrown if formatting issues are encountered in a polygon file"""
+
+class PolygonFileMissingDataError(PolygonFileError):
+    """Error thrown if attempting to edit data in a polygon file without first
+    having defined required attributes"""

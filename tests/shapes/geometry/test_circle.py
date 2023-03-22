@@ -1,3 +1,4 @@
+import copy
 import unittest
 
 import numpy as np
@@ -40,6 +41,12 @@ class Test_Circle(unittest.TestCase):
             self.assertNotEqual(
                 Circle(center=(0, 1), radius=2),
                 Circle(center=(0, 1), diameter=4.5))
+
+        with self.subTest(cause='different_units'):
+            circle_units = copy.deepcopy(self.circle)
+            circle_units.units = 'm'
+
+            self.assertNotEqual(self.circle, circle_units)
 
     def test_repr(self):
         # Verifies that printable string representation of `Circle` objects is
@@ -154,8 +161,8 @@ class Test_Circle(unittest.TestCase):
 
         for num_coordinates, repeat_end in test_cases:
             with self.subTest(num_coordinates=num_coordinates, repeat_end=repeat_end):
-                points = self.circle.points(num_coordinates=num_coordinates,
-                                            repeat_end=repeat_end)
+                points = self.circle.points(repeat_end=repeat_end,
+                                            num_coordinates=num_coordinates)
 
                 self.assertEqual(len(points), num_coordinates)
 
@@ -166,8 +173,8 @@ class Test_Circle(unittest.TestCase):
         # Verifies that x- and y-coordinates of circle circumference can be
         # generated correctly
         with self.subTest(num_coordinates=5, repeat_end=True):
-            coordinates = self.circle.xy_coordinates(num_coordinates=5,
-                                                     repeat_end=True)
+            coordinates = self.circle.xy_coordinates(repeat_end=True,
+                                                     num_coordinates=5)
 
             self.assertEqual(len(coordinates), 2)
 
@@ -177,8 +184,8 @@ class Test_Circle(unittest.TestCase):
                                         np.array([3.5, 8.5, 3.5, -1.5, 3.5])))
 
         with self.subTest(num_coordinates=4, repeat_end=False):
-            coordinates = self.circle.xy_coordinates(num_coordinates=4,
-                                                     repeat_end=False)
+            coordinates = self.circle.xy_coordinates(repeat_end=False,
+                                                     num_coordinates=4)
 
             self.assertEqual(len(coordinates), 2)
 

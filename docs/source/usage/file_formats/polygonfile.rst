@@ -6,8 +6,8 @@
 
 .. _fileref-polygon_file:
 
-Polygon File
-============
+Polygon File Format
+===================
 
 Maha Multics "polygon files" are used to store data about a set of polygons
 whose vertices may change position over time.
@@ -101,14 +101,31 @@ Definitions
     `this paper <https://www.engr.colostate.edu/~dga/documents/papers/point_in_polygon.pdf>`__.
 
 
+.. dropdown:: Enclosed vs. Inside
+    :animate: fade-in
+
+    **This terminology is specific to the MahaUtils project and documentation.**
+
+    The key purpose of Maha Multics polygon files is to determine whether points are
+    considered "enclosed by" or within a given region of space (typically, so a boundary
+    condition can be applied in these regions).  The term **enclosed by** is used in this
+    documentation to consider such regions.
+
+    The term **inside** is a more general mathematical term, commonly characterizing a
+    mathematical problem in determining which points fall inside the perimeter of a
+    polygon.  The term "inside" will be used throughout this page in reference to the
+    mathematical process (e.g., using algorithms such as winding number or ray casting)
+    of solving the point-in-polygon problem.
+
+
 File Format
 -----------
 
 A polygon file stores the :math:`x`- and :math:`y`-coordinates of one or more
 polygons, at one or more instants in time.  **The purpose of the file is to store
-whether a point is "inside" the polygon(s) at a specific point in time.**  In the
+whether a point is "enclosed by" the polygon(s) at a specific point in time.**  In the
 event there are multiple polygons, there are several options for specifying how to
-define "inside," as will be discussed below.
+define "enclosed," as will be discussed below.
 
 .. warning::
 
@@ -142,18 +159,18 @@ the tabs below.
             :linenos:
 
             1 [Np] [POLYGON_MERGE_METHOD]
-            [NUM_COORD_1] [IS_INSIDE_1]  # <-- polygon 1
+            [NUM_COORD_1] [ENCLOSED_CONV_1]  # <-- polygon 1
             [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_1}]
             [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_1}]
-            [NUM_COORD_2] [IS_INSIDE_2]  # <-- polygon 2
+            [NUM_COORD_2] [ENCLOSED_CONV_2]  # <-- polygon 2
             [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_2}]
             [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_2}]
             ...
-            [NUM_COORD_j] [IS_INSIDE_j]  # <-- polygon j
+            [NUM_COORD_j] [ENCLOSED_CONV_j]  # <-- polygon j
             [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_j}]
             [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_j}]
             ...
-            [NUM_COORD_Np] [IS_INSIDE_Np]  # <-- polygon NUM_POLYGONS
+            [NUM_COORD_Np] [ENCLOSED_CONV_Np]  # <-- polygon NUM_POLYGONS
             [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_Np}]
             [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_Np}]
 
@@ -166,25 +183,25 @@ the tabs below.
 
             [Nt] [Np] [POLYGON_MERGE_METHOD]
             [TIME_UNIT]: [TIME_BEGIN] [TIME_STEP] [TIME_EXTRAP_METHOD]
-            [NUM_COORD_1_1] [IS_INSIDE_1_1]  # <-- time step 1, polygon 1
+            [NUM_COORD_1_1] [ENCLOSED_CONV_1_1]  # <-- time step 1, polygon 1
             [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_1_1}]
             [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_1_1}]
-            [NUM_COORD_1_2] [IS_INSIDE_1_2]  # <-- time step 1, polygon 2
+            [NUM_COORD_1_2] [ENCLOSED_CONV_1_2]  # <-- time step 1, polygon 2
             [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_1_2}]
             [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_1_2}]
             ...
-            [NUM_COORD_1_Np] [IS_INSIDE_1_Np]  # <-- time step 1, polygon NUM_POLYGONS
+            [NUM_COORD_1_Np] [ENCLOSED_CONV_1_Np]  # <-- time step 1, polygon NUM_POLYGONS
             [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_1_Np}]
             [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_1_Np}]
-            [NUM_COORD_2_1] [IS_INSIDE_2_1]  # <-- time step 2, polygon 1
+            [NUM_COORD_2_1] [ENCLOSED_CONV_2_1]  # <-- time step 2, polygon 1
             [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_2_1}]
             [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_2_1}]
             ...
-            [NUM_COORD_i_j] [IS_INSIDE_i_j]  # <-- time step i, polygon j
+            [NUM_COORD_i_j] [ENCLOSED_CONV_i_j]  # <-- time step i, polygon j
             [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_i_j}]
             [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_i_j}]
             ...
-            [NUM_COORD_Nt_Np] [IS_INSIDE_Nt_Np]  # <-- time step NUM_TIME_STEPS, polygon NUM_POLYGONS
+            [NUM_COORD_Nt_Np] [ENCLOSED_CONV_Nt_Np]  # <-- time step NUM_TIME_STEPS, polygon NUM_POLYGONS
             [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD_Nt_Np}]
             [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD_Nt_Np}]
 
@@ -247,12 +264,14 @@ These parameters should be included in **all** polygon files.
         The Maha Multics software requires that the number of polygons is the
         same for all time steps.  This is an internal limitation of the software.
 
+.. _fileref-polygon_file-polygon_merge:
+
 .. dropdown:: ``[POLYGON_MERGE_METHOD]``: Method for Combining Disjoint Polygons
     :animate: fade-in
 
     In the event that there are multiple polygons per time step (i.e., ``Np > 1``),
     there are a variety of ways they could be combined.  We might want to know
-    whether a point is inside of *all* of the specified polygons, or *any* of
+    whether a point is enclosed by of *all* of the specified polygons, or *any* of
     them, as a few examples.
 
     There are three supported options for combining multiple disjoint polygons:
@@ -264,22 +283,27 @@ These parameters should be included in **all** polygon files.
         * - ``[POLYGON_MERGE_METHOD]``
           - Description
         * - ``0``
-          - If a point is considered "inside" of the union of polygons in the
-            file if it is inside of *any* of the ``Np`` polygons.
+          - If a point is considered "enclosed by" of the union of polygons in the
+            file if it is enclosed by of *any* of the ``Np`` polygons.
         * - ``1``
-          - If a point is considered "inside" of the union of polygons in the
-            file if it is inside of *all* of the ``Np`` polygons.
+          - If a point is considered "enclosed by" of the union of polygons in the
+            file if it is enclosed by of *all* of the ``Np`` polygons.
         * - ``2``
-          - If a point is considered "inside" of the union of polygons in the
-            file if it is inside of *exactly one* of the ``Np`` polygons.
+          - If a point is considered "enclosed by" of the union of polygons in the
+            file if it is enclosed by of *exactly one* of the ``Np`` polygons.
 
-    Note that whether a point is inside of each of the ``Np`` polygons will
-    be defined by the ``IS_INSIDE`` parameter, discussed in the
+    Note that whether a point is enclosed by of each of the ``Np`` polygons will
+    be defined by the ``ENCLOSED_CONV`` parameter, discussed in the
     :ref:`fileref-polygon_file-coordinates` section.
 
     This parameters is only relevant for polygon files in which ``Np > 1``
     but a value should be included in all polygon files (if ``Np = 1``, this
     parameter is simply ignored).
+
+    .. note::
+
+        The same ``[POLYGON_MERGE_METHOD]`` must be used for all time steps.  This
+        is a limitation hard-coded in the Maha Multics software.
 
 
 Header Parameters for Files with Multiple Time Steps
@@ -317,6 +341,8 @@ These parameters should be included **only** for polygon files multiple time ste
 
         The Maha Multics software requires that the time step is constant.  This
         is an internal limitation of the software.
+
+.. _fileref-polygon_file-time_extrap:
 
 .. dropdown:: ``[TIME_EXTRAP_METHOD]``: Extrapolation for Time Values
     :animate: fade-in
@@ -367,7 +393,7 @@ points (for a single polygon) is shown below:
 
 .. code-block:: text
 
-    [NUM_COORD] [IS_INSIDE]
+    [NUM_COORD] [ENCLOSED_CONV]
     [X_COORDINATE_UNIT]: [X_1] [X_2] ... [X_{NUM_COORD}]
     [Y_COORDINATE_UNIT]: [Y_1] [Y_2] ... [Y_{NUM_COORD}]
 
@@ -391,22 +417,46 @@ The following parameters must be included in this section:
         This information is technically redundant since the coordinates themselves
         are given.  This is an internal limitation of the Maha Multics software.
 
-.. dropdown:: ``[IS_INSIDE]``: How to Define Area "Inside" the Polygon
+.. _fileref-polygon_file-enclosed_conv:
+
+.. dropdown:: ``[ENCLOSED_CONV]``: How to Define Area "Enclosed By" the Polygon
     :animate: fade-in
 
-    This input clarifies, for every polygon, what area is considered to be "inside"
-    the polygon.  A polygon encloses a given geometric region, and this area is
-    typically considered to be "inside" the polygon if ``IS_INSIDE`` is set to 1.
-    However, setting ``IS_INSIDE`` to 0 will reverse this convention.  The figure
-    below illustrates these conventions visually.
+    This input clarifies, for every polygon, what area is considered to be "enclosed by"
+    the polygon.  Particularly for polygons with self-intersecting edges, it can be
+    difficult to intuitively and visually assess which regions are "enclosed by" the
+    polygon.
 
-    .. figure:: ./images/polygon_file_is_inside.png
+    The Maha Multics software uses the `winding number algorithm <https://en.wikipedia.org
+    /wiki/Point_in_polygon#Winding_number_algorithm>`__ to determine which points are
+    inside a polygon.  If these points are to be considered "enclosed by" the polygon
+    for the purposes of the polygon file definition, then set ``ENCLOSED_CONV`` to 1.
+    To reverse this convention, set ``ENCLOSED_CONV`` to 0.
+    
+    The figure and table below clarify these conventions.
+
+    .. figure:: ./images/polygon_file_enclosed_conv.png
         :width: 75%
+
+    .. list-table::
+        :header-rows: 1
+        :widths: 1 3
+
+        * - ``[ENCLOSED_CONV]``
+          - Description
+        * - 1
+          - Points "inside" the polygon based on the winding number algorithm are
+            considered enclosed by the polygon in the Maha Multics polygon file
+        * - 0
+          - Points "inside" the polygon based on the winding number algorithm are
+            considered **not** enclosed by the polygon in the Maha Multics polygon file
 
     .. note::
 
-        This value should almost always be ``1``.  It is primarily included in
-        the Maha Multics software for backwards compatibility.
+        This value should almost always be ``1`` for `simple polygons <https://en.wikipedia.org
+        /wiki/Simple_polygon>`__.  It is primarily included for handling `self-intersecting polygons
+        <https://en.wikipedia.org/wiki/List_of_self-intersecting_polygons>`__ and for backwards
+        compatibility of the Maha Multics software.
 
 .. dropdown:: ``[X_COORDINATE_UNIT]`` and ``[Y_COORDINATE_UNIT]``: Units
     :animate: fade-in
@@ -455,8 +505,8 @@ time step.  Suppose that we want to describe a rectangle with vertices :math:`(1
 In this case, there is one time step (``Nt = 1``) and a single polygon (``Np = 1``).
 Since there is only one polygon, ``POLYGON_MERGE_METHOD`` is not relevant (we'll
 set it to 0 for this example).  We'll assume that all coordinates are in units of
-``m`` and that the area enclosed by the rectangle is "inside" the polygon
-(``IS_INSIDE = 1``).
+``m`` and that the area inside the rectangle based on the winding number algorithm is
+to be considered "enclosed by" the polygon (``ENCLOSED_CONV = 1``).
 
 Taken together, these parameters result in the following polygon file:
 
@@ -472,7 +522,7 @@ Taken together, these parameters result in the following polygon file:
 Multiple, Stationary Polygons
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Let's extend the previous example to describe the area inside of a union of two polygons:
+Let's extend the previous example to a union of two polygons:
 
 1. A rectangle with vertices :math:`(1, 0)`, :math:`(5, 0)`, :math:`(5, 2.5)`, :math:`(1, 2.5)`
 2. A triangle with vertices :math:`(5, 0)`, :math:`(5, 2.5)`, :math:`(7.5, 0)`
@@ -482,10 +532,10 @@ Visually, this union is the following pentagon:
 .. figure:: ./images/polygon_file_example2.png
 
 In this example, there is one time step (``Nt = 1``) and two polygons (``Np = 2``).  Since
-we want to consider the area enclosed by either of the two polygons as "inside" their
+we want to consider the area enclosed by either of the two polygons as enclosed by their
 union, ``POLYGON_MERGE_METHOD`` should be 0.  We'll assume that all coordinates are in
-units of ``cm`` and that the area enclosed by both the rectangle and triangle is "inside"
-the polygon union (``IS_INSIDE = 1``).
+units of ``cm`` and that the area inside both the rectangle and triangle based on the
+winding number algorithm is considered enclosed by the polygon union (``ENCLOSED_CONV = 1``).
 
 Taken together, these parameters result in the following polygon file:
 

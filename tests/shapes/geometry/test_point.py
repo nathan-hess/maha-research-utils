@@ -1,3 +1,4 @@
+import copy
 import unittest
 
 import numpy as np
@@ -39,6 +40,12 @@ class Test_Point(unittest.TestCase):
         with self.subTest(case='different_values'):
             (pnt := Point())._coordinates = (3, 4.001, 5)
             self.assertNotEqual(pnt, self.point3D)
+
+        with self.subTest(cause='different_units'):
+            point3D_units = copy.deepcopy(self.point3D)
+            point3D_units.units = 'm'
+
+            self.assertNotEqual(self.point3D, point3D_units)
 
     def test_len(self):
         # Verifies that the "length" attribute of points is returned correctly

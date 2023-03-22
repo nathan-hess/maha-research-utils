@@ -17,6 +17,7 @@
    np
    num
    OpenShape
+   PolygonFile
    printDict
    SimResults
    str

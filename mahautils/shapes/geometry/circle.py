@@ -49,7 +49,9 @@ class Circle(ClosedShape2D):
     def __init__(self, center: Union[Array_Float2, CartesianPoint2D],
                  radius: Optional[float] = None, diameter: Optional[float] = None,
                  default_num_coordinates: Optional[int] = None,
-                 construction: bool = False):
+                 construction: bool = False,
+                 polygon_file_enclosed_conv: int = 1,
+                 units: Optional[str] = None) -> None:
         """Creates an object representing a circle
 
         Defines a circle in the 2D Cartesian plane, locating it based on the
@@ -69,6 +71,13 @@ class Circle(ClosedShape2D):
         construction : bool, optional
             Whether the shape is a "construction shape" meant for visual
             display but not functional geometry (default is ``False``)
+        polygon_file_enclosed_conv : int, optional
+            Convention for considering enclosed area when generating a polygon
+            file from :py:class:`ClosedShape2D` objects (default is ``1``)
+        units : str, optional
+            The units in which the geometry is defined, or ``None`` to
+            indicate dimensionless geometry or that units are to be ignored
+            (default is ``None``)
 
         Notes
         -----
@@ -78,7 +87,9 @@ class Circle(ClosedShape2D):
         """
         super().__init__(
             default_num_coordinates=default_num_coordinates,
-            construction=construction
+            construction=construction,
+            polygon_file_enclosed_conv=polygon_file_enclosed_conv,
+            units=units,
         )
 
         # Store circle center.  Mypy is disabled for this line because it
@@ -105,6 +116,10 @@ class Circle(ClosedShape2D):
     def __eq__(self, value: object) -> bool:
         # Check that operand is of type "Circle"
         if not isinstance(value, Circle):
+            return False
+
+        # Check that units are the same
+        if not self._has_identical_units(value):
             return False
 
         # If circles have the same center and radius, they are considered equal
@@ -157,8 +172,9 @@ class Circle(ClosedShape2D):
             return distance <= self.radius
         return distance < self.radius
 
-    def points(self, num_coordinates: Optional[int] = None,
-               repeat_end: bool = False) -> Tuple[np.ndarray, ...]:
+    def points(self, repeat_end: bool = False,
+               num_coordinates: Optional[int] = None,
+               ) -> Tuple[np.ndarray, ...]:
         """Returns a list containing discretized points around the
         circumference of the circle
 
@@ -168,17 +184,17 @@ class Circle(ClosedShape2D):
 
         Parameters
         ----------
-        num_coordinates : int, optional
-            The number of points to use when discretizing the circle's shape
-            (default is ``None``).  If this argument is ``None`` or omitted,
-            the number of points is set to :py:attr:`default_num_coordinates`,
-            if provided (otherwise an error is thrown)
         repeat_end : bool, optional
             Whether the first and last coordinate returned should be the same
             point (default is ``False``).  This is useful, for instance, when
             plotting the circle with Matplotlib: if ``repeat_end`` is set to
             ``False``, there may be a slight gap visible between the end points
             of the circle
+        num_coordinates : int, optional
+            The number of points to use when discretizing the circle's shape
+            (default is ``None``).  If this argument is ``None`` or omitted,
+            the number of points is set to :py:attr:`default_num_coordinates`,
+            if provided (otherwise an error is thrown)
 
         See Also
         --------
@@ -193,8 +209,8 @@ class Circle(ClosedShape2D):
             repeat_end=repeat_end,
         )
 
-    def xy_coordinates(self, num_coordinates: Optional[int] = None,
-                       repeat_end: bool = False
+    def xy_coordinates(self, repeat_end: bool = False,
+                       num_coordinates: Optional[int] = None,
                        ) -> Tuple[np.ndarray, np.ndarray]:
         """Generates Cartesian coordinates of the circle
 
@@ -207,17 +223,17 @@ class Circle(ClosedShape2D):
 
         Parameters
         ----------
-        num_coordinates : int, optional
-            The number of points to use when discretizing the circle's shape
-            (default is ``None``).  If this argument is ``None`` or omitted,
-            the number of points is set to :py:attr:`default_num_coordinates`,
-            if provided (otherwise an error is thrown)
         repeat_end : bool, optional
             Whether the first and last coordinate returned should be the same
             point (default is ``False``).  This is useful, for instance, when
             plotting the circle with Matplotlib: if ``repeat_end`` is set to
             ``False``, there may be a slight gap visible between the end points
             of the circle
+        num_coordinates : int, optional
+            The number of points to use when discretizing the circle's shape
+            (default is ``None``).  If this argument is ``None`` or omitted,
+            the number of points is set to :py:attr:`default_num_coordinates`,
+            if provided (otherwise an error is thrown)
 
         See Also
         --------

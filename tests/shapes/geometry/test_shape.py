@@ -154,6 +154,39 @@ class Test_ClosedShape(unittest.TestCase):
     def test_initialize(self):
         self.assertTrue(ClosedShape2D().is_closed)
 
+    def test_polygon_file_enclosed_conv_default(self):
+        # Verifies that the default for the "polygon_file_enclosed_conv"
+        # property is to consider the area inside the shape (as determined
+        # by the winding number algorithm) to be "enclosed" by the shape
+        self.assertEqual(ClosedShape2D().polygon_file_enclosed_conv, 1)
+
+    def test_polygon_file_enclosed_conv_set_get(self):
+        # Verifies that the "polygon_file_enclosed_conv" can be correctly
+        # set and retrieved
+        with self.subTest(method='constructor'):
+            self.assertEqual(
+                ClosedShape2D(polygon_file_enclosed_conv=1).polygon_file_enclosed_conv, 1)
+            self.assertEqual(
+                ClosedShape2D(polygon_file_enclosed_conv=0).polygon_file_enclosed_conv, 0)
+
+        with self.subTest(method='attribute'):
+            shape = ClosedShape2D()
+
+            shape.polygon_file_enclosed_conv = 0
+            self.assertEqual(shape.polygon_file_enclosed_conv, 0)
+
+            shape.polygon_file_enclosed_conv = 1
+            self.assertEqual(shape.polygon_file_enclosed_conv, 1)
+
+    def test_polygon_file_enclosed_conv_invalid(self):
+        # Verifies that an appropriate error is thrown if attempting to set
+        # the "polygon_file_enclosed_conv" to an invalid value
+        with self.assertRaises(ValueError):
+            ClosedShape2D(polygon_file_enclosed_conv=2)
+
+        with self.assertRaises(ValueError):
+            ClosedShape2D(polygon_file_enclosed_conv=-1)
+
 
 class Test_OpenShape(unittest.TestCase):
     def test_initialize(self):

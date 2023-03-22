@@ -17,7 +17,7 @@ File Parsers
 The classes below can be used to read and/or write input and output files
 for the Maha Multics software.
 
-.. inheritance-diagram:: MahaMulticsConfigFile FluidPropertyFile SimResults VTKFile
+.. inheritance-diagram:: MahaMulticsConfigFile FluidPropertyFile PolygonFile SimResults VTKFile
     :parts: 1
 
 |
@@ -28,6 +28,7 @@ for the Maha Multics software.
 
     MahaMulticsConfigFile
     FluidPropertyFile
+    PolygonFile
     SimResults
     VTKFile
 

@@ -484,10 +484,6 @@ class SimResults(MahaMulticsConfigFile):
         This method parses the data in :py:attr:`contents`, extracting
         configuration and simulation results data and storing it in this
         object's attributes for easier reading and editing.
-
-        Note that calling this method will alter the data in
-        :py:attr:`contents` (performs actions such as removing comments and
-        blank lines).
         """
         # Verify that file contents have been read
         super().parse()
