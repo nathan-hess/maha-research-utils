@@ -1,11 +1,14 @@
+import copy
 import unittest
+
+import numpy as np
 
 from mahautils.multics import PolygonFile
 from mahautils.multics.exceptions import (
     PolygonFileFormatError,
     PolygonFileMissingDataError,
 )
-from mahautils.shapes import Layer, Polygon
+from mahautils.shapes import Layer, Polygon, OpenShape2D
 from tests import max_array_diff, SAMPLE_FILES_DIR, TEST_FLOAT_TOLERANCE
 
 
@@ -135,6 +138,27 @@ class Test_PolygonFile_Properties(Test_PolygonFile):
 
         with self.subTest(file='polygon_file_004.txt'):
             self.assertListEqual(self.polygon_file_004_p2_t3.time_values, [0, 1, 2])
+
+    def test_time_step(self):
+        # Verifies that time step is calculated correctly
+        with self.subTest(num_time_steps=1):
+            self.assertEqual(self.polygon_file_001_p1_t1.get_time_step(), 0)
+
+        with self.subTest(num_time_steps=3):
+            self.assertEqual(self.polygon_file_003_p1_t3.get_time_step('ms'), 1)
+
+        with self.subTest(num_time_steps=3, comment='unit_conversion'):
+            self.assertEqual(self.polygon_file_003_p1_t3.get_time_step('s'), 0.001)
+
+        with self.subTest(comment='missing_units'):
+            with self.assertRaises(TypeError):
+                self.polygon_file_003_p1_t3.get_time_step()
+
+        with self.subTest(comment='non_constant_time_step'):
+            self.polygon_file_003_p1_t3._polygon_data[200] = Layer()
+
+            with self.assertRaises(PolygonFileFormatError):
+                self.polygon_file_003_p1_t3.get_time_step('ms')
 
 
 class Test_PolygonFile_Parse(Test_PolygonFile):
@@ -477,3 +501,163 @@ class Test_PolygonFile_Parse(Test_PolygonFile):
 
         with self.assertRaises(PolygonFileFormatError):
             self.polygon_file_blank.parse()
+
+
+class Test_PolygonFile_UpdateContents(Test_PolygonFile):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.square_coordinates = np.array(((0, 0), (1, 0), (1, 1), (0, 1)))
+        self.square = Polygon(self.square_coordinates)
+        self.square_units = Polygon(self.square_coordinates, units='mm')
+
+        self.polygon_file_initialized = copy.deepcopy(self.polygon_file_blank)
+        self.polygon_file_initialized.polygon_merge_method = 0
+        self.polygon_file_initialized.time_extrap_method = 0
+        self.polygon_file_initialized.time_units = 's'
+
+    def test_update_contents_p1_t1(self):
+        # Verifies that the "contents" attribute is correctly populated for
+        # a polygon file with a single polygon and a single time step
+        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
+        polygon_data[6955] = Layer(self.square_units)
+        self.polygon_file_initialized.update_contents()
+
+        self.assertListEqual(
+            self.polygon_file_initialized.contents,
+            [
+             '1 1 0',
+             '4 1',
+             'mm: 0.0 1.0 1.0 0.0',
+             'mm: 0.0 0.0 1.0 1.0',
+            ]
+        )
+
+    def test_update_contents_p2_t3(self):
+        # Verifies that the "contents" attribute is correctly populated for
+        # a polygon file with a single polygon and a single time step
+        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
+        polygon_data[6955] = Layer(
+            self.square_units,
+            Polygon(self.square_coordinates + 1, units='mm'),
+        )
+        polygon_data[6964] = Layer(
+            Polygon(self.square_coordinates + 4, units='m', polygon_file_enclosed_conv=0),
+            self.square_units,
+        )
+        polygon_data[6973] = Layer(
+            Polygon(self.square_coordinates - 8, units='in'),
+            self.square_units,
+        )
+
+        with self.subTest(polygon_merge_method=0, time_extrap_method=0):
+            self.polygon_file_initialized.update_contents()
+
+            self.assertListEqual(
+                self.polygon_file_initialized.contents,
+                [
+                 '3 2 0',
+                 's: 6955 9.0 0',
+                 '4 1',
+                 'mm: 0.0 1.0 1.0 0.0',
+                 'mm: 0.0 0.0 1.0 1.0',
+                 '4 1',
+                 'mm: 1.0 2.0 2.0 1.0',
+                 'mm: 1.0 1.0 2.0 2.0',
+                 '4 0',
+                 'm: 4.0 5.0 5.0 4.0',
+                 'm: 4.0 4.0 5.0 5.0',
+                 '4 1',
+                 'mm: 0.0 1.0 1.0 0.0',
+                 'mm: 0.0 0.0 1.0 1.0',
+                 '4 1',
+                 'in: -8.0 -7.0 -7.0 -8.0',
+                 'in: -8.0 -8.0 -7.0 -7.0',
+                 '4 1',
+                 'mm: 0.0 1.0 1.0 0.0',
+                 'mm: 0.0 0.0 1.0 1.0',
+                ]
+            )
+
+        with self.subTest(polygon_merge_method=1, time_extrap_method=3):
+            self.polygon_file_initialized.polygon_merge_method = 1
+            self.polygon_file_initialized.time_extrap_method = 3
+            self.polygon_file_initialized.update_contents()
+
+            self.assertListEqual(
+                self.polygon_file_initialized.contents,
+                [
+                 '3 2 1',
+                 's: 6955 9.0 3',
+                 '4 1',
+                 'mm: 0.0 1.0 1.0 0.0',
+                 'mm: 0.0 0.0 1.0 1.0',
+                 '4 1',
+                 'mm: 1.0 2.0 2.0 1.0',
+                 'mm: 1.0 1.0 2.0 2.0',
+                 '4 0',
+                 'm: 4.0 5.0 5.0 4.0',
+                 'm: 4.0 4.0 5.0 5.0',
+                 '4 1',
+                 'mm: 0.0 1.0 1.0 0.0',
+                 'mm: 0.0 0.0 1.0 1.0',
+                 '4 1',
+                 'in: -8.0 -7.0 -7.0 -8.0',
+                 'in: -8.0 -8.0 -7.0 -7.0',
+                 '4 1',
+                 'mm: 0.0 1.0 1.0 0.0',
+                 'mm: 0.0 0.0 1.0 1.0',
+                ]
+            )
+
+    def test_update_contents_polygon_merge_method(self):
+        # Verifies that the "contents" attribute is correctly populated for
+        # a polygon file with a single polygon and a single time step with
+        # different "polygon_merge"
+        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
+        polygon_data[6955] = Layer(self.square_units)
+        self.polygon_file_initialized.update_contents()
+
+        self.assertListEqual(
+            self.polygon_file_initialized.contents,
+            ['1 1 0',
+             '4 1',
+             'mm: 0.0 1.0 1.0 0.0',
+             'mm: 0.0 0.0 1.0 1.0',]
+        )
+
+    def test_different_num_polygons(self):
+        # Verifies that an error is thrown if there are different numbers of
+        # polygons for different time steps
+        self.polygon_file_initialized.polygon_data(writable=True)[0] = Layer(self.square)
+        self.polygon_file_initialized.polygon_data(writable=True)[1] = Layer(self.square, self.square)
+
+        with self.assertRaises(PolygonFileFormatError):
+            self.polygon_file_initialized.update_contents()
+
+    def test_negative_time_step(self):
+        # Verifies that an error is thrown if time step is negative
+        self.polygon_file_initialized.polygon_data(writable=True)[2] = Layer(self.square)
+        self.polygon_file_initialized.polygon_data(writable=True)[0] = Layer(self.square)
+
+        with self.assertRaises(PolygonFileFormatError):
+            self.polygon_file_initialized.update_contents()
+
+    def test_missing_units(self):
+        # Verifies that an error is thrown if time step is negative
+        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
+        polygon_data[2] = Layer(self.square)
+        polygon_data[3] = Layer(self.square)
+
+        with self.assertRaises(PolygonFileFormatError):
+            self.polygon_file_initialized.update_contents()
+
+    def test_not_closed_shape(self):
+        # Verifies that an error is thrown if shapes are not subclasses
+        # of `ClosedShape`
+        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
+        polygon_data[2] = Layer(self.square_units)
+        polygon_data[3] = Layer(OpenShape2D(units='mm'))
+
+        with self.assertRaises(PolygonFileFormatError):
+            self.polygon_file_initialized.update_contents()

@@ -11,6 +11,7 @@ import numpy as np
 import pyxx
 
 from mahautils.shapes.geometry.polygon import Polygon
+from mahautils.shapes.geometry.shape import ClosedShape2D
 from mahautils.shapes.layer import Layer
 from mahautils.utils.dictionary import Dictionary
 from .configfile import MahaMulticsConfigFile
@@ -157,7 +158,74 @@ class PolygonFile(MahaMulticsConfigFile):
 
         raise PolygonFileFormatError(error_message)
 
+    def get_time_step(self, units: Optional[str] = None) -> float:
+        """Returns the time step for the polygon file
+
+        Verifies that the polygon file has a constant time step between
+        successive values in :py:attr:`time_values` and returns this time step.
+        If the polygon file has only a single time step, ``0`` is returned.
+
+        Parameters
+        ----------
+        units : str, optional
+            The units in which the time step should be returned.  Required to
+            be provided if the polygon file has more than one time step, but
+            optional otherwise (default is ``None``)
+
+        Returns
+        -------
+        float
+            The time step between successive values in :py:attr:`time_values`,
+            or ``0`` for polygon files with a single time step
+
+        Raises
+        ------
+        PolygonFileFormatError
+            If the polygon file has multiple time values but the time step
+            between them is not consistent
+
+        Notes
+        -----
+        The term "time" is used loosely for polygon files, and "time" may also
+        be given in terms of quantities such as shaft rotation angle.  For
+        more information, refer to the :ref:`fileref-polygon_file` page.
+        """
+        if self.num_time_steps <= 1:
+            return 0
+
+        if units is None:
+            raise TypeError(
+                f'Polygon file has {self.num_time_steps} time steps, so '
+                'argument "units" must be provided')
+
+        fp_tolerance = 1e-12
+
+        time_vals = np.array(self.time_values, dtype=np.float64)
+        time_steps = time_vals[1:] - time_vals[:-1]
+
+        mean_time_step = float(np.mean(time_steps))
+        max_diff = float(np.max(np.abs(time_steps - mean_time_step)))
+
+        if max_diff > fp_tolerance:
+            raise PolygonFileFormatError(
+                'Inconsistent time step in polygon file. The mean time step is '
+                f'{mean_time_step} {self.time_units} but individual time steps '
+                f'differ by up to {max_diff} {self.time_units}'
+            )
+
+        return float(self.unit_converter.convert(
+            quantity=mean_time_step,
+            from_unit=self.time_units, to_unit=units))
+
     def parse(self) -> None:
+        """Parses the file content in the :py:attr:`contents` list and
+        populates attributes (such as the dictionary returned by
+        :py:attr:`polygon_data`) with extracted data
+
+        This method parses the data in :py:attr:`contents`, checking for
+        polygon file format errors and extracting data on individual polygons
+        for easier reading and modification.
+        """
         super().parse()
         original_contents = copy.deepcopy(self.contents)
 
@@ -393,3 +461,57 @@ class PolygonFile(MahaMulticsConfigFile):
                 '\'time_extrap_method\', \'time_units\')')
 
         return self._polygon_data
+
+    def update_contents(self) -> None:
+        """Updates the :py:attr:`contents` list based on object attributes
+
+        This method synchronizes the :py:attr:`contents` list with the data
+        stored in the :py:class:`PolygonFile` attributes.  This step should
+        generally be performed prior to calling :py:meth:`write`, as writing
+        a file directly saves the data in :py:attr:`contents` to disk.
+        """
+        self.contents.clear()
+
+        # Determine number of polygons per time step
+        num_polygons = np.array([len(x) for x in self._polygon_data.values()])
+        polygons_per_time_step = num_polygons[0]
+
+        if not np.all(num_polygons == polygons_per_time_step):
+            raise PolygonFileFormatError(
+                'Different numbers of polygons are present at different time '
+                'steps. To write a polygon file, all time steps must have the '
+                'same number of polygons')
+
+        # Write file
+        self.contents.append(f'{self.num_time_steps} {polygons_per_time_step} '
+                             f'{self.polygon_merge_method}')
+
+        if self.num_time_steps > 1:
+            time_step = self.get_time_step(self.time_units)
+            if time_step <= 0:
+                raise PolygonFileFormatError(
+                    'Polygon file time step cannot be negative or zero '
+                    f'(calculated time step is {time_step} {self.time_units})')
+
+            self.contents.append(f'{self.time_units}: {self.time_values[0]} '
+                                 f'{time_step} {self.time_extrap_method}')
+
+        for t, layer in self._polygon_data.items():
+            for polygon in layer:
+                if polygon.units is None:
+                    raise PolygonFileFormatError(
+                        'Units were not provided for polygon at time '
+                        f'{t} {self.time_units}')
+
+                if not isinstance(polygon, ClosedShape2D):
+                    raise PolygonFileFormatError(
+                        f'Polygon at time {t} {self.time_units} is not a '
+                        f'subclass of `{ClosedShape2D.__name__}`')
+
+                self.contents.append(f'{len(polygon.points())} '
+                                     f'{polygon.polygon_file_enclosed_conv}')
+
+                for coordinates in polygon.xy_coordinates(repeat_end=False):
+                    coordinates_str = [str(x) for x in coordinates]
+                    self.contents.append(
+                        f'{polygon.units}: {" ".join(coordinates_str)}')
