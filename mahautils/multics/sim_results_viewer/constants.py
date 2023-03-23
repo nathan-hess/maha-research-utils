@@ -1,8 +1,6 @@
 """Constants shared throughout the MahaUtils SimViewer GUI.
 """
 
-from typing import Dict
-
 # Importing the package version is a cylic import, but because the
 # `__version__` variable is defined at the beginning of
 # `mahautils/__init__.py`, it is cached and cyclic import does not
@@ -23,7 +21,7 @@ REPO_URL = 'https://github.com/nathan-hess/maha-research-utils'
 
 # TYPE ALIASES ---------------------------------------------------------------
 # Type of global variable which stores simulation results files
-SIM_RESULTS_FILE_T = Dictionary[str, Dict[str, SimResults]]
+SIM_RESULTS_DICT_T = Dictionary[str, SimResults]
 
 
 # STYLING --------------------------------------------------------------------

@@ -89,6 +89,7 @@ def _file_name_input_box():
             ),
         ]),
         id='div-user-file-name',
+        hidden=True,
     )
 
     return children
