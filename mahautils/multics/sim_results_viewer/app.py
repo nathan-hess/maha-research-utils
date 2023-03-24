@@ -55,21 +55,22 @@ def main(argv: Optional[List[str]] = None) -> int:
         argv = sys.argv[1:]
 
     parser = argparse.ArgumentParser(
-        prog='MahaUtilsSimViewer',
+        prog='SimViewer',
         description=('The MahaUtils Simulation Results Viewer is a graphical '
                      'tool that aids in reading Maha Multics simulation '
                      'results files and viewing results. Project documentation '
                      'can be found at https://mahautils.readthedocs.io.'),
     )
-    parser.add_argument('--version', action='version', version=VERSION)
+    parser.add_argument('--port', action='store', type=int, default=8050,
+                        help='port on which to serve the app (default is 8050)')
     parser.add_argument('--debug', action='store_true',
                         help=('enable Dash\'s debug mode (more information: '
                               'https://dash.plotly.com/devtools)'))
-    parser.add_argument('--port', action='store', type=int, default=8050,
-                        help='port on which to serve the app (default is 8050)')
     parser.add_argument('--no-browser', action='store_true',
                         help=('prevent automatically opening a browser window '
                               f'when launching {GUI_SHORT_NAME}'))
+    parser.add_argument('--version', action='version', version=VERSION)
+
     args = parser.parse_args(argv)
 
     port = int(args.port)
