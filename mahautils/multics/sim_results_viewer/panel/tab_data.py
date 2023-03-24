@@ -18,20 +18,24 @@ def data_files_tab():
     contents = [
         dash.html.H5('Data Upload', style={'marginTop': TAB_BAR_PADDING}),
         dash.html.P('Upload a new simulation results file here.'),
-        dash.dcc.Upload(
-            'Drag and Drop or Click to Browse',
-            id='upload-data',
-            style={
-                'width': '100%',
-                'height': '60px',
-                'lineHeight': '60px',
-                'borderWidth': '1px',
-                'borderStyle': 'dashed',
-                'borderRadius': '10px',
-                'textAlign': 'center',
-                'marginLeft': '0px',
-                'marginRight': '0px',
-            },
+        dbc.Spinner(
+            dash.dcc.Upload(
+                'Drag and Drop or Click to Browse',
+                id='upload-data',
+                style={
+                    'width': '100%',
+                    'height': '60px',
+                    'lineHeight': '60px',
+                    'borderWidth': '1px',
+                    'borderStyle': 'dashed',
+                    'borderRadius': '10px',
+                    'textAlign': 'center',
+                    'marginLeft': '0px',
+                    'marginRight': '0px',
+                },
+            ),
+            # Delay prevents showing spinner when using switches or delete button
+            delay_show=100,
         ),
         _file_name_input_box(),
         dash.html.Hr(),
