@@ -204,6 +204,7 @@ def hide_show_upload_filename(contents: Optional[str], filename: Optional[str]):
 @app.callback(
     Output('file-overwrite-alert', 'is_open'),
     Output('load-file-button', 'disabled'),
+    Output('upload-data', 'filename'),
     Input('user-file-name', 'value'),
     prevent_initial_call=True,
 )
@@ -220,7 +221,7 @@ def validate_upload_file_name(name: Optional[str]):
         overwrite_alert_open = False
         load_button_disabled = True
 
-    return overwrite_alert_open, load_button_disabled
+    return overwrite_alert_open, load_button_disabled, name
 
 
 ## HIDE/SHOW CONTROLS FOR CONFIGURATION PANES --------------------------------
