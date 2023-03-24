@@ -60,7 +60,7 @@ def _file_name_input_box():
                     width=9, style={'marginTop': '10px'},
                 ),
                 dbc.Col(
-                    dbc.Button('Load', id='load-file-button'),
+                    dbc.Button('Load', id='load-file-button', disabled=False),
                     width=3, style={'marginTop': '10px'},
                 ),
             ]),

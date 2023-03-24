@@ -203,16 +203,24 @@ def hide_show_upload_filename(contents: Optional[str], filename: Optional[str]):
 
 @app.callback(
     Output('file-overwrite-alert', 'is_open'),
+    Output('load-file-button', 'disabled'),
     Input('user-file-name', 'value'),
     prevent_initial_call=True,
 )
 def validate_upload_file_name(name: Optional[str]):
     """Checks that the user provided a valid file description for a simulation
     results file"""
-    if (name is None) or (len(name) <= 0) or (name in _sim_results_files):
-        return True
+    overwrite_alert_open = False
+    load_button_disabled = False
 
-    return False
+    if (name is None) or (name in _sim_results_files):
+        overwrite_alert_open = True
+        load_button_disabled = False
+    elif len(name) <= 0:
+        overwrite_alert_open = False
+        load_button_disabled = True
+
+    return overwrite_alert_open, load_button_disabled
 
 
 ## HIDE/SHOW CONTROLS FOR CONFIGURATION PANES --------------------------------
