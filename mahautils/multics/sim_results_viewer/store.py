@@ -23,7 +23,7 @@ def file_metadata_store():
     ```
     """
     contents = dash.dcc.Store(
-        id='data_file_store',
+        id='data-file-store',
         storage_type='session',
     )
 

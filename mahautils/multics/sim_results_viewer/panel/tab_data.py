@@ -76,7 +76,7 @@ def _file_name_input_box():
                         ),
                     ],
                     id='file-overwrite-alert',
-                    color='danger',
+                    color='warning',
                     style={
                         'width': '95%',
                         'marginTop': '10px',

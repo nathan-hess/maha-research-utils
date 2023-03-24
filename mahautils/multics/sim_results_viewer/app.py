@@ -120,7 +120,7 @@ _sim_results_files: SIM_RESULTS_DICT_T = Dictionary()
 ## DATA FILE MANAGEMENT ------------------------------------------------------
 @app.callback(
     Output('file-list-table-body', 'children'),
-    Output('data_file_store', 'data'),
+    Output('data-file-store', 'data'),
     Output('upload-data', 'contents'),
     Input('load-file-button', 'n_clicks'),
     Input({'component': 'file-table-switch', 'key': dash.ALL}, 'value'),
@@ -128,7 +128,7 @@ _sim_results_files: SIM_RESULTS_DICT_T = Dictionary()
     State({'component': 'file-table-switch', 'key': dash.ALL}, 'id'),
     State('upload-data', 'contents'),
     State('user-file-name', 'value'),
-    State('data_file_store', 'data'),
+    State('data-file-store', 'data'),
 )
 def data_file_manager(
         ## Inputs ##
@@ -154,6 +154,7 @@ def data_file_manager(
     }
 
     # Upload simulation results file or modify stored metadata
+    updated_contents = None
     if dash.ctx.triggered_id is None:
         # Callback was triggered by initial page load, so skip
         # other actions and render table
@@ -169,15 +170,19 @@ def data_file_manager(
             key = enabled_switch_ids[i]['key']  # type: ignore
             metadata[key]['enabled'] = value
 
+        updated_contents = contents
+
     elif dash.ctx.triggered_id['component'] == 'file-table-delete-button':
         key = dash.ctx.triggered_id['key']
         del _sim_results_files[key]
         del metadata[key]
 
+        updated_contents = contents
+
     return (
         generate_file_table_body(_sim_results_files, metadata),
         metadata,
-        None,
+        updated_contents,
     )
 
 
