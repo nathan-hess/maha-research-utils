@@ -8,8 +8,10 @@ results.
 # pylint: disable=unused-argument
 
 import argparse
+import os
 import sys
 from typing import Any, Dict, List, Optional
+import webbrowser
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import dash                              # type: ignore
@@ -65,7 +67,12 @@ def main(argv: Optional[List[str]] = None) -> int:
                               'https://dash.plotly.com/devtools)'))
     parser.add_argument('--port', action='store', type=int, default=8050,
                         help='port on which to serve the app (default is 8050)')
+    parser.add_argument('--no-browser', action='store_true',
+                        help=('prevent automatically opening a browser window '
+                              f'when launching {GUI_SHORT_NAME}'))
     args = parser.parse_args(argv)
+
+    port = int(args.port)
 
     # Create and load Dash app
     app.layout = dash.html.Div([
@@ -76,7 +83,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         info_box(),
     ])
 
-    app.run_server(debug=bool(args.debug), port=int(args.port))
+    # Launch browser to display app
+    if not bool(args.no_browser) and ('WERKZEUG_RUN_MAIN' not in os.environ):
+        # Checking for the "WERKZEUG_RUN_MAIN" variable prevents opening a new
+        # browser window each time source code changes are saved in debug mode
+        webbrowser.open(f'http://127.0.0.1:{port}/')
+
+    # Run web app
+    app.run_server(debug=bool(args.debug), port=port)
 
     return 0
 
