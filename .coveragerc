@@ -10,6 +10,7 @@ source = mahautils
 
 # Don't include Python test code or GUI files in code coverage report
 omit =
+    mahautils/__main__.py
     mahautils/multics/sim_results_viewer/*
     tests/*
 
