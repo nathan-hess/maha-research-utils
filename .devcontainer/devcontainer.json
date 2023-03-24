@@ -1,0 +1,9 @@
+{
+    // General properties
+    "name": "MahaUtils",
+    "image": "mcr.microsoft.com/devcontainers/universal:2-linux",
+
+    // Lifecycle scripts
+    "onCreateCommand": "sudo apt update && sudo apt -y install libgl1",
+    "postCreateCommand": "pip install -r .vscode/requirements.txt"
+}
