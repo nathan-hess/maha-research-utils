@@ -32,8 +32,17 @@ from .panel import (
     simviewer_config_panel,
 )
 from .plotting import graph
-from .store import file_metadata_store
-from .utils import load_simresults
+from .store import (
+    file_metadata_store,
+    plot_config_general_store,
+    plot_config_x_store,
+    plot_config_y_store,
+)
+from .utils import (
+    load_plot_config,
+    load_simresults,
+    plot_config_to_str,
+)
 
 
 ## MAIN APP CONFIGURATION ----------------------------------------------------
@@ -78,6 +87,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     # Create and load Dash app
     app.layout = dash.html.Div([
         file_metadata_store(),
+        plot_config_general_store(),
+        plot_config_x_store(),
+        plot_config_y_store(),
         app_header(),
         graph(),
         simviewer_config_panel(),
@@ -131,15 +143,16 @@ _sim_results_files: SIM_RESULTS_DICT_T = Dictionary()
     State('data-file-store', 'data'),
 )
 def data_file_manager(
-        ## Inputs ##
-        n_clicks: int,
-        enabled_switch_values: Optional[List[bool]],
-        delete_button_clicks: Optional[List[int]],
-        ## States ##
-        enabled_switch_ids: Optional[List[Dict[str, Any]]],
-        contents: Optional[str],
-        name: Optional[str],
-        metadata: Optional[Dict[str, Dict[str, Any]]]):
+    ## Inputs ##
+    n_clicks: int,
+    enabled_switch_values: Optional[List[bool]],
+    delete_button_clicks: Optional[List[int]],
+    ## States ##
+    enabled_switch_ids: Optional[List[Dict[str, Any]]],
+    contents: Optional[str],
+    name: Optional[str],
+    metadata: Optional[Dict[str, Dict[str, Any]]],
+):
     """Reads uploaded simulation results from a file"""
     # Ensure that keys in file metadata store match current list of simulation
     # results files.  This is important if, for instance, multiple tabs are
@@ -222,6 +235,59 @@ def validate_upload_file_name(name: Optional[str]):
         load_button_disabled = True
 
     return overwrite_alert_open, load_button_disabled, name
+
+
+## PLOT CONFIGURATION --------------------------------------------------------
+@app.callback(
+    Output('plot-config-upload', 'contents'),
+    Output('plot-config-general-store', 'data'),
+    Output('plot-config-x-store', 'data'),
+    Output('plot-config-y-store', 'data'),
+    Input('plot-config-upload', 'contents'),
+    State('plot-config-general-store', 'data'),
+    State('plot-config-x-store', 'data'),
+    State('plot-config-y-store', 'data'),
+    prevent_initial_call=True,
+)
+def update_plot_config(
+    ## Inputs ##
+    upload_contents: Optional[str],
+    ## States ##
+    config_general: dict,
+    config_x: dict,
+    config_y: dict,
+):
+    """Updates the browser storage containing the plot configuration data"""
+    if dash.ctx.triggered_id == 'plot-config-upload':
+        if upload_contents is None:
+            # Either callback was run in initial call, or it was already
+            # triggered and automatically reset the upload "contents" to None.
+            # In either case, no update is necessary
+            raise dash.exceptions.PreventUpdate
+
+        config_general, config_x, config_y = load_plot_config(upload_contents)
+
+    return None, config_general, config_x, config_y
+
+
+@app.callback(
+    Output('config-export-download', 'data'),
+    Input('config-export-button', 'n_clicks'),
+    State('plot-config-general-store', 'data'),
+    State('plot-config-x-store', 'data'),
+    State('plot-config-y-store', 'data'),
+    prevent_initial_call=True,
+)
+def export_plot_config(n_clicks: Optional[int], config_general: dict,
+                       config_x: dict, config_y: dict):
+    """Saves the current plot configuration options in a file and makes it
+    available to the user as a download"""
+    data = {
+        'base64': False,
+        'content': plot_config_to_str(config_general, config_x, config_y),
+        'filename': 'mahautils_simviewer_config.json',
+    }
+    return data
 
 
 ## HIDE/SHOW CONTROLS FOR CONFIGURATION PANES --------------------------------
