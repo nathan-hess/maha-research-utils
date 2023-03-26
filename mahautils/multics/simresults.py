@@ -518,13 +518,19 @@ class SimResults(MahaMulticsConfigFile):
         )
 
         # Extract list of variables in "printDict"
-        sim_results_vars, comments, _, _ = self.extract_section_by_keyword(
+        sim_results_vars, comments, _, num_sec = self.extract_section_by_keyword(
             section_label      = 'printDict',
             begin_regex        = r'^\s*printDict\s*{\s*',
             end_regex          = r'^\s*}\s*$',
             section_line_regex = r'^\s*([@?])\s*([\w\d\._]+)\s+\[([^\s]+)\]\s*$',
             max_sections       = 1,
         )
+
+        if num_sec == 0:
+            raise InvalidSimResultsFormatError(
+                'Unable to find "printDict" section in simulation results '
+                f'file "{self.path}"'
+            )
 
         group_name = None
         for i, var in enumerate(sim_results_vars):

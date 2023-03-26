@@ -267,6 +267,12 @@ class Test_SimResults_Parse(Test_SimResults):
             TEST_FLOAT_TOLERANCE
         )
 
+    def test_missing_printdict(self):
+        # Verifies that an error is thrown if attempting to read a simulation
+        # results file without a "printDict" section
+        with self.assertRaises(InvalidSimResultsFormatError):
+            SimResults(SAMPLE_FILES_DIR / 'simulation_results_08.txt')
+
 
 class Test_SimResults_ReadProperties(Test_SimResults):
     def setUp(self) -> None:
