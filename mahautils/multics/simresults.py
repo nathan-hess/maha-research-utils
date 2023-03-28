@@ -528,9 +528,7 @@ class SimResults(MahaMulticsConfigFile):
 
         if num_sec == 0:
             raise InvalidSimResultsFormatError(
-                'Unable to find "printDict" section in simulation results '
-                f'file "{self.path}"'
-            )
+                'Unable to find "printDict" section in simulation results file')
 
         group_name = None
         for i, var in enumerate(sim_results_vars):
