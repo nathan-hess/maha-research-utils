@@ -25,6 +25,7 @@ from .constants import (
     SIM_RESULTS_DICT_T,
     VERSION,
 )
+from .error_box import error_box, generate_error_box_text
 from .header import app_header
 from .info import info_box
 from .panel import (
@@ -94,6 +95,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         graph(),
         simviewer_config_panel(),
         info_box(),
+        error_box('load-simresults-error'),
     ])
 
     # Launch browser to display app
@@ -134,13 +136,16 @@ _sim_results_files: SIM_RESULTS_DICT_T = Dictionary()
     Output('file-list-table-body', 'children'),
     Output('data-file-store', 'data'),
     Output('upload-data', 'contents'),
+    Output('load-simresults-error', 'is_open'),
+    Output('load-simresults-error-text', 'children'),
     Input('load-file-button', 'n_clicks'),
     Input({'component': 'file-table-switch', 'key': dash.ALL}, 'value'),
     Input({'component': 'file-table-delete-button', 'key': dash.ALL}, 'n_clicks'),
     State({'component': 'file-table-switch', 'key': dash.ALL}, 'id'),
-    State('upload-data', 'contents'),
     State('user-file-name', 'value'),
+    State('file-list-table-body', 'children'),
     State('data-file-store', 'data'),
+    State('upload-data', 'contents'),
 )
 def data_file_manager(
     ## Inputs ##
@@ -149,9 +154,10 @@ def data_file_manager(
     delete_button_clicks: Optional[List[int]],
     ## States ##
     enabled_switch_ids: Optional[List[Dict[str, Any]]],
-    contents: Optional[str],
     name: Optional[str],
+    current_file_table: Optional[list],
     metadata: Optional[Dict[str, Dict[str, Any]]],
+    contents: Optional[str],
 ):
     """Reads uploaded simulation results from a file"""
     # Ensure that keys in file metadata store match current list of simulation
@@ -175,7 +181,16 @@ def data_file_manager(
 
     elif dash.ctx.triggered_id == 'load-file-button':
         if (contents is not None) and (name is not None):
-            _sim_results_files[name] = load_simresults(contents)
+            try:
+                _sim_results_files[name] = load_simresults(contents)
+            except Exception as exception:
+                error_box_text = generate_error_box_text(
+                    dash.html.P(
+                        f'Unable to read simulation results file "{name}."'),
+                    exception,
+                )
+                return (current_file_table, metadata, contents,
+                        True, error_box_text)
             metadata[name] = {'enabled': True}
 
     elif dash.ctx.triggered_id['component'] == 'file-table-switch':
@@ -196,6 +211,8 @@ def data_file_manager(
         generate_file_table_body(_sim_results_files, metadata),
         metadata,
         updated_contents,
+        False,
+        None,
     )
 
 
