@@ -1,12 +1,16 @@
 """Function for generating pop-up error boxes"""
 
+from typing import Dict
+
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import dash                              # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 
 
-def error_box(identifier: str):
+def error_box(identifier: Dict[str, str]):
     """Creates a pop-up box for displaying error messages"""
+    text_id = {k: (v + '-text') for k, v in identifier.items()}
+
     contents = [
         dbc.ModalHeader(
             dbc.ModalTitle(
@@ -16,7 +20,7 @@ def error_box(identifier: str):
                 ], style={'color': 'red'})),
             close_button=True,
         ),
-        dbc.ModalBody(dash.html.Div(id=f'{identifier}-text')),
+        dbc.ModalBody(dash.html.Div(id=text_id)),
     ]
 
     return dbc.Modal(

@@ -3,9 +3,9 @@ results.
 """
 
 # Some linter settings are disabled due to incompatibility with standard Dash
-# coding practice
+# coding practice or to improve the app's user experience
 #
-# pylint: disable=unused-argument
+# pylint: disable=unused-argument,broad-exception-caught
 
 import argparse
 import os
@@ -95,7 +95,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         graph(),
         simviewer_config_panel(),
         info_box(),
-        error_box('load-simresults-error'),
+        error_box({'component': 'error-box', 'id': 'load-simresults'}),
     ])
 
     # Launch browser to display app
@@ -136,8 +136,9 @@ _sim_results_files: SIM_RESULTS_DICT_T = Dictionary()
     Output('file-list-table-body', 'children'),
     Output('data-file-store', 'data'),
     Output('upload-data', 'contents'),
-    Output('load-simresults-error', 'is_open'),
-    Output('load-simresults-error-text', 'children'),
+    Output({'component': 'error-box', 'id': 'load-simresults'}, 'is_open'),
+    Output({'component': 'error-box-text', 'id': 'load-simresults-text'},
+           'children'),
     Input('load-file-button', 'n_clicks'),
     Input({'component': 'file-table-switch', 'key': dash.ALL}, 'value'),
     Input({'component': 'file-table-delete-button', 'key': dash.ALL}, 'n_clicks'),
