@@ -229,7 +229,10 @@ def hide_show_upload_filename(contents: Optional[str], filename: Optional[str]):
     """Hides/shows the file naming box and populates the input area with
     a default name based on the uploaded file"""
     if (contents is not None) and (filename is not None):
-        return False, filename.strip('.txt')
+        if filename.endswith('.txt'):
+            filename = filename[:-4]
+
+        return False, filename
 
     return True, 'NONE'
 
