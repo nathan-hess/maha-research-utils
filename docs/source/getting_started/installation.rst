@@ -6,6 +6,17 @@
 Installation
 ============
 
+Prerequisites
+-------------
+
+If running |PackageNameStylized| on a Linux system, ensure that :spelling:word:`libGL`
+is installed.  For example, to install this package on Ubuntu, run:
+
+.. code-block:: shell
+
+    $ sudo apt install libgl1
+
+
 pip
 ---
 
