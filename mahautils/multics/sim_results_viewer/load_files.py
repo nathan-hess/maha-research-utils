@@ -1,11 +1,12 @@
-"""Utilities to support other SimViewer code.
+"""Utilities for loading simulation results and SimViewer configuration files.
 """
 
 import base64
 import json
 from typing import Tuple
 
-import dash
+# Mypy type checking disabled for packages that are not PEP 561-compliant
+import dash  # type: ignore
 
 from mahautils.multics.simresults import SimResults
 from .constants import GUI_SHORT_NAME, VERSION

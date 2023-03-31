@@ -28,6 +28,12 @@ from .constants import (
 from .error_box import error_box, generate_error_box_text
 from .header import app_header
 from .info import info_box
+from .load_files import (
+    load_plot_config,
+    load_plot_config_error_message,
+    load_simresults,
+    plot_config_to_str,
+)
 from .panel import (
     generate_file_table_body,
     simviewer_config_panel,
@@ -38,12 +44,6 @@ from .store import (
     plot_config_general_store,
     plot_config_x_store,
     plot_config_y_store,
-)
-from .utils import (
-    load_plot_config,
-    load_plot_config_error_message,
-    load_simresults,
-    plot_config_to_str,
 )
 
 
