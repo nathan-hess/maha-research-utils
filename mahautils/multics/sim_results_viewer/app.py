@@ -41,6 +41,7 @@ from .store import (
 )
 from .utils import (
     load_plot_config,
+    load_plot_config_error_message,
     load_simresults,
     plot_config_to_str,
 )
@@ -96,6 +97,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         simviewer_config_panel(),
         info_box(),
         error_box({'component': 'error-box', 'id': 'load-simresults'}),
+        error_box({'component': 'error-box', 'id': 'update-config'}),
     ])
 
     # Launch browser to display app
@@ -261,10 +263,13 @@ def validate_upload_file_name(name: Optional[str]):
     Output('plot-config-general-store', 'data'),
     Output('plot-config-x-store', 'data'),
     Output('plot-config-y-store', 'data'),
+    Output({'component': 'error-box', 'id': 'update-config'}, 'is_open'),
+    Output({'component': 'error-box-text', 'id': 'update-config-text'}, 'children'),
     Input('plot-config-upload', 'contents'),
     State('plot-config-general-store', 'data'),
     State('plot-config-x-store', 'data'),
     State('plot-config-y-store', 'data'),
+    State({'component': 'error-box', 'id': dash.ALL}, 'is_open'),
     prevent_initial_call=True,
 )
 def update_plot_config(
@@ -274,8 +279,14 @@ def update_plot_config(
     config_general: dict,
     config_x: dict,
     config_y: dict,
+    error_boxes_open: List[bool],
 ):
     """Updates the browser storage containing the plot configuration data"""
+    if any(error_boxes_open):
+        # If any error boxes are open, prevent updating the app so user can
+        # resolve the issue first
+        raise dash.exceptions.PreventUpdate
+
     if dash.ctx.triggered_id == 'plot-config-upload':
         if upload_contents is None:
             # Either callback was run in initial call, or it was already
@@ -283,9 +294,19 @@ def update_plot_config(
             # In either case, no update is necessary
             raise dash.exceptions.PreventUpdate
 
-        config_general, config_x, config_y = load_plot_config(upload_contents)
+        try:
+            new_general, new_x, new_y = load_plot_config(upload_contents)
+        except Exception as exception:
+            error_text = generate_error_box_text(load_plot_config_error_message,
+                                                 exception)
 
-    return None, config_general, config_x, config_y
+            return None, config_general, config_x, config_y, True, error_text
+
+        config_general = new_general
+        config_x = new_x
+        config_y = new_y
+
+    return None, config_general, config_x, config_y, False, None
 
 
 @app.callback(
