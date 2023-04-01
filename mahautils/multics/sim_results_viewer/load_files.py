@@ -7,9 +7,10 @@ from typing import Tuple
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import dash  # type: ignore
+from packaging.version import Version
 
 from mahautils.multics.simresults import SimResults
-from .constants import GUI_SHORT_NAME, VERSION
+from .constants import GUI_SHORT_NAME, PROJECT_NAME, VERSION
 
 
 def decode_base64(base64_str: str) -> str:
@@ -56,6 +57,7 @@ def load_plot_config(dash_base64_contents: str) -> Tuple[dict, dict, dict]:
         raise
 
     try:
+        version = combined_data['version']
         config_general = combined_data['general']
         config_x = combined_data['x']
         config_y = combined_data['y']
@@ -64,6 +66,13 @@ def load_plot_config(dash_base64_contents: str) -> Tuple[dict, dict, dict]:
             'Invalid plot configuration JSON file. The file does not contain '
             f'required key "{exception.args[0]}"',)
         raise
+
+    minimum_version = '0.1.0'
+    if Version(version) < Version(minimum_version):
+        raise ValueError(
+            'The plot configuration file you uploaded was generated with '
+            f'{PROJECT_NAME} v{version}, but the minimum required version '
+            f'that can be read is v{minimum_version}')
 
     return config_general, config_x, config_y
 
