@@ -17,6 +17,7 @@ import webbrowser
 import dash                              # type: ignore
 from dash import Input, Output, State    # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
+import plotly.graph_objects as go        # type: ignore
 
 from mahautils.utils import Dictionary
 from .constants import (
@@ -38,7 +39,7 @@ from .panel import (
     generate_file_table_body,
     simviewer_config_panel,
 )
-from .plotting import graph
+from .plotting import graph, update_graph
 from .store import (
     file_metadata_store,
     plot_config_general_store,
@@ -98,6 +99,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         info_box(),
         error_box({'component': 'error-box', 'id': 'load-simresults'}),
         error_box({'component': 'error-box', 'id': 'update-config'}),
+        error_box({'component': 'error-box', 'id': 'update-plot'}),
     ])
 
     # Launch browser to display app
@@ -269,6 +271,7 @@ def validate_upload_file_name(name: Optional[str]):
     Output({'component': 'error-box', 'id': 'update-config'}, 'is_open'),
     Output({'component': 'error-box-text', 'id': 'update-config-text'}, 'children'),
     Input('plot-config-upload', 'contents'),
+    Input('data-file-store', 'data'),
     State('plot-config-general-store', 'data'),
     State('plot-config-x-store', 'data'),
     State('plot-config-y-store', 'data'),
@@ -278,6 +281,7 @@ def validate_upload_file_name(name: Optional[str]):
 def update_plot_config(
     ## Inputs ##
     upload_contents: Optional[str],
+    file_metadata: dict,
     ## States ##
     config_general: dict,
     config_x: dict,
@@ -299,6 +303,7 @@ def update_plot_config(
 
         try:
             new_general, new_x, new_y = load_plot_config(upload_contents)
+            update_graph(new_general, new_x, new_y, _sim_results_files)
         except Exception as exception:
             error_text = generate_error_box_text(load_plot_config_error_message,
                                                  exception)
@@ -330,6 +335,59 @@ def export_plot_config(n_clicks: Optional[int], config_general: dict,
         'filename': 'mahautils_simviewer_config.json',
     }
     return data
+
+
+## PLOTTING ------------------------------------------------------------------
+@app.callback(
+    Output('plotly-graph', 'figure'),
+    Output({'component': 'error-box', 'id': 'update-plot'}, 'is_open'),
+    Output({'component': 'error-box-text', 'id': 'update-plot-text'}, 'children'),
+    Input('plot-config-general-store', 'data'),
+    Input('plot-config-x-store', 'data'),
+    Input('plot-config-y-store', 'data'),
+    Input('data-file-store', 'data'),
+    State('plotly-graph', 'figure'),
+    State({'component': 'error-box', 'id': dash.ALL}, 'is_open'),
+    prevent_initial_call=True,
+)
+def update_plot(
+    ## Inputs ##
+    config_general: dict,
+    config_x: dict,
+    config_y: dict,
+    file_metadata: dict,
+    ## States ##
+    current_figure: go.Figure,
+    error_boxes_open: List[bool],
+):
+    """Updates the simulation results plot any time the plot configuration
+    data dictionary changes"""
+    if any(error_boxes_open):
+        # If any error boxes are open, prevent updating the app so user can
+        # resolve the issue first
+        raise dash.exceptions.PreventUpdate
+
+    try:
+        figure = update_graph(
+            config_general    = config_general,
+            config_x          = config_x,
+            config_y          = config_y,
+            sim_results_files = _sim_results_files,
+        )
+
+        error_box_is_open = False
+        error_box_text = None
+
+    except KeyError as exception:
+        figure = current_figure
+        error_box_is_open = True
+        error_box_text = generate_error_box_text(
+            dash.html.P('Unable to update plot.  There is likely a mistake '
+                        'in the plot configuration options you have selected.'),
+            exception,
+        )
+
+    return figure, error_box_is_open, error_box_text
 
 
 ## HIDE/SHOW CONTROLS FOR CONFIGURATION PANES --------------------------------
