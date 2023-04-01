@@ -31,5 +31,6 @@ in the documentation.
     :caption: File Format Specifications
     :maxdepth: 1
 
+    fluidprop
     lookuptable
     polygonfile
