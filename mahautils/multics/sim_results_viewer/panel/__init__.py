@@ -3,3 +3,4 @@
 
 from .utils_generate_table import generate_file_table_body
 from .main_panel import simviewer_config_panel
+from .settings_general import render_general_settings

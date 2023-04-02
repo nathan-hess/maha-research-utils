@@ -27,3 +27,6 @@ SIM_RESULTS_DICT_T = Dictionary[str, SimResults]
 # STYLING --------------------------------------------------------------------
 # Margin between tab bar and content in configuration panel
 TAB_BAR_PADDING = '20px'
+
+# Styling for color picker UI elements
+COLOR_PICKER_STYLE = {'width': 75, 'height': 50}

@@ -37,6 +37,7 @@ from .load_files import (
 )
 from .panel import (
     generate_file_table_body,
+    render_general_settings,
     simviewer_config_panel,
 )
 from .plotting import graph, update_graph
@@ -272,6 +273,13 @@ def validate_upload_file_name(name: Optional[str]):
     Output({'component': 'error-box-text', 'id': 'update-config-text'}, 'children'),
     Input('plot-config-upload', 'contents'),
     Input('data-file-store', 'data'),
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'title'}, 'value'),              # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'background-color'}, 'value'),   # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'grid-x'}, 'value'),             # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'grid-y'}, 'value'),             # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'append-units'}, 'value'),       # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'freeze-uirevision'}, 'value'),  # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'hovermode'}, 'value'),          # noqa: E501  # pylint: disable=C0301
     State('plot-config-general-store', 'data'),
     State('plot-config-x-store', 'data'),
     State('plot-config-y-store', 'data'),
@@ -282,6 +290,13 @@ def update_plot_config(
     ## Inputs ##
     upload_contents: Optional[str],
     file_metadata: dict,
+    plot_title: Optional[str],
+    background_color: Optional[str],
+    grid_x_enabled: Optional[bool],
+    grid_y_enabled: Optional[bool],
+    append_units: Optional[bool],
+    freeze_uirevision: Optional[bool],
+    hovermode: Optional[str],
     ## States ##
     config_general: dict,
     config_x: dict,
@@ -314,6 +329,27 @@ def update_plot_config(
         config_x = new_x
         config_y = new_y
 
+    else:
+        config_general['title'] = plot_title
+
+        if background_color is not None:
+            config_general['background_color'] = background_color
+
+        if grid_x_enabled is not None:
+            config_general['grid_x'] = grid_x_enabled
+
+        if grid_y_enabled is not None:
+            config_general['grid_y'] = grid_y_enabled
+
+        if append_units is not None:
+            config_general['append_units'] = append_units
+
+        if hovermode is not None:
+            config_general['hovermode'] = hovermode
+
+        if freeze_uirevision is not None:
+            config_general['freeze_uirevision'] = freeze_uirevision
+
     return None, config_general, config_x, config_y, False, None
 
 
@@ -335,6 +371,16 @@ def export_plot_config(n_clicks: Optional[int], config_general: dict,
         'filename': 'mahautils_simviewer_config.json',
     }
     return data
+
+
+@app.callback(
+    Output('plot-config-general-settings', 'children'),
+    Input('plot-config-general-store', 'data'),
+)
+def render_ui_general(config_general: dict):
+    """Generates the UI elements that allow the user to configure general
+    plot settings"""
+    return render_general_settings(config_general)
 
 
 ## PLOTTING ------------------------------------------------------------------

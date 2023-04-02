@@ -6,6 +6,11 @@ import dash                              # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 
 from mahautils.multics.sim_results_viewer.constants import TAB_BAR_PADDING
+from mahautils.multics.sim_results_viewer.store import default_plot_config_general
+from mahautils.multics.sim_results_viewer.ui_elements import (
+    color_picker,
+    on_off_switch_row,
+)
 
 
 import_export_button_styling = {
@@ -17,14 +22,10 @@ import_export_button_styling = {
 
 def plot_settings_general():
     """Creates the configuration panel tab with general plot settings"""
-    contents = [
-        dash.html.H2(
-            'General settings',
-            style={'marginTop': TAB_BAR_PADDING},
-        ),
-        dash.html.Br(),
-        dash.html.H4('Load/Save Plot Configuration'),
-        dash.html.Br(),
+    return [
+        dash.html.H4('Load/Save Plot Configuration',
+                     style={'marginTop': TAB_BAR_PADDING},),
+        dash.html.Hr(),
         dbc.Row([
             dbc.Col(
                 dash.dcc.Upload(
@@ -43,6 +44,85 @@ def plot_settings_general():
                 class_name='d-grid gap-2',
             ),
         ]),
+        dash.html.Br(),
+        dash.html.Br(),
+        dash.html.Div(
+            render_general_settings(default_plot_config_general),
+            id='plot-config-general-settings'
+        ),
     ]
 
-    return contents
+
+def render_general_settings(config_general: dict):
+    """Generates the UI elements that allow the user to configure general
+    plot settings"""
+    return [
+        dash.html.H4('Plot Appearance'),
+        dash.html.Hr(),
+        dash.html.H5('Plot Title'),
+        dbc.Input(
+            debounce=True,
+            id={'component': 'plot-config', 'tab': 'general',
+                'field': 'title'},
+            placeholder='Enter a title for the plot...',
+            value=config_general['title'],
+        ),
+        dash.html.Br(),
+        dash.html.H5('Background Color'),
+        color_picker(
+            identifier={'component': 'plot-config', 'tab': 'general',
+                        'field': 'background-color'},
+            current_color=config_general['background_color'],
+        ),
+        dash.html.Br(),
+        dash.html.H5('Gridlines'),
+        on_off_switch_row(
+            identifier={'component': 'plot-config', 'tab': 'general',
+                        'field': 'grid-x'},
+            state=config_general['grid_x'],
+            description='Enable x-axis gridlines'),
+        on_off_switch_row(
+            identifier={'component': 'plot-config', 'tab': 'general',
+                        'field': 'grid-y'},
+            state=config_general['grid_y'],
+            description='Enable y-axis gridlines'),
+        dash.html.Br(),
+        dash.html.H5('Units'),
+        on_off_switch_row(
+            identifier={'component': 'plot-config', 'tab': 'general',
+                        'field': 'append-units'},
+            state=config_general['append_units'],
+            description=('Append units to axis titles and legend entries '
+                         '(where applicable)')),
+        dash.html.Br(),
+        dash.html.Br(),
+        dash.html.H4('User Interface'),
+        dash.html.Hr(),
+        dash.html.H5('Hover Labels'),
+        dash.html.P(
+            ('Controls the information displayed when hovering the cursor '
+             'over the plot'),
+            style={'marginBottom': '5px'},
+        ),
+        dash.dcc.Dropdown(
+            options=['closest', 'x unified', 'y unified', 'x', 'y'],
+            value=config_general['hovermode'],
+            id={'component': 'plot-config', 'tab': 'general',
+                'field': 'hovermode'},
+            clearable=False,
+            multi=False,
+        ),
+        dash.html.Br(),
+        dash.html.H5('Plot Updates'),
+        on_off_switch_row(
+            identifier={'component': 'plot-config', 'tab': 'general',
+                        'field': 'freeze-uirevision'},
+            state=config_general['freeze_uirevision'],
+            description='Prevent user interface state reset on plot updates'),
+        dbc.Tooltip(
+            ('Prevents changes to plot data or settings from resetting past '
+             'user interactions (zoom, clicking legend items, etc.)'),
+            target={'component': 'plot-config', 'tab': 'general',
+                    'field': 'freeze-uirevision'},
+        ),
+    ]
