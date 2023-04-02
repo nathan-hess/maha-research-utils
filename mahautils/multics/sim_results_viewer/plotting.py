@@ -42,7 +42,7 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
     ## Plot simulation results data ##
     y_axes: List[Dict[str, Any]] = config_y['axes']
     num_active_axes = sum(x['enabled'] for x in y_axes)
-    width_per_axis = float(config_y['width_per_axis'])
+    width_per_axis = float(config_general['width_per_y_axis'])
 
     if (
         len(y_axes) > 0

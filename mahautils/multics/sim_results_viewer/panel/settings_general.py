@@ -98,6 +98,20 @@ def render_general_settings(config_general: dict):
             description=('Append units to axis titles and legend entries '
                          '(where applicable)')),
         dash.html.Br(),
+        dash.html.H5('Vertical Axis Spacing'),
+        dash.html.P(
+            ('Sets the width in the plot window allocated for each vertical '
+             'y-axis.  Must be a number in the range [0, 1]'),
+            style={'marginBottom': UI_DESCRIPTION_MARGIN_BELOW},
+        ),
+        dbc.Input(
+            debounce=True,
+            value=config_general['width_per_y_axis'],
+            id={'component': 'plot-config', 'tab': 'general',
+                'field': 'width-per-y-axis'},
+            style={'width': 200},
+        ),
+        dash.html.Br(),
         dash.html.Br(),
         dash.html.H4('User Interface'),
         dash.html.Hr(),

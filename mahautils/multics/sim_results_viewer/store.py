@@ -1,6 +1,8 @@
 """Data structures for storing program data in the browser.
 """
 
+from typing import Any, Dict
+
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import dash  # type: ignore
 
@@ -30,17 +32,18 @@ def file_metadata_store():
     return contents
 
 
-default_plot_config_general = {
+default_plot_config_general: Dict[str, Any] = {
     'title': None,
     'background_color': '#FFFFFF',
     'grid_x': True,
     'grid_y': True,
     'append_units': False,
+    'width_per_y_axis': 0.1,
     'hovermode': 'closest',
     'freeze_uirevision': False,
 }
 
-default_plot_config_x = {
+default_plot_config_x: Dict[str, Any] = {
     'axis_title': None,
     'variable': None,
     'units': None,
@@ -49,8 +52,7 @@ default_plot_config_x = {
     'tick_spacing': None,
 }
 
-default_plot_config_y = {
-    'width_per_axis': 0.1,
+default_plot_config_y: Dict[str, Any] = {
     'axes': [],
 }
 

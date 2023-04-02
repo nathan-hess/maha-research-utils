@@ -279,6 +279,7 @@ def validate_upload_file_name(name: Optional[str]):
     Input({'component': 'plot-config', 'tab': 'general', 'field': 'grid-x'}, 'value'),             # noqa: E501  # pylint: disable=C0301
     Input({'component': 'plot-config', 'tab': 'general', 'field': 'grid-y'}, 'value'),             # noqa: E501  # pylint: disable=C0301
     Input({'component': 'plot-config', 'tab': 'general', 'field': 'append-units'}, 'value'),       # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'width-per-y-axis'}, 'value'),   # noqa: E501  # pylint: disable=C0301
     Input({'component': 'plot-config', 'tab': 'general', 'field': 'freeze-uirevision'}, 'value'),  # noqa: E501  # pylint: disable=C0301
     Input({'component': 'plot-config', 'tab': 'general', 'field': 'hovermode'}, 'value'),          # noqa: E501  # pylint: disable=C0301
     Input({'component': 'plot-config', 'tab': 'x', 'field': 'variable'}, 'value'),
@@ -302,6 +303,7 @@ def update_plot_config(
     grid_x_enabled: Optional[bool],
     grid_y_enabled: Optional[bool],
     append_units: Optional[bool],
+    width_per_y_axis: Optional[str],
     freeze_uirevision: Optional[bool],
     hovermode: Optional[str],
     x_variable: Optional[str],
@@ -357,6 +359,9 @@ def update_plot_config(
 
         if append_units is not None:
             config_general['append_units'] = append_units
+
+        if width_per_y_axis is not None:
+            config_general['width_per_y_axis'] = float(width_per_y_axis)
 
         if hovermode is not None:
             config_general['hovermode'] = hovermode
