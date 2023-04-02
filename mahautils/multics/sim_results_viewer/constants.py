@@ -30,3 +30,6 @@ TAB_BAR_PADDING = '20px'
 
 # Styling for color picker UI elements
 COLOR_PICKER_STYLE = {'width': 75, 'height': 50}
+
+# Margin below HTML <p> elements used to describe features to users
+UI_DESCRIPTION_MARGIN_BELOW = '5px'

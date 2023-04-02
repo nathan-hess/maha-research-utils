@@ -5,7 +5,7 @@
 import dash                              # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 
-from .constants import COLOR_PICKER_STYLE
+from .constants import COLOR_PICKER_STYLE, UI_DESCRIPTION_MARGIN_BELOW
 
 
 def color_picker(identifier, current_color: str):
@@ -45,5 +45,48 @@ def on_off_switch_row(identifier, state: bool, description: str):
         dbc.Col(
             dash.html.P(description),
             width=10,
+        ),
+    ])
+
+
+def tick_range_step(range_min_id, range_max_id, tick_spacing_id,
+                    range_min_val, range_max_val, tick_spacing_val):
+    """Input boxes where users can select the range and tick spacing for
+    plot axes"""
+    return dash.html.Div([
+        dash.html.H5('Axis Range'),
+        dash.html.P(
+            ('Sets the minimum and/or maximum axis limits.  Leave blank to '
+             'automatically scale the axis'),
+            style={'marginBottom': UI_DESCRIPTION_MARGIN_BELOW},
+        ),
+        dash.html.Div([
+            dbc.Input(
+                debounce=True,
+                id=range_min_id,
+                value=range_min_val,
+                style={'display': 'inline-block', 'width': '100px'},
+            ),
+            dash.html.P('  —  ', style={'display': 'inline-block',
+                                        'whiteSpace': 'pre'}),
+            dbc.Input(
+                debounce=True,
+                id=range_max_id,
+                value=range_max_val,
+                style={'display': 'inline-block', 'width': '100px'},
+            ),
+        ]),
+        dash.html.Br(),
+        dash.html.H5('Tick Spacing'),
+        dash.html.P(
+            ('Sets the distance between tick marks.  Leave blank to '
+             'automatically scale the tick spacing'),
+            style={'marginBottom': UI_DESCRIPTION_MARGIN_BELOW},
+        ),
+        dbc.Input(
+            debounce=True,
+            id=tick_spacing_id,
+            value=tick_spacing_val,
+            style={'width': '100px'},
         ),
     ])

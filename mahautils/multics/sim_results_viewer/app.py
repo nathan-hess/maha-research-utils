@@ -38,6 +38,7 @@ from .load_files import (
 from .panel import (
     generate_file_table_body,
     render_general_settings,
+    render_x_settings,
     simviewer_config_panel,
 )
 from .plotting import graph, update_graph
@@ -280,6 +281,12 @@ def validate_upload_file_name(name: Optional[str]):
     Input({'component': 'plot-config', 'tab': 'general', 'field': 'append-units'}, 'value'),       # noqa: E501  # pylint: disable=C0301
     Input({'component': 'plot-config', 'tab': 'general', 'field': 'freeze-uirevision'}, 'value'),  # noqa: E501  # pylint: disable=C0301
     Input({'component': 'plot-config', 'tab': 'general', 'field': 'hovermode'}, 'value'),          # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'x', 'field': 'variable'}, 'value'),
+    Input({'component': 'plot-config', 'tab': 'x', 'field': 'units'}, 'value'),
+    Input({'component': 'plot-config', 'tab': 'x', 'field': 'title'}, 'value'),
+    Input({'component': 'plot-config', 'tab': 'x', 'field': 'xmin'}, 'value'),
+    Input({'component': 'plot-config', 'tab': 'x', 'field': 'xmax'}, 'value'),
+    Input({'component': 'plot-config', 'tab': 'x', 'field': 'tick_spacing'}, 'value'),  # noqa: E501  # pylint: disable=C0301
     State('plot-config-general-store', 'data'),
     State('plot-config-x-store', 'data'),
     State('plot-config-y-store', 'data'),
@@ -297,6 +304,12 @@ def update_plot_config(
     append_units: Optional[bool],
     freeze_uirevision: Optional[bool],
     hovermode: Optional[str],
+    x_variable: Optional[str],
+    x_units: Optional[str],
+    x_title: Optional[str],
+    x_min,
+    x_max,
+    x_tick_spacing,
     ## States ##
     config_general: dict,
     config_x: dict,
@@ -330,6 +343,7 @@ def update_plot_config(
         config_y = new_y
 
     else:
+        # General plot configuration settings
         config_general['title'] = plot_title
 
         if background_color is not None:
@@ -349,6 +363,22 @@ def update_plot_config(
 
         if freeze_uirevision is not None:
             config_general['freeze_uirevision'] = freeze_uirevision
+
+        # Plot configuration settings for x-axis
+        if x_variable is not None:
+            if x_variable != config_x['variable']:
+                x_units = ''
+
+            config_x['variable'] = x_variable
+
+        config_x['units'] = x_units
+
+        config_x['axis_title'] = x_title
+
+        config_x['xmin'] = None if x_min in (None, '') else float(x_min)
+        config_x['xmax'] = None if x_max in (None, '') else float(x_max)
+        config_x['tick_spacing'] = None if x_tick_spacing in (None, '') \
+                                        else float(x_tick_spacing)  # noqa: E127
 
     return None, config_general, config_x, config_y, False, None
 
@@ -383,6 +413,16 @@ def render_ui_general(config_general: dict):
     return render_general_settings(config_general)
 
 
+@app.callback(
+    Output('plot-config-x-settings', 'children'),
+    Input('plot-config-x-store', 'data'),
+)
+def render_ui_x(config_x: dict):
+    """Generates the UI elements that allow the user to configure x-axis
+    plot settings"""
+    return render_x_settings(config_x, _sim_results_files)
+
+
 ## PLOTTING ------------------------------------------------------------------
 @app.callback(
     Output('plotly-graph', 'figure'),
@@ -413,6 +453,11 @@ def update_plot(
         # resolve the issue first
         raise dash.exceptions.PreventUpdate
 
+    if config_x['units'] in (None, ''):
+        # If the user just changed the x-axis simulation results variable,
+        # wait to update the plot to give them a chance to set the units
+        raise dash.exceptions.PreventUpdate
+
     try:
         figure = update_graph(
             config_general    = config_general,
@@ -424,7 +469,7 @@ def update_plot(
         error_box_is_open = False
         error_box_text = None
 
-    except KeyError as exception:
+    except Exception as exception:
         figure = current_figure
         error_box_is_open = True
         error_box_text = generate_error_box_text(

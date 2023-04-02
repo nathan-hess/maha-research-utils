@@ -5,7 +5,10 @@
 import dash                              # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 
-from mahautils.multics.sim_results_viewer.constants import TAB_BAR_PADDING
+from mahautils.multics.sim_results_viewer.constants import (
+    TAB_BAR_PADDING,
+    UI_DESCRIPTION_MARGIN_BELOW,
+)
 from mahautils.multics.sim_results_viewer.store import default_plot_config_general
 from mahautils.multics.sim_results_viewer.ui_elements import (
     color_picker,
@@ -102,7 +105,7 @@ def render_general_settings(config_general: dict):
         dash.html.P(
             ('Controls the information displayed when hovering the cursor '
              'over the plot'),
-            style={'marginBottom': '5px'},
+            style={'marginBottom': UI_DESCRIPTION_MARGIN_BELOW},
         ),
         dash.dcc.Dropdown(
             options=['closest', 'x unified', 'y unified', 'x', 'y'],
