@@ -44,7 +44,9 @@ default_plot_config_x = {
     'axis_title': None,
     'variable': None,
     'units': None,
-    'tick_spacing': 'auto',
+    'xmin': None,
+    'xmax': None,
+    'tick_spacing': None,
 }
 
 default_plot_config_y = {

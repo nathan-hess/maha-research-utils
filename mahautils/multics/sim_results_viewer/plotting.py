@@ -3,6 +3,7 @@ the data graph.
 """
 
 import itertools
+import math
 from typing import Any, Dict, List
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
@@ -57,8 +58,13 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
         figure.update_layout(
             xaxis={'domain': [width_per_axis*(num_active_axes-1), 1]})
 
-        if (dtick := config_x['tick_spacing']) != 'auto':
+        if (dtick := config_x['tick_spacing']) not in (None, ''):
             figure.update_xaxes(dtick=dtick)
+
+        set_xmin = config_x['xmin'] not in (None, '')
+        xmin = config_x['xmin'] if set_xmin else math.inf
+        set_xmax = config_x['xmax'] not in (None, '')
+        xmax = config_x['xmax'] if set_xmax else -math.inf
 
         # Settings for y-axes
         y_axis_data: Dict[str, Any]
@@ -67,7 +73,12 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
             if not y_axis_data['enabled']:
                 continue
 
-            plot_data = {'yaxis': f'y{i+1 if i > 0 else ""}'}
+            plot_data: Dict[str, Any] = {'yaxis': f'y{i+1 if i > 0 else ""}'}
+
+            set_ymin = y_axis_data['ymin'] not in (None, '')
+            ymin = y_axis_data['ymin'] if set_ymin else math.inf
+            set_ymax = y_axis_data['ymax'] not in (None, '')
+            ymax = y_axis_data['ymax'] if set_ymax else -math.inf
 
             for trace in y_axis_data['traces']:
                 try:
@@ -90,13 +101,34 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
                                                       trace['units'])
                 plot_data['line'] = trace['style']
 
+                if set_xmin != set_xmax:
+                    if not set_xmin:
+                        xmin = min(xmin, plot_data['x'].min())
+                    if not set_xmax:
+                        xmax = max(xmax, plot_data['x'].max())
+
+                if set_ymin != set_ymax:
+                    if not set_ymin:
+                        ymin = min(ymin, plot_data['y'].min())
+                    if not set_ymax:
+                        ymax = max(ymax, plot_data['y'].max())
+
                 figure.add_trace(go.Scatter(**plot_data))
+
+            tick_options = {}
+
+            if y_axis_data['tick_spacing'] not in (None, ''):
+                tick_options['dtick'] = y_axis_data['tick_spacing']
+
+            if set_ymin or set_ymax:
+                tick_options['range'] = [ymin, ymax]
 
             if i == 0:
                 figure.update_layout(
                     yaxis={
                         'title': str(y_axis_data['axis_title']),
                         'color': str(y_axis_data.get('color', 'black')),
+                        **tick_options,
                     },
                 )
             else:
@@ -108,10 +140,14 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
                         'side': 'left',
                         'position': (width_per_axis * i) - width_per_axis,
                         'color': str(y_axis_data.get('color', 'black')),
+                        **tick_options,
                     }
                 })
 
             i += 1
+
+        if set_xmin or set_xmax:
+            figure.update_xaxes(range=[xmin, xmax])
 
     ## Plot formatting settings ##
     figure.update_layout(margin={'t': 7.5, 'r': 10})
