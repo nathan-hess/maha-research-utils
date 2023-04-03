@@ -1,3 +1,8 @@
+.. spelling:word-list::
+
+    txt
+
+
 .. _fileref-fluid_property_file:
 
 Fluid Property File Format
@@ -96,7 +101,7 @@ in the file will be defined.
 - The list of temperature and pressure values must have lengths ``N_T`` and ``N_p``,
   respectively.
 - The difference between subsequent values in the temperature and pressure lists
-  must be ``T_step`` and ``p_step``, respectively. 
+  must be ``T_step`` and ``p_step``, respectively.
 
 .. important::
 
