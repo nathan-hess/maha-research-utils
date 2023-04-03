@@ -458,11 +458,6 @@ def update_plot(
         # resolve the issue first
         raise dash.exceptions.PreventUpdate
 
-    if config_x['units'] in (None, ''):
-        # If the user just changed the x-axis simulation results variable,
-        # wait to update the plot to give them a chance to set the units
-        raise dash.exceptions.PreventUpdate
-
     try:
         figure = update_graph(
             config_general    = config_general,
