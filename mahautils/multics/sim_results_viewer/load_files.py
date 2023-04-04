@@ -44,7 +44,7 @@ def plot_config_to_str(config_general: dict, config_x: dict, config_y: dict):
         'y': config_y,
     }
 
-    return json.dumps(combined_data)
+    return json.dumps(combined_data, indent=4)
 
 
 def load_plot_config(dash_base64_contents: str) -> Tuple[dict, dict, dict]:
