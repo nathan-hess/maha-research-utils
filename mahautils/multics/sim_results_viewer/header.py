@@ -41,6 +41,10 @@ def app_header():
                                 'marginBottom': '5px',
                             },
                         ),
+                        dbc.Tooltip(
+                            f'Configure {GUI_SHORT_NAME} settings',
+                            target='plot-config-button',
+                        ),
                         dbc.Button(
                             dash.html.I(className='fa fa-question-circle'),
                             id='info-button',
@@ -52,6 +56,10 @@ def app_header():
                                 'marginRight': '10px',
                                 'marginBottom': '5px',
                             },
+                        ),
+                        dbc.Tooltip(
+                            f'View {GUI_SHORT_NAME} version and acknowledgments',
+                            target='info-button',
                         ),
                     ],
                 ),
