@@ -39,6 +39,7 @@ from .panel import (
     generate_file_table_body,
     render_general_settings,
     render_x_settings,
+    render_y_settings,
     simviewer_config_panel,
 )
 from .plotting import graph, update_graph
@@ -426,6 +427,32 @@ def render_ui_x(config_x: dict):
     """Generates the UI elements that allow the user to configure x-axis
     plot settings"""
     return render_x_settings(config_x, _sim_results_files)
+
+
+@app.callback(
+    Output('plot-config-y-settings', 'children'),
+    Output('y-data-selector', 'active_page'),
+    Input('plot-config-y-store', 'data'),
+    Input('data-file-store', 'data'),
+    Input('y-axis-selector', 'active_page'),
+    Input('y-data-selector', 'active_page'),
+)
+def render_ui_y(config_y: dict, file_metadata: dict,
+                selected_axis: int, selected_data_series: int):
+    """Generates the UI elements that allow the user to configure y-axis
+    plot settings"""
+    if dash.ctx.triggered_id == 'y-axis-selector':
+        # If the user switched y-axes, reset selected trace to first trace
+        # (otherwise, the currently selected trace might be out of range)
+        selected_data_series = 1
+
+    layout = render_y_settings(
+        config_y, _sim_results_files, file_metadata,
+        selected_axis-1 if selected_axis is not None else 0,
+        selected_data_series-1 if selected_data_series is not None else 0,
+    )
+
+    return layout, selected_data_series
 
 
 ## PLOTTING ------------------------------------------------------------------

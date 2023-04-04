@@ -34,7 +34,7 @@ def file_metadata_store():
 
 default_plot_config_general: Dict[str, Any] = {
     'title': None,
-    'background_color': '#FFFFFF',
+    'background_color': '#ffffff',
     'grid_x': True,
     'grid_y': True,
     'append_units': False,
@@ -54,6 +54,29 @@ default_plot_config_x: Dict[str, Any] = {
 
 default_plot_config_y: Dict[str, Any] = {
     'axes': [],
+}
+
+default_y_axis_settings = {
+    'axis_title': None,
+    'enabled': True,
+    'color': '#000000',
+    'ymin': None,
+    'ymax': None,
+    'tick_spacing': None,
+    'traces': [],
+}
+
+default_trace_settings = {
+    'name': None,
+    'enabled': True,
+    'file': None,
+    'variable': None,
+    'units': None,
+    'style': {
+        'color': '#1f77b4',
+        'width': 2,
+        'dash': 'solid',
+    },
 }
 
 
