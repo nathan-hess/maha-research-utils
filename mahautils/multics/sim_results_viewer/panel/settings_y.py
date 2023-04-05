@@ -26,7 +26,7 @@ def plot_settings_y():
     """Creates the configuration panel tab with settings for the y-axes"""
     return [
         dash.html.Div(
-            render_y_settings(default_plot_config_y, {}, {}, 1, 1),
+            render_y_settings(default_plot_config_y, {}, {}, 0, 0),
             id='plot-config-y-settings',
             style={'marginTop': TAB_BAR_PADDING},
         ),

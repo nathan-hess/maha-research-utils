@@ -446,6 +446,16 @@ def render_ui_y(config_y: dict, file_metadata: dict,
         # (otherwise, the currently selected trace might be out of range)
         selected_data_series = 1
 
+    # Ensure that the selected axis and trace are within a valid range (they
+    # might not be if an axis or trace was just deleted)
+    num_axes = len(config_y['axes'])
+    selected_axis = max(1, min(selected_axis, num_axes))
+
+    if num_axes > 0:
+        selected_data_series = min(
+            selected_data_series,
+            len(config_y['axes'][selected_axis-1]['traces']))
+
     layout = render_y_settings(
         config_y, _sim_results_files, file_metadata,
         selected_axis-1 if selected_axis is not None else 0,
