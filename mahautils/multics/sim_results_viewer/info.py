@@ -21,7 +21,7 @@ def info_box():
     """Creates an "about" box showing program version and acknowledgements"""
     contents = [
         dbc.ModalHeader(
-            dbc.ModalTitle(f'{PROJECT_NAME} SimViewer v{VERSION}'),
+            dbc.ModalTitle(f'{PROJECT_NAME} {GUI_SHORT_NAME} v{VERSION}'),
             close_button=True,
         ),
         dbc.ModalBody([
