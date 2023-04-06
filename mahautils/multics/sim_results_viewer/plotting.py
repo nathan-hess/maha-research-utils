@@ -55,8 +55,9 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
 
             figure.update_layout(xaxis={'title': axis_title, 'color': 'black'})
 
+        x_domain_min = max(0, width_per_axis*(num_active_axes-1))
         figure.update_layout(
-            xaxis={'domain': [width_per_axis*(num_active_axes-1), 1]})
+            xaxis={'domain': [x_domain_min, 1]})
 
         if (dtick := config_x['tick_spacing']) not in (None, ''):
             figure.update_xaxes(dtick=dtick)
@@ -81,6 +82,9 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
             ymax = y_axis_data['ymax'] if set_ymax else -math.inf
 
             for trace in y_axis_data['traces']:
+                if not trace['enabled']:
+                    continue
+
                 try:
                     sim_results = sim_results_files[trace['file']]
                 except KeyError as exception:
