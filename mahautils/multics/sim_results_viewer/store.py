@@ -56,7 +56,7 @@ default_plot_config_y: Dict[str, Any] = {
     'axes': [],
 }
 
-default_y_axis_settings = {
+default_y_axis_settings: Dict[str, Any] = {
     'axis_title': None,
     'enabled': True,
     'color': '#000000',
@@ -66,7 +66,7 @@ default_y_axis_settings = {
     'traces': [],
 }
 
-default_trace_settings = {
+default_trace_settings: Dict[str, Any] = {
     'name': None,
     'enabled': True,
     'file': None,

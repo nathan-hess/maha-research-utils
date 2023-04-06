@@ -8,6 +8,7 @@ results.
 # pylint: disable=unused-argument,broad-exception-caught
 
 import argparse
+import copy
 import os
 import sys
 from typing import Any, Dict, List, Optional
@@ -44,6 +45,8 @@ from .panel import (
 )
 from .plotting import graph, update_graph
 from .store import (
+    default_trace_settings,
+    default_y_axis_settings,
     file_metadata_store,
     plot_config_general_store,
     plot_config_x_store,
@@ -289,10 +292,18 @@ def validate_upload_file_name(name: Optional[str]):
     Input({'component': 'plot-config', 'tab': 'x', 'field': 'xmin'}, 'value'),
     Input({'component': 'plot-config', 'tab': 'x', 'field': 'xmax'}, 'value'),
     Input({'component': 'plot-config', 'tab': 'x', 'field': 'tick_spacing'}, 'value'),  # noqa: E501  # pylint: disable=C0301
+    Input('add-y-axis-button', 'n_clicks'),
+    Input('delete-y-axis-button', 'n_clicks'),
+    Input('hide-show-y-axis-button', 'n_clicks'),
+    Input('add-y-data-button', 'n_clicks'),
+    Input('delete-y-data-button', 'n_clicks'),
+    Input('hide-show-y-data-button', 'n_clicks'),
     State('plot-config-general-store', 'data'),
     State('plot-config-x-store', 'data'),
     State('plot-config-y-store', 'data'),
     State({'component': 'error-box', 'id': dash.ALL}, 'is_open'),
+    State('y-axis-selector', 'active_page'),
+    State('y-data-selector', 'active_page'),
     prevent_initial_call=True,
 )
 def update_plot_config(
@@ -313,17 +324,30 @@ def update_plot_config(
     x_min,
     x_max,
     x_tick_spacing,
+    add_y_axis_clicks: int,
+    delete_y_axis_clicks: int,
+    hide_show_y_axis_clicks: int,
+    add_trace_clicks: int,
+    delete_trace_clicks: int,
+    hide_show_trace_clicks: int,
     ## States ##
     config_general: dict,
     config_x: dict,
     config_y: dict,
     error_boxes_open: List[bool],
+    selected_y_axis_page: int,
+    selected_data_series_page: int,
 ):
     """Updates the browser storage containing the plot configuration data"""
     if any(error_boxes_open):
         # If any error boxes are open, prevent updating the app so user can
         # resolve the issue first
         raise dash.exceptions.PreventUpdate
+
+    # Determine which axis and data series are selected displayed to the user
+    # (these are the objects whose settings may be edited)
+    y_axis_idx = selected_y_axis_page - 1
+    trace_idx = selected_data_series_page - 1
 
     if dash.ctx.triggered_id == 'plot-config-upload':
         if upload_contents is None:
@@ -345,6 +369,55 @@ def update_plot_config(
         config_x = new_x
         config_y = new_y
 
+    # Note that for the callback actions below, the buttons' "n_clicks"
+    # properties are reset to 0 when the configuration panel is rendered, so
+    # checking that "n_clicks > 0" is necessary (or else the branch will be
+    # run when the panel is rendered and "n_clicks" is reset from 1 to 0).
+
+    # Detect and respond to button presses to manage y-axes
+    elif dash.ctx.triggered_id == 'add-y-axis-button':
+        if add_y_axis_clicks > 0:
+            config_y['axes'].append(copy.deepcopy(default_y_axis_settings))
+        else:
+            # Callback is fired when components are dynamically generated, so
+            # if this is the case, skip running actions
+            raise dash.exceptions.PreventUpdate
+
+    elif dash.ctx.triggered_id == 'delete-y-axis-button':
+        if delete_y_axis_clicks > 0:
+            del config_y['axes'][y_axis_idx]
+        else:
+            raise dash.exceptions.PreventUpdate
+
+    elif dash.ctx.triggered_id == 'hide-show-y-axis-button':
+        if hide_show_y_axis_clicks > 0:
+            config_y['axes'][y_axis_idx]['enabled'] \
+                = not config_y['axes'][y_axis_idx]['enabled']
+        else:
+            raise dash.exceptions.PreventUpdate
+
+    # Detect and respond to button presses to manage data series
+    elif dash.ctx.triggered_id == 'add-y-data-button':
+        if add_trace_clicks > 0:
+            config_y['axes'][y_axis_idx]['traces'].append(
+                copy.deepcopy(default_trace_settings))
+        else:
+            raise dash.exceptions.PreventUpdate
+
+    elif dash.ctx.triggered_id == 'delete-y-data-button':
+        if delete_trace_clicks > 0:
+            del config_y['axes'][y_axis_idx]['traces'][trace_idx]
+        else:
+            raise dash.exceptions.PreventUpdate
+
+    elif dash.ctx.triggered_id == 'hide-show-y-data-button':
+        if hide_show_trace_clicks > 0:
+            config_y['axes'][y_axis_idx]['traces'][trace_idx]['enabled'] \
+                = not config_y['axes'][y_axis_idx]['traces'][trace_idx]['enabled']
+        else:
+            raise dash.exceptions.PreventUpdate
+
+    # Update stored properties
     else:
         # General plot configuration settings
         config_general['title'] = plot_title
@@ -438,31 +511,32 @@ def render_ui_x(config_x: dict):
     Input('y-data-selector', 'active_page'),
 )
 def render_ui_y(config_y: dict, file_metadata: dict,
-                selected_axis: int, selected_data_series: int):
+                selected_axis_page: int, selected_trace_page: int):
     """Generates the UI elements that allow the user to configure y-axis
     plot settings"""
     if dash.ctx.triggered_id == 'y-axis-selector':
         # If the user switched y-axes, reset selected trace to first trace
         # (otherwise, the currently selected trace might be out of range)
-        selected_data_series = 1
+        selected_trace_page = 1
 
     # Ensure that the selected axis and trace are within a valid range (they
     # might not be if an axis or trace was just deleted)
     num_axes = len(config_y['axes'])
-    selected_axis = max(1, min(selected_axis, num_axes))
+    selected_axis_page = max(1, min(selected_axis_page, num_axes))
 
+    selected_trace_page = max(1, selected_trace_page)
     if num_axes > 0:
-        selected_data_series = min(
-            selected_data_series,
-            len(config_y['axes'][selected_axis-1]['traces']))
+        selected_trace_page = min(
+            selected_trace_page,
+            len(config_y['axes'][selected_axis_page-1]['traces']))
 
     layout = render_y_settings(
         config_y, _sim_results_files, file_metadata,
-        selected_axis-1 if selected_axis is not None else 0,
-        selected_data_series-1 if selected_data_series is not None else 0,
+        selected_axis_page-1 if selected_axis_page is not None else 0,
+        selected_trace_page-1 if selected_trace_page is not None else 0,
     )
 
-    return layout, selected_data_series
+    return layout, selected_trace_page
 
 
 ## PLOTTING ------------------------------------------------------------------
