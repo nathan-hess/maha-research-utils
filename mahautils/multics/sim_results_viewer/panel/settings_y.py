@@ -55,6 +55,18 @@ def render_y_settings(config_y: dict, sim_results_files: SIM_RESULTS_DICT_T,
     file_enabled = ((trace['file'] in file_metadata)
                     and file_metadata[trace['file']]['enabled'])
 
+    # Get list of possible simulation results variables to plot
+    if trace['file'] in (None, ''):
+        variable_options = []
+    else:
+        variable_options = [{
+            'label': (
+                f'{var} — '
+                f'{sim_results_files[trace["file"]].get_description(var)}'
+            ),
+            'value': var,
+        } for var in sim_results_files[trace['file']].variables]
+
     return [
         # Axis selector and buttons for creating and deleting axes
         dash.html.H5('Y-Axis Selector', style={'marginBottom': '10px'}),
@@ -136,11 +148,15 @@ def render_y_settings(config_y: dict, sim_results_files: SIM_RESULTS_DICT_T,
                     hidden=file_enabled,
                 ),
                 dash.html.H5('Legend Title'),
+                dash.html.P(
+                    'Enter a legend title for the data series. Use "<br>" to '
+                    'split long lines',
+                    style={'marginBottom': UI_DESCRIPTION_MARGIN_BELOW},
+                ),
                 dbc.Input(
                     debounce=True,
                     id={'component': 'plot-config', 'tab': 'y',
                         'field': 'legend-title'},
-                    placeholder='Enter a legend title for the data series...',
                     value=trace['name'],
                 ),
                 dash.html.Br(),
@@ -162,11 +178,7 @@ def render_y_settings(config_y: dict, sim_results_files: SIM_RESULTS_DICT_T,
                     ),
                     dbc.Col(
                         dash.dcc.Dropdown(
-                            options=(
-                                [] if trace['file'] in (None, '')
-                                else list(
-                                    sim_results_files[trace['file']].variables)
-                            ),
+                            options=variable_options,
                             value=trace['variable'],
                             id={'component': 'plot-config', 'tab': 'y',
                                 'field': 'trace-variable'},
