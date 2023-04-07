@@ -298,6 +298,18 @@ def validate_upload_file_name(name: Optional[str]):
     Input('add-y-data-button', 'n_clicks'),
     Input('delete-y-data-button', 'n_clicks'),
     Input('hide-show-y-data-button', 'n_clicks'),
+    Input({'component': 'plot-config', 'tab': 'y', 'field': 'title'}, 'value'),
+    Input({'component': 'plot-config', 'tab': 'y', 'field': 'axis-color'}, 'value'),  # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'y', 'field': 'ymin'}, 'value'),
+    Input({'component': 'plot-config', 'tab': 'y', 'field': 'ymax'}, 'value'),
+    Input({'component': 'plot-config', 'tab': 'y', 'field': 'tick_spacing'}, 'value'),    # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'y', 'field': 'legend-title'}, 'value'),    # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'y', 'field': 'trace-file'}, 'value'),      # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'y', 'field': 'trace-variable'}, 'value'),  # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'y', 'field': 'units'}, 'value'),           # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'y', 'field': 'trace-color'}, 'value'),     # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'y', 'field': 'trace-width'}, 'value'),     # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'y', 'field': 'trace-dash'}, 'value'),      # noqa: E501  # pylint: disable=C0301
     State('plot-config-general-store', 'data'),
     State('plot-config-x-store', 'data'),
     State('plot-config-y-store', 'data'),
@@ -330,6 +342,18 @@ def update_plot_config(
     add_trace_clicks: int,
     delete_trace_clicks: int,
     hide_show_trace_clicks: int,
+    y_title: Optional[str],
+    y_color: Optional[str],
+    y_min,
+    y_max,
+    y_tick_spacing,
+    trace_name: Optional[str],
+    trace_file: Optional[str],
+    trace_variable: Optional[str],
+    trace_units: Optional[str],
+    trace_color: str,
+    trace_width,
+    trace_dash: str,
     ## States ##
     config_general: dict,
     config_x: dict,
@@ -444,20 +468,45 @@ def update_plot_config(
             config_general['freeze_uirevision'] = freeze_uirevision
 
         # Plot configuration settings for x-axis
-        if x_variable is not None:
-            if x_variable != config_x['variable']:
-                x_units = ''
+        if x_variable != config_x['variable']:
+            x_units = None
 
-            config_x['variable'] = x_variable
-
+        config_x['variable'] = x_variable
         config_x['units'] = x_units
-
         config_x['axis_title'] = x_title
-
         config_x['xmin'] = None if x_min in (None, '') else float(x_min)
         config_x['xmax'] = None if x_max in (None, '') else float(x_max)
         config_x['tick_spacing'] = None if x_tick_spacing in (None, '') \
                                         else float(x_tick_spacing)  # noqa: E127
+
+        # Plot configuration settings for y-axes
+        if len(config_y['axes']) > 0:
+            y_axis = config_y['axes'][y_axis_idx]
+
+            y_axis['axis_title'] = y_title
+
+            if y_color is not None:
+                y_axis['color'] = y_color
+
+            y_axis['ymin'] = None if y_min in (None, '') else float(y_min)
+            y_axis['ymax'] = None if y_max in (None, '') else float(y_max)
+            y_axis['tick_spacing'] = None if y_tick_spacing in (None, '') \
+                                          else float(y_tick_spacing)  # noqa: E127
+
+            if len(config_y['axes'][y_axis_idx]['traces']) > 0:
+                trace = config_y['axes'][y_axis_idx]['traces'][trace_idx]
+
+                if trace_variable != trace['variable']:
+                    trace_units = None
+
+                trace['name'] = trace_name
+                trace['file'] = trace_file
+                trace['variable'] = trace_variable
+                trace['units'] = trace_units
+                trace['style']['color'] = trace_color
+                trace['style']['width'] = None if trace_width in (None, '') \
+                                               else float(trace_width)  # noqa: E127
+                trace['style']['dash'] = trace_dash
 
     return None, config_general, config_x, config_y, False, None
 
