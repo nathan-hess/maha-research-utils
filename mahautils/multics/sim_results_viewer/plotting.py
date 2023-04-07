@@ -4,6 +4,7 @@ the data graph.
 
 import itertools
 import math
+import random
 from typing import Any, Dict, List
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
@@ -30,6 +31,12 @@ def graph():
     )
 
     return contents
+
+
+def random_hex_color() -> str:
+    """Generates a hex code for a random color"""
+    return '#' + ''.join([f'{random.randint(0, 255):02x}'  # nosec: B311
+                          for _ in range(3)])
 
 
 def update_graph(config_general: dict, config_x: dict, config_y: dict,

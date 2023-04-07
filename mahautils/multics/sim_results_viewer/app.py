@@ -43,7 +43,7 @@ from .panel import (
     render_y_settings,
     simviewer_config_panel,
 )
-from .plotting import graph, update_graph
+from .plotting import graph, random_hex_color, update_graph
 from .store import (
     default_trace_settings,
     default_y_axis_settings,
@@ -425,6 +425,8 @@ def update_plot_config(
         if add_trace_clicks > 0:
             config_y['axes'][y_axis_idx]['traces'].append(
                 copy.deepcopy(default_trace_settings))
+            config_y['axes'][y_axis_idx]['traces'][-1]['style']['color'] \
+                = random_hex_color()
         else:
             raise dash.exceptions.PreventUpdate
 
