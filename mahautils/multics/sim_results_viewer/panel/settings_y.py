@@ -7,6 +7,7 @@ import dash_bootstrap_components as dbc  # type: ignore
 
 from mahautils.multics.sim_results_viewer.constants import (
     SIM_RESULTS_DICT_T,
+    SIM_VAR_DROPDOWN_OPTION_HEIGHT,
     TAB_BAR_PADDING,
     UI_DESCRIPTION_MARGIN_BELOW,
 )
@@ -185,6 +186,7 @@ def render_y_settings(config_y: dict, sim_results_files: SIM_RESULTS_DICT_T,
                             clearable=True,
                             disabled=(trace['file'] in (None, '')),
                             multi=False,
+                            optionHeight=SIM_VAR_DROPDOWN_OPTION_HEIGHT,
                         ),
                         width=10,
                     ),

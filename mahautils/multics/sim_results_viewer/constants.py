@@ -33,3 +33,7 @@ COLOR_PICKER_STYLE = {'width': 75, 'height': 50}
 
 # Margin below HTML <p> elements used to describe features to users
 UI_DESCRIPTION_MARGIN_BELOW = '5px'
+
+# Option height in dropdowns when selecting simulation results variables
+# to plot (https://community.plotly.com/t/long-dropdown-values-overlap/14843)
+SIM_VAR_DROPDOWN_OPTION_HEIGHT = 48
