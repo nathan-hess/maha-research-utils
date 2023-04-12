@@ -371,15 +371,21 @@ These parameters should be included **only** for polygon files multiple time ste
             it is rescaled by :math:`t = t_{max}`.
         * - **3** (periodic)
           - Assumes that the polygon data are periodic with period
-            :math:`t_{min} - t_{max}`.  If :math:`t` falls outside the range
-            :math:`[t_{min}, t_{max}]`, it is rescaled by
-            :math:`t = ((t - t_{min}) \% (t_{max} - t_{min})) + t_{min}`,
+            :math:`t_{min} - t_{max} + \Delta t`, where :math:`\Delta t` represents
+            ``TIME_STEP``.  If :math:`t` falls outside the defined range, it is rescaled by
+            :math:`t = ((t - t_{min}) \% (t_{max} - t_{min} + \Delta t)) + t_{min}`,
             where :math:`\%` denotes the modulo operator.
 
-    .. note::
+    .. warning::
 
-        Why is ``1`` not an option?  This is unfortunately a limitation hard-coded
-        in the Maha Multics source code.
+        If using the periodic approximation method (3), notice that you should **not**
+        include both endpoints in the lookup table (otherwise, the period would be
+        :math:`t_{max} - t_{min}`, not :math:`t_{max} - t_{min} + \Delta t`).
+
+        For example, suppose your time variable is a cycle that repeats every rotation
+        (:math:`360^\circ`) and you are defining polygons in your polygon file every
+        :math:`1^\circ`.  In this case, your polygon file should include data for the
+        following angles: :math:`0^\circ, 1^\circ, 2^\circ, ..., 358^\circ, 359^\circ`.
 
 
 .. _fileref-polygon_file-coordinates:
@@ -432,7 +438,7 @@ The following parameters must be included in this section:
     inside a polygon.  If these points are to be considered "enclosed by" the polygon
     for the purposes of the polygon file definition, then set ``ENCLOSED_CONV`` to 1.
     To reverse this convention, set ``ENCLOSED_CONV`` to 0.
-    
+
     The figure and table below clarify these conventions.
 
     .. figure:: ./images/polygon_file_enclosed_conv.png

@@ -116,7 +116,8 @@ Section 2: Independent Variable Spacing and Approximation Method
 The next section of the lookup table file provides the points (values of each
 independent variable) at which the dependent variable is explicitly defined,
 as well as the method for interpolating and/or extrapolating values along each
-dimension of the lookup table.
+dimension of the lookup table.  All values in this section should be
+**whitespace-separated**.
 
 There are several important pieces of information defined for each independent
 variable dimension.  First, the independent variable can be assigned a unit,
@@ -161,11 +162,21 @@ methods are valid:
         :math:`x \le x_{min}` and :math:`f(x) = f(x_{max})` for :math:`x \ge x_{max}`)
     * - **3** (periodic)
       - Linear interpolation; to extrapolate, it is assumed that the dependent
-        variable is periodic with period :math:`x_{max} - x_{min}` such that
-        :math:`f(x) = f(((x - x_{min}) \% (x_{max} - x_{min})) + x_{min})`,
+        variable is periodic with period :math:`x_{max} - x_{min} + \Delta x`, where
+        :math:`\Delta x` represents ``DIM_#_STEP``, such that
+        :math:`f(x) = f(((x - x_{min}) \% (x_{max} - x_{min} + \Delta x)) + x_{min})`,
         where :math:`\%` denotes the modulo operator
 
-All values should be **whitespace-separated**.
+.. warning::
+
+    If using the periodic approximation method (3), notice that you should **not**
+    include both endpoints in the lookup table (otherwise, the period would be
+    :math:`x_{max} - x_{min}`, not :math:`x_{max} - x_{min} + \Delta x`).
+
+    For example, suppose your independent variable is a cycle that repeats every rotation
+    (:math:`360^\circ`) and you are defining values in your lookup table every
+    :math:`1^\circ`.  In this case, your lookup table file should include data for the
+    following angles: :math:`0^\circ, 1^\circ, 2^\circ, ..., 358^\circ, 359^\circ`.
 
 
 Section 3: Dependent Variable Data
