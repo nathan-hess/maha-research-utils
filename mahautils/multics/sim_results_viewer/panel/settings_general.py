@@ -141,5 +141,6 @@ def render_general_settings(config_general: dict):
              'user interactions (zoom, clicking legend items, etc.)'),
             target={'component': 'plot-config', 'tab': 'general',
                     'field': 'freeze-uirevision'},
+            trigger='hover',
         ),
     ]
