@@ -53,6 +53,7 @@ def render_y_settings(config_y: dict, sim_results_files: SIM_RESULTS_DICT_T,
     trace = axis['traces'][selected_data_series] if num_traces > 0 \
         else default_trace_settings
 
+    file_selected = trace['file'] is not None
     file_enabled = ((trace['file'] in file_metadata)
                     and file_metadata[trace['file']]['enabled'])
 
@@ -146,7 +147,7 @@ def render_y_settings(config_y: dict, sim_results_files: SIM_RESULTS_DICT_T,
                         ),
                         dash.html.Br(),
                     ],
-                    hidden=file_enabled,
+                    hidden=(file_enabled or not file_selected),
                 ),
                 dash.html.H5('Legend Title'),
                 dash.html.P(
