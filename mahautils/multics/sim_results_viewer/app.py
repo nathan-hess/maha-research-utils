@@ -560,9 +560,12 @@ def render_ui_x(config_x: dict):
     Input('data-file-store', 'data'),
     Input('y-axis-selector', 'active_page'),
     Input('y-data-selector', 'active_page'),
+    Input('add-y-axis-button', 'n_clicks'),
+    Input('add-y-data-button', 'n_clicks'),
 )
 def render_ui_y(config_y: dict, file_metadata: dict,
-                selected_axis_page: int, selected_trace_page: int):
+                selected_axis_page: int, selected_trace_page: int,
+                add_y_axis_clicks: int, add_y_data_clicks: int):
     """Generates the UI elements that allow the user to configure y-axis
     plot settings"""
     if dash.ctx.triggered_id == 'y-axis-selector':
@@ -570,16 +573,23 @@ def render_ui_y(config_y: dict, file_metadata: dict,
         # (otherwise, the currently selected trace might be out of range)
         selected_trace_page = 1
 
+    # If the user just created a new y-axis or data series, display it
+    num_axes = len(config_y['axes'])
+    if dash.ctx.triggered_id == 'add-y-axis-button':
+        selected_axis_page = num_axes
+
+    if dash.ctx.triggered_id == 'add-y-data-button':
+        num_traces = len(config_y['axes'][selected_axis_page-1]['traces'])
+        selected_trace_page = num_traces
+
     # Ensure that the selected axis and trace are within a valid range (they
     # might not be if an axis or trace was just deleted)
-    num_axes = len(config_y['axes'])
     selected_axis_page = max(1, min(selected_axis_page, num_axes))
 
     selected_trace_page = max(1, selected_trace_page)
     if num_axes > 0:
-        selected_trace_page = min(
-            selected_trace_page,
-            len(config_y['axes'][selected_axis_page-1]['traces']))
+        num_traces = len(config_y['axes'][selected_axis_page-1]['traces'])
+        selected_trace_page = min(selected_trace_page, num_traces)
 
     layout = render_y_settings(
         config_y, _sim_results_files, file_metadata,
