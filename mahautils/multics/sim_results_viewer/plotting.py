@@ -161,7 +161,7 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
             figure.update_xaxes(range=[xmin, xmax])
 
     ## Plot formatting settings ##
-    figure.update_layout(margin={'t': 7.5, 'r': 10})
+    figure.update_layout(margin={'t': 7.5, 'r': 10}, showlegend=True)
 
     default_axes_settings = {
         # Border around plot
