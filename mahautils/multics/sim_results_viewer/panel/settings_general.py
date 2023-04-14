@@ -31,10 +31,15 @@ def plot_settings_general():
         dash.html.Hr(),
         dbc.Row([
             dbc.Col(
-                dash.dcc.Upload(
-                    dbc.Button('Import', id='config-import-button',
-                               style=import_export_button_styling),
-                    id='plot-config-upload',
+                dbc.Spinner(
+                    dash.dcc.Upload(
+                        dbc.Button('Import', id='config-import-button',
+                                   style=import_export_button_styling),
+                        id='plot-config-upload',
+                    ),
+                    # Delay prevents showing spinner when changing other
+                    # configuration UI elements
+                    delay_show=200,
                 ),
                 class_name='d-grid gap-2',
             ),
