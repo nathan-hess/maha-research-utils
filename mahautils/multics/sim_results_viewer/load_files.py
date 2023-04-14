@@ -74,6 +74,13 @@ def load_plot_config(dash_base64_contents: str) -> Tuple[dict, dict, dict]:
             f'{PROJECT_NAME} v{version}, but the minimum required version '
             f'that can be read is v{minimum_version}')
 
+    maximum_version = VERSION
+    if Version(version) > Version(maximum_version):
+        raise ValueError(
+            'The plot configuration file you uploaded was generated with '
+            f'{PROJECT_NAME} v{version}, but the maximum permitted version '
+            f'that can be read is v{maximum_version}')
+
     return config_general, config_x, config_y
 
 
