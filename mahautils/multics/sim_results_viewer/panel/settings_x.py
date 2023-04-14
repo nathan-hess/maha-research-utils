@@ -95,10 +95,35 @@ def render_x_settings(config_x: dict, sim_results_files: SIM_RESULTS_DICT_T):
                     id={'component': 'plot-config', 'tab': 'x',
                         'field': 'units'},
                     style={'width': 150},
+                    disabled=(config_x['variable'] is None),
                 ),
                 width=10,
             ),
         ]),
+        dbc.Alert(
+            [
+                dash.html.H5([
+                    dash.html.I(className='fa fa-exclamation-triangle'),
+                    ' WARNING',
+                ]),
+                dash.html.Hr(),
+                dash.html.P('The plot will not be updated until you have '
+                            'selected both a simulation results variable AND '
+                            'units for the x-axis'),
+            ],
+            color='danger',
+            style={
+                'width': '95%',
+                'marginTop': '10px',
+                'marginLeft': '10px',
+                'marginRight': '10px',
+            },
+            is_open=(
+                config_x['variable'] in (None, '')
+                or config_x['units'] in (None, '')
+            ),
+            dismissable=False,
+        ),
         dash.html.Br(),
         dash.html.Br(),
         dash.html.H4('Formatting'),

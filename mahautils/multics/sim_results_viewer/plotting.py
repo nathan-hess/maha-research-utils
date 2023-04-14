@@ -51,29 +51,30 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
     num_active_axes = sum(x['enabled'] for x in y_axes)
     width_per_axis = float(config_general['width_per_y_axis'])
 
+    # Settings for x-axis
+    if (axis_title := config_x['axis_title']) not in (None, ''):
+        if append_units:
+            axis_title += f' [{config_x["units"]}]'
+
+        figure.update_layout(xaxis={'title': axis_title, 'color': 'black'})
+
+    x_domain_min = max(0, width_per_axis*(num_active_axes-1))
+    figure.update_layout(
+        xaxis={'domain': [x_domain_min, 1]})
+
+    if (dtick := config_x['tick_spacing']) not in (None, ''):
+        figure.update_xaxes(dtick=dtick)
+
+    set_xmin = config_x['xmin'] not in (None, '')
+    xmin = config_x['xmin'] if set_xmin else math.inf
+    set_xmax = config_x['xmax'] not in (None, '')
+    xmax = config_x['xmax'] if set_xmax else -math.inf
+
     if (
         len(y_axes) > 0
-        and (None not in (config_x['variable'], config_x['units']))
+        and (config_x['variable'] not in (None, ''))
+        and (config_x['units'] not in (None, ''))
     ):
-        # Settings for x-axis
-        if (axis_title := config_x['axis_title']) not in (None, ''):
-            if append_units:
-                axis_title += f' [{config_x["units"]}]'
-
-            figure.update_layout(xaxis={'title': axis_title, 'color': 'black'})
-
-        x_domain_min = max(0, width_per_axis*(num_active_axes-1))
-        figure.update_layout(
-            xaxis={'domain': [x_domain_min, 1]})
-
-        if (dtick := config_x['tick_spacing']) not in (None, ''):
-            figure.update_xaxes(dtick=dtick)
-
-        set_xmin = config_x['xmin'] not in (None, '')
-        xmin = config_x['xmin'] if set_xmin else math.inf
-        set_xmax = config_x['xmax'] not in (None, '')
-        xmax = config_x['xmax'] if set_xmax else -math.inf
-
         # Settings for y-axes
         y_axis_data: Dict[str, Any]
         i = 0
@@ -157,8 +158,8 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
 
             i += 1
 
-        if set_xmin or set_xmax:
-            figure.update_xaxes(range=[xmin, xmax])
+    if set_xmin or set_xmax:
+        figure.update_xaxes(range=[xmin, xmax])
 
     ## Plot formatting settings ##
     figure.update_layout(margin={'t': 7.5, 'r': 10}, showlegend=True)
