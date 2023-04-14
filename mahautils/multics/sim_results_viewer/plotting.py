@@ -8,8 +8,9 @@ import random
 from typing import Any, Dict, List
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
-import dash                        # type: ignore
-import plotly.graph_objects as go  # type: ignore
+import dash                              # type: ignore
+import dash_bootstrap_components as dbc  # type: ignore
+import plotly.graph_objects as go        # type: ignore
 
 from mahautils.multics.sim_results_viewer.constants import SIM_RESULTS_DICT_T
 
@@ -20,7 +21,7 @@ def graph():
     """Creates the main plot where simulation results are displayed"""
     default_height_percent = 90
 
-    contents = dash.dcc.Loading(
+    return dbc.Spinner(
         dash.dcc.Graph(
             id='plotly-graph',
             figure={},
@@ -28,9 +29,8 @@ def graph():
                 'height': f'{default_height_percent}vh',
             },
         ),
+        delay_show=100,
     )
-
-    return contents
 
 
 def random_hex_color() -> str:
