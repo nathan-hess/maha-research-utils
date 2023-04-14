@@ -159,7 +159,7 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
                         'anchor': 'free',
                         'overlaying': 'y',
                         'side': 'left',
-                        'position': (width_per_axis * i) - width_per_axis,
+                        'position': (width_per_axis * (num_active_axes - i - 1)),
                         'color': str(y_axis_data.get('color', 'black')),
                         **tick_options,
                     }
