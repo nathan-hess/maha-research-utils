@@ -209,6 +209,31 @@ def render_y_settings(config_y: dict, sim_results_files: SIM_RESULTS_DICT_T,
                         width=10,
                     ),
                 ]),
+                dbc.Alert(
+                    [
+                        dash.html.H5([
+                            dash.html.I(className='fa fa-exclamation-triangle'),
+                            ' WARNING',
+                        ]),
+                        dash.html.Hr(),
+                        dash.html.P('The plot will not be updated until you '
+                                    'have selected a simulation results file, '
+                                    'variable, AND units for the data series'),
+                    ],
+                    color='danger',
+                    style={
+                        'width': '95%',
+                        'marginTop': '10px',
+                        'marginLeft': '10px',
+                        'marginRight': '10px',
+                    },
+                    is_open=(
+                        trace['file'] in (None, '')
+                        or trace['variable'] in (None, '')
+                        or trace['units'] in (None, '')
+                    ),
+                    dismissable=False,
+                ),
                 dash.html.Br(),
                 dash.html.H5('Line Color'),
                 color_picker(

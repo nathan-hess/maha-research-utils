@@ -90,6 +90,15 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
             ymax = y_axis_data['ymax'] if set_ymax else -math.inf
 
             for trace in y_axis_data['traces']:
+                if (
+                    trace['file'] in (None, '')
+                    or trace['variable'] in (None, '')
+                    or trace['units'] in (None, '')
+                ):
+                    # If the file, variable, and units are not all provided,
+                    # omit the trace from the plot
+                    continue
+
                 if not trace['enabled']:
                     continue
 
