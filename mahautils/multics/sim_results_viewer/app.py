@@ -443,8 +443,8 @@ def update_plot_config(
         else:
             raise dash.exceptions.PreventUpdate
 
-    # Update stored properties
-    else:
+    # Update stored properties if any of the dropdowns or input boxes were changed
+    elif dash.ctx.triggered_id != 'data-file-store':
         # General plot configuration settings
         config_general['title'] = plot_title
 
