@@ -393,6 +393,22 @@ def update_plot_config(
         config_x = new_x
         config_y = new_y
 
+    # If simulation results files were uploaded or deleted, make appropriate
+    # adjustments to configuration options
+    elif dash.ctx.triggered_id == 'data-file-store':
+        # If a new file was uploaded and it doesn't contain the x-axis
+        # variable, reset the x-axis variable
+        if not all(config_x['variable'] in file.variables
+                   for file in _sim_results_files.values()):
+            config_x['variable'] = None
+            config_x['units'] = None
+
+        # If a file was deleted, remove any associated traces
+        for y_axis in config_y['axes']:
+            for i, trace in enumerate(y_axis['traces']):
+                if trace['file'] not in _sim_results_files.keys():
+                    del y_axis['traces'][i]
+
     # Note that for the callback actions below, the buttons' "n_clicks"
     # properties are reset to 0 when the configuration panel is rendered, so
     # checking that "n_clicks > 0" is necessary (or else the branch will be
@@ -444,7 +460,7 @@ def update_plot_config(
             raise dash.exceptions.PreventUpdate
 
     # Update stored properties if any of the dropdowns or input boxes were changed
-    elif dash.ctx.triggered_id != 'data-file-store':
+    else:
         # General plot configuration settings
         config_general['title'] = plot_title
 
