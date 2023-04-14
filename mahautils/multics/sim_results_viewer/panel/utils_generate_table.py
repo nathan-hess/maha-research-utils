@@ -13,14 +13,12 @@ from mahautils.multics.sim_results_viewer.constants import SIM_RESULTS_DICT_T
 def empty_file_table():
     """Generates an empty table which can display a list of currently uploaded
     simulation results files"""
-    contents = dbc.Table(
+    return dbc.Table(
         [
             dash.html.Thead(dash.html.Tr(_table_header())),
             dash.html.Tbody(id='file-list-table-body'),
         ],
     )
-
-    return contents
 
 
 def generate_file_table_body(sim_results_files: SIM_RESULTS_DICT_T,

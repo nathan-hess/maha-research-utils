@@ -24,12 +24,10 @@ def file_metadata_store():
     }
     ```
     """
-    contents = dash.dcc.Store(
+    return dash.dcc.Store(
         id='data-file-store',
         storage_type='session',
     )
-
-    return contents
 
 
 default_plot_config_general: Dict[str, Any] = {
@@ -83,34 +81,28 @@ default_trace_settings: Dict[str, Any] = {
 def plot_config_general_store():
     """Creates browser session storage for general plot settings
     """
-    contents = dash.dcc.Store(
+    return dash.dcc.Store(
         id='plot-config-general-store',
         storage_type='session',
         data=default_plot_config_general,
     )
 
-    return contents
-
 
 def plot_config_x_store():
     """Creates browser session storage for x-axis plot settings
     """
-    contents = dash.dcc.Store(
+    return dash.dcc.Store(
         id='plot-config-x-store',
         storage_type='session',
         data=default_plot_config_x,
     )
 
-    return contents
-
 
 def plot_config_y_store():
     """Creates browser session storage for y-axes plot settings
     """
-    contents = dash.dcc.Store(
+    return dash.dcc.Store(
         id='plot-config-y-store',
         storage_type='session',
         data=default_plot_config_y,
     )
-
-    return contents
