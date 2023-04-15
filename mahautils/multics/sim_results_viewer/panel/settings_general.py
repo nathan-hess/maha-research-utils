@@ -143,7 +143,8 @@ def render_general_settings(config_general: dict):
             description='Prevent user interface state reset on plot updates'),
         dbc.Tooltip(
             ('Prevents changes to plot data or settings from resetting past '
-             'user interactions (zoom, clicking legend items, etc.)'),
+             'user interactions (zoom, clicking legend items, shape '
+             'annotations, etc.)'),
             target={'component': 'plot-config', 'tab': 'general',
                     'field': 'freeze-uirevision'},
             trigger='hover',

@@ -28,6 +28,32 @@ def graph():
             style={
                 'height': f'{default_height_percent}vh',
             },
+
+            # Styling options
+            config={
+                'editSelection': True,
+                'edits': {
+                    'annotationPosition': True,
+                    'annotationTail': True,
+                    'annotationText': True,
+                    'legendPosition': True,
+                },
+                'modeBarButtonsToAdd': [
+                    'drawclosedpath',
+                    'drawopenpath',
+                    'drawline',
+                    'drawrect',
+                    'drawcircle',
+                    'eraseshape',
+                ],
+                'toImageButtonOptions': {
+                    'format': 'png',
+                    'width': None,
+                    'height': None,
+                },
+                'scrollZoom': True,
+                'showAxisDragHandles': True,
+            },
         ),
         delay_show=100,
     )
