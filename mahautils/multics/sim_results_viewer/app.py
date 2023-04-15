@@ -278,14 +278,18 @@ def validate_upload_file_name(name: Optional[str]):
     Output({'component': 'error-box-text', 'id': 'update-config-text'}, 'children'),
     Input('plot-config-upload', 'contents'),
     Input('data-file-store', 'data'),
-    Input({'component': 'plot-config', 'tab': 'general', 'field': 'title'}, 'value'),              # noqa: E501  # pylint: disable=C0301
-    Input({'component': 'plot-config', 'tab': 'general', 'field': 'background-color'}, 'value'),   # noqa: E501  # pylint: disable=C0301
-    Input({'component': 'plot-config', 'tab': 'general', 'field': 'grid-x'}, 'value'),             # noqa: E501  # pylint: disable=C0301
-    Input({'component': 'plot-config', 'tab': 'general', 'field': 'grid-y'}, 'value'),             # noqa: E501  # pylint: disable=C0301
-    Input({'component': 'plot-config', 'tab': 'general', 'field': 'append-units'}, 'value'),       # noqa: E501  # pylint: disable=C0301
-    Input({'component': 'plot-config', 'tab': 'general', 'field': 'width-per-y-axis'}, 'value'),   # noqa: E501  # pylint: disable=C0301
-    Input({'component': 'plot-config', 'tab': 'general', 'field': 'freeze-uirevision'}, 'value'),  # noqa: E501  # pylint: disable=C0301
-    Input({'component': 'plot-config', 'tab': 'general', 'field': 'hovermode'}, 'value'),          # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'title'}, 'value'),                # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'background-color'}, 'value'),     # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'grid-x'}, 'value'),               # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'grid-y'}, 'value'),               # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'append-units'}, 'value'),         # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'width-per-y-axis'}, 'value'),     # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'freeze-uirevision'}, 'value'),    # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'hovermode'}, 'value'),            # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'image_export_type'}, 'value'),    # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'image_export_width'}, 'value'),   # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'image_export_height'}, 'value'),  # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'general', 'field': 'image_export_scale'}, 'value'),   # noqa: E501  # pylint: disable=C0301
     Input({'component': 'plot-config', 'tab': 'x', 'field': 'variable'}, 'value'),
     Input({'component': 'plot-config', 'tab': 'x', 'field': 'units'}, 'value'),
     Input({'component': 'plot-config', 'tab': 'x', 'field': 'title'}, 'value'),
@@ -330,6 +334,10 @@ def update_plot_config(
     width_per_y_axis: Optional[str],
     freeze_uirevision: Optional[bool],
     hovermode: Optional[str],
+    image_export_type,
+    image_export_width,
+    image_export_height,
+    image_export_scale,
     x_variable: Optional[str],
     x_units: Optional[str],
     x_title: Optional[str],
@@ -487,6 +495,23 @@ def update_plot_config(
         if freeze_uirevision is not None:
             config_general['freeze_uirevision'] = freeze_uirevision
 
+        if image_export_type is not None:
+            config_general['image_export_type'] = image_export_type
+
+        if image_export_width not in (None, ''):
+            config_general['image_export_width'] = int(float(image_export_width))
+        else:
+            config_general['image_export_width'] = None
+
+        if image_export_height not in (None, ''):
+            config_general['image_export_height'] = int(float(image_export_height))
+        else:
+            config_general['image_export_height'] = None
+
+        if image_export_scale in (None, ''):
+            image_export_scale = 1
+        config_general['image_export_scale'] = int(float(image_export_scale))
+
         # Plot configuration settings for x-axis
         if x_variable != config_x['variable']:
             x_units = None
@@ -621,6 +646,7 @@ def render_ui_y(config_y: dict, file_metadata: dict,
 ## PLOTTING ------------------------------------------------------------------
 @app.callback(
     Output('plotly-graph', 'figure'),
+    Output('plotly-graph', 'config'),
     Output({'component': 'error-box', 'id': 'update-plot'}, 'is_open'),
     Output({'component': 'error-box-text', 'id': 'update-plot-text'}, 'children'),
     Input('plot-config-general-store', 'data'),
@@ -629,6 +655,7 @@ def render_ui_y(config_y: dict, file_metadata: dict,
     Input('data-file-store', 'data'),
     State('plotly-graph', 'figure'),
     State({'component': 'error-box', 'id': dash.ALL}, 'is_open'),
+    State('plotly-graph', 'config'),
     prevent_initial_call=True,
 )
 def update_plot(
@@ -640,6 +667,7 @@ def update_plot(
     ## States ##
     current_figure: go.Figure,
     error_boxes_open: List[bool],
+    figure_config: dict,
 ):
     """Updates the simulation results plot any time the plot configuration
     data dictionary changes"""
@@ -657,6 +685,18 @@ def update_plot(
             file_metadata     = file_metadata,
         )
 
+        figure_config['toImageButtonOptions']['format'] \
+            = config_general['image_export_type']
+
+        figure_config['toImageButtonOptions']['width'] \
+            = config_general['image_export_width']
+
+        figure_config['toImageButtonOptions']['height'] \
+            = config_general['image_export_height']
+
+        figure_config['toImageButtonOptions']['scale'] \
+            = config_general['image_export_scale']
+
         error_box_is_open = False
         error_box_text = None
 
@@ -669,7 +709,7 @@ def update_plot(
             exception,
         )
 
-    return figure, error_box_is_open, error_box_text
+    return figure, figure_config, error_box_is_open, error_box_text
 
 
 ## HIDE/SHOW CONTROLS FOR CONFIGURATION PANES --------------------------------

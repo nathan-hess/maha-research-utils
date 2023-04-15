@@ -39,6 +39,10 @@ default_plot_config_general: Dict[str, Any] = {
     'width_per_y_axis': 0.1,
     'hovermode': 'closest',
     'freeze_uirevision': False,
+    'image_export_type': 'png',
+    'image_export_width': None,
+    'image_export_height': None,
+    'image_export_scale': 1,
 }
 
 default_plot_config_x: Dict[str, Any] = {

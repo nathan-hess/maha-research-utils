@@ -143,9 +143,62 @@ def render_general_settings(config_general: dict):
             description='Prevent user interface state reset on plot updates'),
         dbc.Tooltip(
             ('Prevents changes to plot data or settings from resetting past '
-             'user interactions (zoom, clicking legend items, etc.)'),
+             'user interactions (zoom, clicking legend items, shape '
+             'annotations, etc.)'),
             target={'component': 'plot-config', 'tab': 'general',
                     'field': 'freeze-uirevision'},
             trigger='hover',
+        ),
+        dash.html.Br(),
+        dash.html.Br(),
+        dash.html.H4('Image Export Options'),
+        dash.html.Hr(),
+        dash.html.H5('Export Type'),
+        dash.dcc.Dropdown(
+            options=['png', 'jpeg', 'webp', 'svg'],
+            value=config_general['image_export_type'],
+            id={'component': 'plot-config', 'tab': 'general',
+                'field': 'image_export_type'},
+            clearable=False,
+            multi=False,
+        ),
+        dash.html.Br(),
+        dash.html.H5('Aspect Ratio'),
+        dash.html.P(
+            ('Output aspect ratio for exported images (width x height). '
+             'Leave blank to use window size'),
+            style={'marginBottom': UI_DESCRIPTION_MARGIN_BELOW},
+        ),
+        dash.html.Div([
+            dbc.Input(
+                debounce=True,
+                id={'component': 'plot-config', 'tab': 'general',
+                    'field': 'image_export_width'},
+                value=config_general['image_export_width'],
+                style={'display': 'inline-block', 'width': '100px'},
+            ),
+            dash.html.P('  x  ', style={'display': 'inline-block',
+                                        'whiteSpace': 'pre'}),
+            dbc.Input(
+                debounce=True,
+                id={'component': 'plot-config', 'tab': 'general',
+                    'field': 'image_export_height'},
+                value=config_general['image_export_height'],
+                style={'display': 'inline-block', 'width': '100px'},
+            ),
+        ]),
+        dash.html.Br(),
+        dash.html.H5('Resolution'),
+        dash.html.P(
+            ('Setting this to n will increase the exported image '
+             'resolution by a factor of n'),
+            style={'marginBottom': UI_DESCRIPTION_MARGIN_BELOW},
+        ),
+        dbc.Input(
+            debounce=True,
+            id={'component': 'plot-config', 'tab': 'general',
+                'field': 'image_export_scale'},
+            value=config_general['image_export_scale'],
+            style={'width': '100px'},
         ),
     ]
