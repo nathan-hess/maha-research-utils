@@ -3,11 +3,14 @@
 """
 
 import itertools
-from typing import Optional
+from typing import Optional, Union
 
+# Mypy type checking disabled for packages that are not PEP 561-compliant
+import plotly.graph_objects as go  # type: ignore
 import pyxx
 
 from .layer import Layer
+from .plotting import _figure_config, _create_blank_plotly_figure
 
 
 class Canvas(pyxx.arrays.TypedListWithID[Layer]):
@@ -72,3 +75,47 @@ class Canvas(pyxx.arrays.TypedListWithID[Layer]):
     def num_layers(self) -> int:
         """The number of layers in the canvas"""
         return len(self)
+
+    def plot(self, units: Optional[str] = None,
+             figure: Optional[go.Figure] = None,
+             show: bool = True, return_fig: bool = False,
+             ) -> Union[go.Figure, None]:
+        """Plots the shapes in the canvas
+
+        Creates a Plotly figure illustrating the shapes in all layers of the
+        canvas, or optionally appends traces for each shape to an existing
+        figure.  The figure can be opened in a browser (default behavior)
+        and/or returned (to allow subsequent user-specific customizations).
+
+        Parameters
+        ----------
+        units : str, optional
+            If units are provided, it will be verified that all plotted shapes
+            have these units in their :py:attr:`Shape2D.units` attribute
+            (default is ``None``, which performs no unit checks).  Additionally,
+            if the ``figure`` argument was not provided, the specified units
+            will be included in the axis titles
+        figure : go.Figure, optional
+            A Plotly figure.  If provided, rather than creating a new figure
+            from scratch, the layer's shapes will be added as new traces in
+            the provided figure (default is ``None``, which creates a new
+            figure from scratch)
+        show : bool, optional
+            Whether to open the figure in a browser (default is ``True``)
+        return_fig : bool, optional
+            Whether to return the figure (default is ``False``)
+        """
+        if not isinstance(figure, go.Figure):
+            figure = _create_blank_plotly_figure(units)
+
+        for layer in self:
+            figure = layer.plot(units=units, figure=figure,
+                                show=False, return_fig=True)
+
+        if show:
+            figure.show(config=_figure_config)
+
+        if return_fig:
+            return figure
+
+        return None

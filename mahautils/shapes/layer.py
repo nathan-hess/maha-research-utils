@@ -7,9 +7,11 @@ from typing import List, Optional, Union
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import plotly.express as px        # type: ignore
+import plotly.graph_objects as go  # type: ignore
 import pyxx
 
-from mahautils.shapes.geometry.shape import Shape2D
+from mahautils.shapes.geometry.shape import ClosedShape2D, Shape2D
+from .plotting import _figure_config, _create_blank_plotly_figure
 
 
 class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
@@ -101,3 +103,72 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
     def num_shapes(self) -> int:
         """The number of shapes in the layer"""
         return len(self)
+
+    def plot(self, units: Optional[str] = None,
+             figure: Optional[go.Figure] = None,
+             show: bool = True, return_fig: bool = False,
+             ) -> Union[go.Figure, None]:
+        """Plots the shapes in the layer
+
+        Creates a Plotly figure illustrating the shapes in the layer, or
+        optionally appends traces for each shape to an existing figure.  The
+        figure can be opened in a browser (default behavior) and/or returned
+        (to allow subsequent user-specific customizations).
+
+        Parameters
+        ----------
+        units : str, optional
+            If units are provided, it will be verified that all plotted shapes
+            have these units in their :py:attr:`Shape2D.units` attribute
+            (default is ``None``, which performs no unit checks).  Additionally,
+            if the ``figure`` argument was not provided, the specified units
+            will be included in the axis titles
+        figure : go.Figure, optional
+            A Plotly figure.  If provided, rather than creating a new figure
+            from scratch, the layer's shapes will be added as new traces in
+            the provided figure (default is ``None``, which creates a new
+            figure from scratch)
+        show : bool, optional
+            Whether to open the figure in a browser (default is ``True``)
+        return_fig : bool, optional
+            Whether to return the figure (default is ``False``)
+        """
+        if not isinstance(figure, go.Figure):
+            figure = _create_blank_plotly_figure(units)
+
+        for shape in self:
+            if (units is not None) and (units != shape.units):
+                raise ValueError(
+                    f'Expected all shapes to have units "{units}" but found '
+                    f'a shape with units "{shape.units}"')
+
+            if isinstance(shape, ClosedShape2D):
+                x, y = shape.xy_coordinates(repeat_end=True)
+
+                if not shape.construction:
+                    figure.add_trace(go.Scatter(
+                        x=x, y=y, fill='toself',
+                        fillcolor=self.color, line=None, opacity=0.2,
+                        hoverinfo='skip',
+                    ))
+            else:
+                x, y = shape.xy_coordinates()
+
+            figure.add_trace(go.Scatter(
+                x=x, y=y, fill=None, opacity=1, fillcolor=None,
+                mode='lines' if shape.construction else 'lines+markers',
+                line={
+                    'color': self.color,
+                    'dash': 'dash' if shape.construction else 'solid',
+                },
+                marker={'size': 4},
+                hovertemplate='(%{x}, %{y})<extra></extra>',
+            ))
+
+        if show:
+            figure.show(config=_figure_config)
+
+        if return_fig:
+            return figure
+
+        return None
