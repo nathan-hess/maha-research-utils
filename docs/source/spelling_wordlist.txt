@@ -22,6 +22,7 @@ megapascal
 megapascals
 multiline
 parsers
+Plotly
 piecewise
 pre
 programmatically

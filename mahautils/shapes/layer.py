@@ -3,10 +3,10 @@ shapes.
 """
 
 import itertools
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Union
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
-import matplotlib.pyplot as plt  # type: ignore
+import plotly.express as px        # type: ignore
 import pyxx
 
 from mahautils.shapes.geometry.shape import Shape2D
@@ -29,8 +29,7 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
     _id = itertools.count(0)
 
     def __init__(self, *shapes: Shape2D, name: Optional[str] = None,
-                 color: Union[str, Tuple[float, float, float]] = 'default',
-                 print_multiline: bool = True,
+                 color: str = 'default', print_multiline: bool = True,
                  ) -> None:
         """Creates a new layer to store shapes
 
@@ -45,9 +44,9 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
         name : str, optional
             A descriptive name to identify the layer.  If not provided, the
             layer name is generated automatically
-        color : str or tuple, optional
+        color : str, optional
             The color with which to display the layer in plots.  If not
-            provided or set to ``'default'``, the colors from Matplotlib's
+            provided or set to ``'default'``, the colors from Plotly's
             default color order are used
         print_multiline : bool, optional
             Whether to return a printable string representation of the list in
@@ -56,11 +55,9 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
 
         Notes
         -----
-        Any valid color accepted by Matplotlib can be specified.  Valid color
-        codes are described on `this page <https://matplotlib.org/stable
-        /tutorials/colors/colors.html>`__, and valid named colors are listed
-        on `this page <https://matplotlib.org/stable/gallery/color
-        /named_colors.html>`__.
+        Any valid color accepted by Plotly can be specified, either as a named
+        color (``'blue'``, ``'green'``, etc.) or a hex code.  Valid options are
+        described on `this page <https://plotly.com/python/discrete-color/>`__.
         """
         super().__init__(*shapes, list_type=Shape2D,
                          print_multiline=print_multiline, multiline_padding=1)
@@ -69,31 +66,27 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
         self.name = f'layer{self.id}' if name is None else name
 
     @property
-    def color(self) -> Union[str, Tuple[float, float, float]]:
+    def color(self) -> str:
         """The color with which to display the layer in plots
 
         Notes
         -----
-        Any valid color accepted by Matplotlib can be specified.  Valid color
-        codes are described on `this page <https://matplotlib.org/stable
-        /tutorials/colors/colors.html>`__, and valid named colors are listed
-        on `this page <https://matplotlib.org/stable/gallery/color
-        /named_colors.html>`__.
+        Any valid color accepted by Plotly can be specified, either as a named
+        color (``'blue'``, ``'green'``, etc.) or a hex code.  Valid options are
+        described on `this page <https://plotly.com/python/discrete-color/>`__.
         """
         return self._color
 
     @color.setter
-    def color(self, color: Union[str, Tuple[float, float, float]]):
-        # Get default Matplotlib color sequence
-        matplotlib_colors: List[str] \
-            = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    def color(self, color: str):
+        # Get default Plotly color sequence
+        plotly_colors: List[str] = px.colors.qualitative.Plotly
 
         # Set layer color
         if color == 'default':
-            self._color: Union[str, Tuple[float, float, float]] \
-                = matplotlib_colors[self.id % len(matplotlib_colors)]
+            self._color = plotly_colors[self.id % len(plotly_colors)]
         else:
-            self._color = color
+            self._color = str(color)
 
     @property
     def name(self) -> str:

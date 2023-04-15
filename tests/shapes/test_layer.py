@@ -1,6 +1,6 @@
 import unittest
 
-import matplotlib.pyplot as plt
+import plotly.express as px
 import pyxx
 
 from mahautils.shapes import Layer
@@ -18,26 +18,22 @@ class Test_Layer(unittest.TestCase):
     def test_color_user(self):
         # Verifies that user-defined "color" attribute is set
         # and retrieved correctly
-        with self.subTest(type='str'):
-            self.assertEqual(Layer(color='red').color, 'red')
-
-        with self.subTest(type='tuple'):
-            self.assertTupleEqual(
-                Layer(color=(1.0, 2.0, 3.0)).color,
-                (1.0, 2.0, 3.0))
+        self.assertEqual(Layer(color='red').color, 'red')
 
     def test_color_automatic(self):
         # Verifies that automatically-selected "color" attribute
         # is set and retrieved correctly
-        matplotlib_colors: list = plt.rcParams['axes.prop_cycle'].by_key()['color']
+        plotly_colors = px.colors.qualitative.Plotly
 
-        layer1_color_index = matplotlib_colors.index(Layer().color)
-        layer2_color_index = matplotlib_colors.index(Layer().color)
+        for _ in range(len(plotly_colors) + 2):
+            # Check that layer colors follow Plotly's default color order
+            layer1_color_index = plotly_colors.index(Layer().color)
+            layer2_color_index = plotly_colors.index(Layer().color)
 
-        if layer2_color_index < layer1_color_index:
-            layer2_color_index += len(matplotlib_colors)
+            if layer2_color_index < layer1_color_index:
+                layer2_color_index += len(plotly_colors)
 
-        self.assertEqual(layer1_color_index + 1, layer2_color_index)
+            self.assertEqual(layer1_color_index + 1, layer2_color_index)
 
     def test_name_user(self):
         # Verifies that user-defined "name" attribute is set
