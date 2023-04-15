@@ -14,4 +14,5 @@ from .units import (
     MahaMulticsUnitSystem,
 )
 from .simresults import SimResults
+from .sim_results_viewer.app import main as run_sim_results_viewer
 from .vtk import VTKFile

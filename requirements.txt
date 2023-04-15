@@ -13,9 +13,13 @@
 
 ##############################################################################
 
+dash >= 2.8.1
+dash-bootstrap-components >= 1.4.0
 matplotlib
 numpy
+packaging
 pandas
+plotly
 pyxx
 scipy
 vtk

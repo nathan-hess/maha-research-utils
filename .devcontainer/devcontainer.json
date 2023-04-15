@@ -5,5 +5,10 @@
 
     // Lifecycle scripts
     "onCreateCommand": "sudo apt update && sudo apt -y install libgl1",
-    "postCreateCommand": "pip install -r .vscode/requirements.txt"
+    "postCreateCommand": "pip install -r .vscode/requirements.txt",
+
+    // Environment variables
+    "remoteEnv": {
+        "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/bin"
+    }
 }
