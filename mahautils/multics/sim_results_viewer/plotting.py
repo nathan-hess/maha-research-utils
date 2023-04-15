@@ -40,7 +40,7 @@ def random_hex_color() -> str:
 
 
 def update_graph(config_general: dict, config_x: dict, config_y: dict,
-                 sim_results_files: SIM_RESULTS_DICT_T):
+                 sim_results_files: SIM_RESULTS_DICT_T, file_metadata: dict):
     """Generates the plot of simulation results based on the current
     user-specified configuration options"""
     figure = go.Figure()
@@ -99,7 +99,10 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
                     # omit the trace from the plot
                     continue
 
-                if not trace['enabled']:
+                if not (
+                    trace['enabled']
+                    and file_metadata[trace['file']]['enabled']
+                ):
                     continue
 
                 try:

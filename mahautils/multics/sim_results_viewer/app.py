@@ -382,7 +382,9 @@ def update_plot_config(
 
         try:
             new_general, new_x, new_y = load_plot_config(upload_contents)
-            update_graph(new_general, new_x, new_y, _sim_results_files)
+            update_graph(config_general=new_general, config_x=new_x,
+                         config_y=new_y, sim_results_files=_sim_results_files,
+                         file_metadata=file_metadata)
         except Exception as exception:
             error_text = generate_error_box_text(load_plot_config_error_message,
                                                  exception)
@@ -652,6 +654,7 @@ def update_plot(
             config_x          = config_x,
             config_y          = config_y,
             sim_results_files = _sim_results_files,
+            file_metadata     = file_metadata,
         )
 
         error_box_is_open = False
