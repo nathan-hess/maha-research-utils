@@ -47,9 +47,10 @@ def graph():
                     'eraseshape',
                 ],
                 'toImageButtonOptions': {
-                    'format': 'png',
+                    'format': 'svg',
                     'width': None,
                     'height': None,
+                    'scale': 1,
                 },
                 'scrollZoom': True,
                 'showAxisDragHandles': True,
