@@ -426,6 +426,13 @@ class PolygonFile(MahaMulticsConfigFile):
         containing :py:class:`mahautils.shapes.Polygon` objects corresponding
         to each time step.
 
+        Note that any of the methods for adding or removing data provided by
+        :py:class:`mahautils.utils.Dictionary` can be used to modify polygon
+        data.  For instance, to insert a new time step prior to an existing
+        time, simply use :py:meth:`mahautils.utils.Dictionary.insert_before`.
+        *This is why there is no "add polygon" method -- accessing the
+        dictionary methods provides greater flexibility.*
+
         .. important::
 
             The dictionary can either be returned **by copy** or **by
@@ -439,6 +446,13 @@ class PolygonFile(MahaMulticsConfigFile):
         writable : bool, optional
             Whether to return a reference to the object's polygon data
             dictionary (default is ``False``)
+
+        Returns
+        -------
+        Dictionary
+            A :py:class:`mahautils.utils.Dictionary` whose keys are the time
+            steps and whose values are :py:class:`Layer` instances containing
+            the polygons
 
         Notes
         -----
