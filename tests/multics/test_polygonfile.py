@@ -41,13 +41,12 @@ class Test_PolygonFile_Properties(Test_PolygonFile):
             self.assertEqual(self.polygon_file_004_p2_t3.num_time_steps, 3)
 
     def test_polygon_data_read_only(self):
-        # Verifies that "polygon_data" property can always be read
+        # Verifies that "polygon_data_readonly" property can always be read
         with self.subTest(action='read'):
-            polygon_data = self.polygon_file_blank.polygon_data(writable=False)
-            self.assertDictEqual(polygon_data, {})
+            self.assertDictEqual(self.polygon_file_blank.polygon_data_readonly, {})
 
         with self.subTest(action='write'):
-            polygon_data[50] = Layer()
+            self.polygon_file_blank.polygon_data_readonly[50] = Layer()
             self.assertDictEqual(self.polygon_file_blank._polygon_data, {})
 
     def test_polygon_data_write(self):
@@ -55,21 +54,20 @@ class Test_PolygonFile_Properties(Test_PolygonFile):
         # operations if required attributes are set
         with self.subTest(action='read', accessible=False):
             with self.assertRaises(PolygonFileMissingDataError):
-                self.polygon_file_blank.polygon_data(writable=True)
+                self.polygon_file_blank.polygon_data
 
         with self.subTest(action='read', accessible=True):
             self.polygon_file_blank.polygon_merge_method = 0
             self.polygon_file_blank.time_extrap_method = 0
             self.polygon_file_blank.time_units = 's'
 
-            polygon_data = self.polygon_file_blank.polygon_data(writable=True)
-            self.assertDictEqual(polygon_data, {})
+            self.assertDictEqual(self.polygon_file_blank.polygon_data, {})
 
         with self.subTest(operation='write'):
             self.assertEqual(len(self.polygon_file_blank._polygon_data), 0)
-            polygon_data[50] = Layer()
+            self.polygon_file_blank.polygon_data[50] = Layer()
             self.assertEqual(len(self.polygon_file_blank._polygon_data), 1)
-            polygon_data[50.5] = Layer()
+            self.polygon_file_blank.polygon_data[50.5] = Layer()
             self.assertEqual(len(self.polygon_file_blank._polygon_data), 2)
 
     def test_polygon_merge_method(self):
@@ -165,7 +163,7 @@ class Test_PolygonFile_Parse(Test_PolygonFile):
     def test_parse_p1_t1(self):
         # Verifies that a polygon file with a single polygon and single time
         # step is parsed correctly
-        layer = self.polygon_file_001_p1_t1.polygon_data()[0]
+        layer = self.polygon_file_001_p1_t1.polygon_data_readonly[0]
         self.assertEqual(len(layer), 1)
         polygon: Polygon = layer[0]
 
@@ -184,7 +182,7 @@ class Test_PolygonFile_Parse(Test_PolygonFile):
     def test_parse_p2_t3(self):
         # Verifies that a polygon file with multiple polygons and multiple time
         # steps is parsed correctly
-        layers = list(self.polygon_file_004_p2_t3.polygon_data().values())
+        layers = list(self.polygon_file_004_p2_t3.polygon_data.values())
         self.assertEqual(len(layers), 3)
 
         with self.subTest(t=0):
@@ -519,8 +517,7 @@ class Test_PolygonFile_UpdateContents(Test_PolygonFile):
     def test_update_contents_p1_t1(self):
         # Verifies that the "contents" attribute is correctly populated for
         # a polygon file with a single polygon and a single time step
-        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
-        polygon_data[6955] = Layer(self.square_units)
+        self.polygon_file_initialized.polygon_data[6955] = Layer(self.square_units)
         self.polygon_file_initialized.update_contents()
 
         self.assertListEqual(
@@ -536,16 +533,15 @@ class Test_PolygonFile_UpdateContents(Test_PolygonFile):
     def test_update_contents_p2_t3(self):
         # Verifies that the "contents" attribute is correctly populated for
         # a polygon file with a single polygon and a single time step
-        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
-        polygon_data[6955] = Layer(
+        self.polygon_file_initialized.polygon_data[6955] = Layer(
             self.square_units,
             Polygon(self.square_coordinates + 1, units='mm'),
         )
-        polygon_data[6964] = Layer(
+        self.polygon_file_initialized.polygon_data[6964] = Layer(
             Polygon(self.square_coordinates + 4, units='m', polygon_file_enclosed_conv=0),
             self.square_units,
         )
-        polygon_data[6973] = Layer(
+        self.polygon_file_initialized.polygon_data[6973] = Layer(
             Polygon(self.square_coordinates - 8, units='in'),
             self.square_units,
         )
@@ -614,8 +610,7 @@ class Test_PolygonFile_UpdateContents(Test_PolygonFile):
         # Verifies that the "contents" attribute is correctly populated for
         # a polygon file with a single polygon and a single time step with
         # different "polygon_merge"
-        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
-        polygon_data[6955] = Layer(self.square_units)
+        self.polygon_file_initialized.polygon_data[6955] = Layer(self.square_units)
         self.polygon_file_initialized.update_contents()
 
         self.assertListEqual(
@@ -629,25 +624,24 @@ class Test_PolygonFile_UpdateContents(Test_PolygonFile):
     def test_different_num_polygons(self):
         # Verifies that an error is thrown if there are different numbers of
         # polygons for different time steps
-        self.polygon_file_initialized.polygon_data(writable=True)[0] = Layer(self.square)
-        self.polygon_file_initialized.polygon_data(writable=True)[1] = Layer(self.square, self.square)
+        self.polygon_file_initialized.polygon_data[0] = Layer(self.square)
+        self.polygon_file_initialized.polygon_data[1] = Layer(self.square, self.square)
 
         with self.assertRaises(PolygonFileFormatError):
             self.polygon_file_initialized.update_contents()
 
     def test_negative_time_step(self):
         # Verifies that an error is thrown if time step is negative
-        self.polygon_file_initialized.polygon_data(writable=True)[2] = Layer(self.square)
-        self.polygon_file_initialized.polygon_data(writable=True)[0] = Layer(self.square)
+        self.polygon_file_initialized.polygon_data[2] = Layer(self.square)
+        self.polygon_file_initialized.polygon_data[0] = Layer(self.square)
 
         with self.assertRaises(PolygonFileFormatError):
             self.polygon_file_initialized.update_contents()
 
     def test_missing_units(self):
         # Verifies that an error is thrown if time step is negative
-        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
-        polygon_data[2] = Layer(self.square)
-        polygon_data[3] = Layer(self.square)
+        self.polygon_file_initialized.polygon_data[2] = Layer(self.square)
+        self.polygon_file_initialized.polygon_data[3] = Layer(self.square)
 
         with self.assertRaises(PolygonFileFormatError):
             self.polygon_file_initialized.update_contents()
@@ -655,9 +649,8 @@ class Test_PolygonFile_UpdateContents(Test_PolygonFile):
     def test_not_closed_shape(self):
         # Verifies that an error is thrown if shapes are not subclasses
         # of `ClosedShape`
-        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
-        polygon_data[2] = Layer(self.square_units)
-        polygon_data[3] = Layer(OpenShape2D(units='mm'))
+        self.polygon_file_initialized.polygon_data[2] = Layer(self.square_units)
+        self.polygon_file_initialized.polygon_data[3] = Layer(OpenShape2D(units='mm'))
 
         with self.assertRaises(PolygonFileFormatError):
             self.polygon_file_initialized.update_contents()

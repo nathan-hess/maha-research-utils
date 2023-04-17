@@ -24,7 +24,8 @@ class PolygonFile(MahaMulticsConfigFile):
     The Maha Multics software uses polygon files to store geometry used for
     setting boundary conditions when running fluid simulations.  This class
     is capable of parsing such files and providing an interface through which
-    users can interact with and manipulate data in the file.
+    users can interact with and manipulate data in the file (through the
+    :py:attr:`polygon_data` attribute).
 
     .. note::
 
@@ -59,6 +60,82 @@ class PolygonFile(MahaMulticsConfigFile):
     def num_time_steps(self) -> int:
         """The number of time steps in the polygon file"""
         return len(self._polygon_data)
+
+    @property
+    def polygon_data(self) -> Dictionary[float, Layer]:
+        """A reference to the dictionary containing the polygon data in the
+        file
+
+        This method returns a :py:class:`mahautils.utils.Dictionary` instance
+        containing the polygon data in the file.  The keys are the time values
+        defined in the file (with units given by :py:attr:`time_units`) and
+        the values are :py:class:`Layer` instances containing the polygons
+        corresponding to each time step.  This dictionary can be directly
+        edited to modify the polygon file (adding new time steps, removing
+        time steps, changing polygon properties, etc.).
+
+        .. important::
+
+            The dictionary is returned **by reference**, so editing the
+            returned dictionary will directly edit data in the
+            :py:class:`PolygonFile` instance.
+
+        Notes
+        -----
+        This property can only be accessed if :py:attr:`polygon_merge_method`,
+        :py:attr:`time_extrap_method`, and :py:attr:`time_units` are all
+        defined (even for polygon files with a single time step, since
+        additional time steps may be added by modifying the polygon data
+        dictionary).  This ensures consistency of the data stored in the
+        :py:class:`PolygonFile` object.  To access the polygon data before
+        setting these properties, use :py:attr:`polygon_data_readonly`.
+
+        Any of the methods for adding or removing data provided by
+        :py:class:`mahautils.utils.Dictionary` can be used to modify polygon
+        data.  For instance, to insert a new time step prior to an existing
+        time, simply use :py:meth:`mahautils.utils.Dictionary.insert_before`.
+        *This is why there is no "add polygon" method -- accessing the
+        dictionary methods provides greater flexibility.*
+        """
+        # Verify that polygon file metadata is defined; otherwise it is
+        # ambiguous what units and meaning user-specified polygons and time
+        # steps have (i.e., if you add a new time step to the polygon data
+        # dictionary at t=2, what units are t=2?)
+        if None in [
+            self._polygon_merge_method,
+            self._time_extrap_method,
+            self._time_units,
+        ]:
+            raise PolygonFileMissingDataError(
+                'In order to edit or view the "polygon_data" dictionary, the '
+                'following attributes must be set: (\'polygon_merge_method\', '
+                '\'time_extrap_method\', \'time_units\')')
+
+        return self._polygon_data
+
+    @property
+    def polygon_data_readonly(self) -> Dictionary[float, Layer]:
+        """A copy of the dictionary containing the polygon data in the file
+
+        This method returns a :py:class:`mahautils.utils.Dictionary` instance
+        containing the polygon data in the file.  The keys are the time values
+        defined in the file (with units given by :py:attr:`time_units`) and
+        the values are :py:class:`Layer` instances containing the polygons
+        corresponding to each time step.
+
+        .. important::
+
+            The dictionary is returned **by copy**, so editing the
+            returned dictionary will **not** directly edit data in the
+            :py:class:`PolygonFile` instance.
+
+        Notes
+        -----
+        Unlike :py:attr:`polygon_data`, this method does **not** require the
+        :py:attr:`polygon_merge_method`, :py:attr:`time_extrap_method`, and
+        :py:attr:`time_units` properties to be defined defined.
+        """
+        return copy.deepcopy(self._polygon_data)
 
     @property
     def polygon_merge_method(self) -> int:
@@ -414,67 +491,6 @@ class PolygonFile(MahaMulticsConfigFile):
 
         self.contents.clear()
         self.contents.extend(original_contents)
-
-    def polygon_data(self, writable: bool = False) -> Dictionary[float, Layer]:
-        """A copy of or a reference to the dictionary containing the polygon
-        data in the file
-
-        This method returns a :py:class:`mahautils.utils.Dictionary` instance
-        containing the polygon data in the file.  The keys in the dictionary
-        are the time values (with units given by :py:attr:`time_units`) and
-        the values should be :py:class:`mahautils.shapes.Layer` instances
-        containing :py:class:`mahautils.shapes.Polygon` objects corresponding
-        to each time step.
-
-        Note that any of the methods for adding or removing data provided by
-        :py:class:`mahautils.utils.Dictionary` can be used to modify polygon
-        data.  For instance, to insert a new time step prior to an existing
-        time, simply use :py:meth:`mahautils.utils.Dictionary.insert_before`.
-        *This is why there is no "add polygon" method -- accessing the
-        dictionary methods provides greater flexibility.*
-
-        .. important::
-
-            The dictionary can either be returned **by copy** or **by
-            reference**, depending on the value of the ``writable`` argument.
-            If returned by reference, then the dictionary can be directly
-            edited to modify the polygon file (adding new time steps, removing
-            time steps, changing polygon properties, etc.).
-
-        Parameters
-        ----------
-        writable : bool, optional
-            Whether to return a reference to the object's polygon data
-            dictionary (default is ``False``)
-
-        Returns
-        -------
-        Dictionary
-            A :py:class:`mahautils.utils.Dictionary` whose keys are the time
-            steps and whose values are :py:class:`Layer` instances containing
-            the polygons
-
-        Notes
-        -----
-        If ``writable`` is ``True``, this method can only be accessed if
-        :py:attr:`polygon_merge_method`, :py:attr:`time_extrap_method`, and
-        :py:attr:`time_units` are all defined.  This ensures consistency of
-        the data stored in the :py:class:`PolygonFile` object.
-        """
-        if not writable:
-            return copy.deepcopy(self._polygon_data)
-
-        if None in [
-            self._polygon_merge_method,
-            self._time_extrap_method,
-            self._time_units,
-        ]:
-            raise PolygonFileMissingDataError(
-                'In order to edit or view the "polygon_data" dictionary, the '
-                'following attributes must be set: (\'polygon_merge_method\', '
-                '\'time_extrap_method\', \'time_units\')')
-
-        return self._polygon_data
 
     def update_contents(self) -> None:
         """Updates the :py:attr:`contents` list based on object attributes
