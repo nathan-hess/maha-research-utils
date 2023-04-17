@@ -1,12 +1,21 @@
+import copy
 import unittest
+from unittest.mock import Mock
+
+import plotly.graph_objects as go
 
 from mahautils.shapes import Canvas, Layer
-from mahautils.shapes.geometry import Shape2D
+from mahautils.shapes.geometry import ClosedShape2D, Shape2D
 
 
 class Test_Canvas(unittest.TestCase):
     def setUp(self):
         self.idx0 = Canvas().id + 1
+
+
+class Test_Canvas_Properties(Test_Canvas):
+    def setUp(self):
+        super().setUp()
 
     def test_name_user(self):
         # Verifies that user-defined "name" attribute is set
@@ -27,6 +36,11 @@ class Test_Canvas(unittest.TestCase):
         canvas2 = Canvas()
         self.assertEqual(canvas2.name, f'canvas{self.idx0 + 1}')
         self.assertEqual(canvas2.name, f'canvas{canvas2.id}')
+
+
+class Test_Canvas_Add(Test_Canvas):
+    def setUp(self):
+        super().setUp()
 
     def test_add_layers(self):
         # Verifies that layers can be added to a canvas as expected
@@ -70,3 +84,95 @@ class Test_Canvas(unittest.TestCase):
 
         with self.subTest(num_shapes=2):
             self.assertEqual(Canvas(Layer(), Layer()).num_layers, 2)
+
+
+class Test_Canvas_Plot(Test_Canvas):
+    def setUp(self):
+        super().setUp()
+
+        self.shape1 = ClosedShape2D(default_num_coordinates=100)
+        self.shape1.xy_coordinates = Mock(return_value=([0, 1, 2], [3, 4, 5]))
+
+        self.shape2 = copy.deepcopy(self.shape1)
+        self.shape3 = copy.deepcopy(self.shape1)
+        self.shape3.construction = True
+
+        self.layer1 = Layer(self.shape1, self.shape2)
+        self.layer2 = Layer(self.shape3)
+
+        self.canvas = Canvas(self.layer1, self.layer2)
+
+    def test_plot_new_figure(self):
+        # Verifies that a canvas plot is generated correctly when creating a
+        # new figure from scratch
+        figure: go.Figure = self.canvas.plot(show=False, return_fig=True)
+
+        with self.subTest(check='num_data_series'):
+            # There should be 5 data series (outline + fill for each of the
+            # non-construction shapes; outline only for construction shapes)
+            expected_num_traces = 5
+
+            self.assertEqual(len(figure.data), expected_num_traces)
+
+        with self.subTest(check='layout'):
+            layout_dict = figure.to_dict()['layout']
+            del layout_dict['template']
+
+            self.assertDictEqual(
+                layout_dict,
+                {'margin': {'r': 20, 't': 30}, 'plot_bgcolor': 'white', 'showlegend': False,
+                 'xaxis': {'gridcolor': '#d2d2d2', 'gridwidth': 1, 'linecolor': 'black',
+                           'linewidth': 1, 'mirror': True, 'showgrid': True, 'showline': True,
+                           'title': {'text': 'x'}, 'zeroline': False, 'zerolinecolor': 'black',
+                           'zerolinewidth': 1},
+                 'yaxis': {'gridcolor': '#d2d2d2', 'gridwidth': 1, 'linecolor': 'black',
+                           'linewidth': 1, 'mirror': True, 'scaleanchor': 'x', 'scaleratio': 1,
+                           'showgrid': True, 'showline': True, 'title': {'text': 'y'},
+                           'zeroline': False, 'zerolinecolor': 'black', 'zerolinewidth': 1},
+                }
+            )
+
+        with self.subTest(check='shapes'):
+            # Verifies that each shape's coordinates were requested
+            self.shape1.xy_coordinates.assert_called_once()
+            self.shape2.xy_coordinates.assert_called_once()
+            self.shape3.xy_coordinates.assert_called_once()
+
+    def test_plot_custom_figure(self):
+        # Verifies that a canvas plot is generated correctly when appending to
+        # an existing figure
+        existing_figure = go.Figure()
+        figure = self.canvas.plot(figure=existing_figure, show=False, return_fig=True)
+
+        with self.subTest(check='num_data_series'):
+            # There should be 5 data series (outline + fill for each of the
+            # non-construction shapes; outline only for construction shapes)
+            expected_num_traces = 5
+
+            self.assertEqual(len(figure.data), expected_num_traces)
+
+        with self.subTest(check='layout'):
+            layout_dict = figure.to_dict()['layout']
+            del layout_dict['template']
+
+            self.assertDictEqual(layout_dict, {})
+
+        with self.subTest(check='shapes'):
+            # Verifies that each shape's coordinates were requested
+            self.shape1.xy_coordinates.assert_called_once()
+            self.shape2.xy_coordinates.assert_called_once()
+            self.shape3.xy_coordinates.assert_called_once()
+
+    def test_show(self):
+        # Verifies that figures can be displayed if requested by user
+        existing_figure = go.Figure()
+        existing_figure.show = Mock()
+
+        # Ensure plotting doesn't return any output (prevents printing
+        # unnecessary text to the terminal)
+        self.assertIsNone(
+            self.canvas.plot(figure=existing_figure, show=True, return_fig=False)
+        )
+
+        # Verify that figure was displayed
+        existing_figure.show.assert_called_once()
