@@ -517,6 +517,13 @@ class FluidPropertyFile(MahaMulticsConfigFile):
         )
 
     def parse(self) -> None:
+        """Parses the file content in the :py:attr:`contents` list and
+        populates attributes (such as :py:attr:`title`) with extracted data
+
+        This method parses the data in :py:attr:`contents`, extracting
+        fluid property data and storing it in this object's attributes for
+        easier reading and editing.
+        """
         super().parse()
         original_contents = copy.deepcopy(self.contents)
 
