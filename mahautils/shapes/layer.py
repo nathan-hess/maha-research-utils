@@ -3,13 +3,15 @@ shapes.
 """
 
 import itertools
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Union
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
-import matplotlib.pyplot as plt  # type: ignore
+import plotly.express as px        # type: ignore
+import plotly.graph_objects as go  # type: ignore
 import pyxx
 
-from mahautils.shapes.geometry.shape import Shape2D
+from mahautils.shapes.geometry.shape import ClosedShape2D, Shape2D
+from .plotting import _figure_config, _create_blank_plotly_figure
 
 
 class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
@@ -29,8 +31,7 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
     _id = itertools.count(0)
 
     def __init__(self, *shapes: Shape2D, name: Optional[str] = None,
-                 color: Union[str, Tuple[float, float, float]] = 'default',
-                 print_multiline: bool = True,
+                 color: str = 'default', print_multiline: bool = True,
                  ) -> None:
         """Creates a new layer to store shapes
 
@@ -45,9 +46,9 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
         name : str, optional
             A descriptive name to identify the layer.  If not provided, the
             layer name is generated automatically
-        color : str or tuple, optional
+        color : str, optional
             The color with which to display the layer in plots.  If not
-            provided or set to ``'default'``, the colors from Matplotlib's
+            provided or set to ``'default'``, the colors from Plotly's
             default color order are used
         print_multiline : bool, optional
             Whether to return a printable string representation of the list in
@@ -56,11 +57,9 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
 
         Notes
         -----
-        Any valid color accepted by Matplotlib can be specified.  Valid color
-        codes are described on `this page <https://matplotlib.org/stable
-        /tutorials/colors/colors.html>`__, and valid named colors are listed
-        on `this page <https://matplotlib.org/stable/gallery/color
-        /named_colors.html>`__.
+        Any valid color accepted by Plotly can be specified, either as a named
+        color (``'blue'``, ``'green'``, etc.) or a hex code.  Valid options are
+        described on `this page <https://plotly.com/python/discrete-color/>`__.
         """
         super().__init__(*shapes, list_type=Shape2D,
                          print_multiline=print_multiline, multiline_padding=1)
@@ -69,31 +68,27 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
         self.name = f'layer{self.id}' if name is None else name
 
     @property
-    def color(self) -> Union[str, Tuple[float, float, float]]:
+    def color(self) -> str:
         """The color with which to display the layer in plots
 
         Notes
         -----
-        Any valid color accepted by Matplotlib can be specified.  Valid color
-        codes are described on `this page <https://matplotlib.org/stable
-        /tutorials/colors/colors.html>`__, and valid named colors are listed
-        on `this page <https://matplotlib.org/stable/gallery/color
-        /named_colors.html>`__.
+        Any valid color accepted by Plotly can be specified, either as a named
+        color (``'blue'``, ``'green'``, etc.) or a hex code.  Valid options are
+        described on `this page <https://plotly.com/python/discrete-color/>`__.
         """
         return self._color
 
     @color.setter
-    def color(self, color: Union[str, Tuple[float, float, float]]):
-        # Get default Matplotlib color sequence
-        matplotlib_colors: List[str] \
-            = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    def color(self, color: str):
+        # Get default Plotly color sequence
+        plotly_colors: List[str] = px.colors.qualitative.Plotly
 
         # Set layer color
         if color == 'default':
-            self._color: Union[str, Tuple[float, float, float]] \
-                = matplotlib_colors[self.id % len(matplotlib_colors)]
+            self._color = plotly_colors[self.id % len(plotly_colors)]
         else:
-            self._color = color
+            self._color = str(color)
 
     @property
     def name(self) -> str:
@@ -108,3 +103,72 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
     def num_shapes(self) -> int:
         """The number of shapes in the layer"""
         return len(self)
+
+    def plot(self, units: Optional[str] = None,
+             figure: Optional[go.Figure] = None,
+             show: bool = True, return_fig: bool = False,
+             ) -> Union[go.Figure, None]:
+        """Plots the shapes in the layer
+
+        Creates a Plotly figure illustrating the shapes in the layer, or
+        optionally appends traces for each shape to an existing figure.  The
+        figure can be opened in a browser (default behavior) and/or returned
+        (to allow subsequent user-specific customizations).
+
+        Parameters
+        ----------
+        units : str, optional
+            If units are provided, it will be verified that all plotted shapes
+            have these units in their :py:attr:`Shape2D.units` attribute
+            (default is ``None``, which performs no unit checks).  Additionally,
+            if the ``figure`` argument was not provided, the specified units
+            will be included in the axis titles
+        figure : go.Figure, optional
+            A Plotly figure.  If provided, rather than creating a new figure
+            from scratch, the layer's shapes will be added as new traces in
+            the provided figure (default is ``None``, which creates a new
+            figure from scratch)
+        show : bool, optional
+            Whether to open the figure in a browser (default is ``True``)
+        return_fig : bool, optional
+            Whether to return the figure (default is ``False``)
+        """
+        if not isinstance(figure, go.Figure):
+            figure = _create_blank_plotly_figure(units)
+
+        for shape in self:
+            if (units is not None) and (units != shape.units):
+                raise ValueError(
+                    f'Expected all shapes to have units "{units}" but found '
+                    f'a shape with units "{shape.units}"')
+
+            if isinstance(shape, ClosedShape2D):
+                x, y = shape.xy_coordinates(repeat_end=True)
+
+                if not shape.construction:
+                    figure.add_trace(go.Scatter(
+                        x=x, y=y, fill='toself',
+                        fillcolor=self.color, line=None, opacity=0.2,
+                        hoverinfo='skip',
+                    ))
+            else:
+                x, y = shape.xy_coordinates()
+
+            figure.add_trace(go.Scatter(
+                x=x, y=y, fill=None, opacity=1, fillcolor=None,
+                mode='lines' if shape.construction else 'lines+markers',
+                line={
+                    'color': self.color,
+                    'dash': 'dash' if shape.construction else 'solid',
+                },
+                marker={'size': 4},
+                hovertemplate='(%{x}, %{y})<extra></extra>',
+            ))
+
+        if show:
+            figure.show(config=_figure_config)
+
+        if return_fig:
+            return figure
+
+        return None
