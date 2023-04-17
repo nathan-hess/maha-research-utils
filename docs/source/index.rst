@@ -12,6 +12,14 @@ classes, functions, and other objects in this package are intended to assist wit
 general-purpose research tasks as well as simplify interaction with the
 `Maha Multics software <https://avaccadev.github.io/Multics/>`__.
 
+.. warning::
+
+    This documentation refers to the "Maha Multics" software in a
+    number of places.  This software is **NOT** related to the
+    `Multics operating system <https://en.wikipedia.org/wiki/Multics>`__.
+    It is an unrelated fluid simulation software designed for analyzing
+    hydraulic pumps and motors.
+
 
 .. toctree::
     :caption: Getting Started
