@@ -224,6 +224,12 @@ class MahaMulticsConfigFile(pyxx.files.TextFile):
         return (section_regex_groups, section_line_comments, i, num_sections)
 
     def parse(self) -> None:
+        """Parses the data in :py:attr:`contents` and stores it in class
+        attributes
+
+        For Maha Multics configuration files, the :py:meth:`parse` method
+        verifies that the file has been read prior to attempting to parse it.
+        """
         super().parse()
 
         # Verify that file contents have been read
