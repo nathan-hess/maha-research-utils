@@ -64,7 +64,7 @@ def _create_blank_plotly_figure(units: Optional[str] = None):
         'showline': True, 'linewidth': 1, 'linecolor': 'black', 'mirror': True,
 
         # Settings for x=0 and y=0 axes
-        'zeroline': False, 'zerolinewidth': 1, 'zerolinecolor': 'black',
+        'zeroline': True, 'zerolinewidth': 1, 'zerolinecolor': '#7b7b7b',
 
         # Settings for gridlines
         'showgrid': True, 'gridwidth': 1, 'gridcolor': '#d2d2d2',

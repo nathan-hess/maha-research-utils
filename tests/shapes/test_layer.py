@@ -193,12 +193,12 @@ class Test_Layer_Plot(Test_Layer):
                     'xaxis': {
                         'gridcolor': '#d2d2d2', 'gridwidth': 1, 'linecolor': 'black', 'linewidth': 1,
                         'mirror': True, 'showgrid': True, 'showline': True, 'title': {'text': 'x'},
-                        'zeroline': False, 'zerolinecolor': 'black', 'zerolinewidth': 1
+                        'zeroline': True, 'zerolinecolor': '#7b7b7b', 'zerolinewidth': 1
                     },
                     'yaxis': {
                         'gridcolor': '#d2d2d2', 'gridwidth': 1, 'linecolor': 'black', 'linewidth': 1,
                         'mirror': True, 'scaleanchor': 'x', 'scaleratio': 1, 'showgrid': True, 'showline': True,
-                        'title': {'text': 'y'}, 'zeroline': False, 'zerolinecolor': 'black', 'zerolinewidth': 1}
+                        'title': {'text': 'y'}, 'zeroline': True, 'zerolinecolor': '#7b7b7b', 'zerolinewidth': 1}
                 }
             )
 
