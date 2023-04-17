@@ -530,6 +530,26 @@ class Test_PolygonFile_UpdateContents(Test_PolygonFile):
             ]
         )
 
+    def test_update_contents_construction(self):
+        # Verifies that construction polygons are not added to the "contents"
+        # attribute when populating file contents
+        square_construction = copy.deepcopy(self.square_units)
+        square_construction.construction = True
+
+        self.polygon_file_initialized.polygon_data[6955] = Layer(
+            self.square_units, square_construction)
+        self.polygon_file_initialized.update_contents()
+
+        self.assertListEqual(
+            self.polygon_file_initialized.contents,
+            [
+             '1 1 0',
+             '4 1',
+             'mm: 0.0 1.0 1.0 0.0',
+             'mm: 0.0 0.0 1.0 1.0',
+            ]
+        )
+
     def test_update_contents_p2_t3(self):
         # Verifies that the "contents" attribute is correctly populated for
         # a polygon file with a single polygon and a single time step

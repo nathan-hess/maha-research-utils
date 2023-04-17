@@ -499,11 +499,15 @@ class PolygonFile(MahaMulticsConfigFile):
         stored in the :py:class:`PolygonFile` attributes.  This step should
         generally be performed prior to calling :py:meth:`write`, as writing
         a file directly saves the data in :py:attr:`contents` to disk.
+
+        Construction polygons are not added to the :py:attr:`contents` list.
         """
         self.contents.clear()
 
-        # Determine number of polygons per time step
-        num_polygons = np.array([len(x) for x in self._polygon_data.values()])
+        # Determine number of non-construction polygons per time step
+        num_polygons = np.array(
+            [sum(not shape.construction for shape in x)
+             for x in self._polygon_data.values()])
         polygons_per_time_step = num_polygons[0]
 
         if not np.all(num_polygons == polygons_per_time_step):
@@ -528,6 +532,9 @@ class PolygonFile(MahaMulticsConfigFile):
 
         for t, layer in self._polygon_data.items():
             for polygon in layer:
+                if polygon.construction:
+                    continue
+
                 if polygon.units is None:
                     raise PolygonFileFormatError(
                         'Units were not provided for polygon at time '
