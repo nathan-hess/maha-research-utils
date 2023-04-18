@@ -666,11 +666,11 @@ class Test_PolygonFile_UpdateContents(Test_PolygonFile):
             self.polygon_file_initialized.update_contents()
 
     def test_missing_units(self):
-        # Verifies that an error is thrown if time step is negative
+        # Verifies that an error is thrown if polygons are missing units
         self.polygon_file_initialized.polygon_data[2] = Layer(self.square)
         self.polygon_file_initialized.polygon_data[3] = Layer(self.square)
 
-        with self.assertRaises(PolygonFileFormatError):
+        with self.assertRaises(PolygonFileMissingDataError):
             self.polygon_file_initialized.update_contents()
 
     def test_not_closed_shape(self):

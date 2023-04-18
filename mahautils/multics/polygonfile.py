@@ -7,11 +7,14 @@ import pathlib
 import re
 from typing import List, Optional, Union
 
+# Mypy type checking disabled for packages that are not PEP 561-compliant
 import numpy as np
+import plotly.graph_objects as go  # type: ignore
 import pyxx
 
 from mahautils.shapes.geometry.polygon import Polygon
 from mahautils.shapes.geometry.shape import ClosedShape2D
+from mahautils.shapes.plotting import _figure_config
 from mahautils.shapes.layer import Layer
 from mahautils.utils.dictionary import Dictionary
 from .configfile import MahaMulticsConfigFile
@@ -433,6 +436,103 @@ class PolygonFile(MahaMulticsConfigFile):
         self.contents.clear()
         self.contents.extend(original_contents)
 
+    def plot(self):
+        """Generates an animated plot showing the geometry in the polygon file
+
+        Polygons in the file are illustrated as filled, solid shapes, and
+        construction geometry is illustrated as dotted outlines.
+        """
+        # Verify that all polygons have the same units
+        units = None
+        for t, layer in self._polygon_data.items():
+            for polygon in layer:
+                if polygon.units is None:
+                    raise PolygonFileMissingDataError(
+                        'Units were not provided for polygon at time '
+                        f'{t} {self.time_units}')
+
+                if units is None:
+                    units = polygon.units
+                else:
+                    if polygon.units != units:
+                        raise PolygonFileFormatError(
+                            'Polygons must have the same units to be plotted. '
+                            f'Polygon at time {t} {self.time_units} has units '
+                            f'{polygon.units} but previous polygons had units '
+                            f'{units}')
+
+        # Determine maximum number of polygons per layer (since Plotly
+        # animations require all frames to have the same number of traces)
+        max_layer_polygons \
+            = pyxx.arrays.max_list_item_len(self._polygon_data.values())
+
+        # Create frames
+        frames = []
+        for i, (t, layer) in enumerate(self._polygon_data.items()):
+            layer_fig = layer.plot(units=units, show=False, return_fig=True)
+
+            for _ in range(max_layer_polygons - len(layer)):
+                layer_fig.add_trace(go.Scatter(x=[], y=[]))
+
+            frames.append(
+                go.Frame(data=layer_fig.data, layout=layer_fig.layout, name=t))
+
+            if i == 0:
+                first_layer_fig = layer_fig
+
+        # Create main figure
+        figure = go.Figure(data=first_layer_fig.data,
+                           layout=first_layer_fig.layout,
+                           frames=frames)
+
+        frame_args = {
+            'frame': {'duration': 0},
+            'mode': 'immediate',
+            'fromcurrent': True,
+            'transition': {'duration': 0, 'easing': 'linear'},
+        }
+
+        sliders = [{
+            'pad': {'b': 10, 't': 60},
+            'len': 0.9,
+            'x': 0.1,
+            'y': 0,
+            'steps': [
+                {
+                    'args': [[frame.name], frame_args],
+                    'label': str(frame.name),
+                    'method': 'animate',
+                } for frame in frames
+            ]
+        }]
+
+        figure.update_layout(
+            xaxis={'range': [-30, 30], 'autorange': False},
+            yaxis={'range': [-1, 1], 'autorange': False},
+            updatemenus=[{
+                'buttons': [
+                    {
+                        'args': [None, frame_args],
+                        'label': '&#9654;',
+                        'method': 'animate',
+                    },
+                    {
+                        'args': [[None], frame_args],
+                        'label': '<b>||</b>',
+                        'method': 'animate',
+                    },
+                ],
+                'direction': 'left',
+                'pad': {'r': 10, 't': 70},
+                'type': 'buttons',
+                'x': 0.1,
+                'y': 0,
+            }],
+            sliders=sliders,
+        )
+
+        figure.show(config=_figure_config)
+
     def time_step(self, units: Optional[str] = None) -> float:
         """Returns the time step for the polygon file
 
@@ -539,7 +639,7 @@ class PolygonFile(MahaMulticsConfigFile):
                     continue
 
                 if polygon.units is None:
-                    raise PolygonFileFormatError(
+                    raise PolygonFileMissingDataError(
                         'Units were not provided for polygon at time '
                         f'{t} {self.time_units}')
 
