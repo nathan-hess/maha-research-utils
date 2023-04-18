@@ -239,6 +239,32 @@ class PolygonFile(MahaMulticsConfigFile):
 
         raise PolygonFileFormatError(error_message)
 
+    def filter_times(self, interval: float, tolerance: float = 1e-12) -> None:
+        """Reduces the number of time steps in a polygon file
+
+        Prunes time steps from a polygon file at user-specified intervals.
+        This can be useful, for instance, if you have a polygon file with a
+        time step of 0.01 seconds and you want to increase the time step to
+        0.1 seconds.
+
+        Parameters
+        ----------
+        interval : float
+            The spacing at which to keep time steps, in units of
+            :py:attr:`time_units`
+        tolerance : float, optional
+            The allowable difference between retained time steps and intervals
+            of size ``interval`` (default is ``1e-12``)
+
+        Notes
+        -----
+        Time steps are kept if they fall within a distance of ``tolerance``
+        of ``{..., -2*interval, -interval, 0, interval, 2*interval, ...}``
+        """
+        for t in self.time_values:
+            if abs(interval*round(t / interval) - t) > tolerance:
+                del self._polygon_data[t]
+
     def parse(self) -> None:
         """Parses the file content in the :py:attr:`contents` list and
         populates attributes (such as the dictionary returned by

@@ -171,6 +171,63 @@ class Test_PolygonFile_Properties(Test_PolygonFile):
                 self.polygon_file_initialized.time_step(units='s')
 
 
+class Test_PolygonFile_Filter(Test_PolygonFile):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.polygon_file_spacing = self.polygon_file_initialized
+        for t in np.arange(-5, 5.1, 0.1):
+            self.polygon_file_spacing.polygon_data[t] = Layer()
+
+    def test_filter_times(self):
+        # Verifies that time steps can be filtered to a user-defined interval
+        self.assertListEqual(
+            self.polygon_file_spacing.time_values,
+            list(np.arange(-5, 5.1, 0.1))
+        )
+
+        with self.subTest(time_step=0.5):
+            self.polygon_file_spacing.filter_times(0.5)
+
+            self.assertLessEqual(
+                max_array_diff(
+                    self.polygon_file_spacing.time_values,
+                    [-5, -4.5, -4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1,
+                     1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
+                ),
+                TEST_FLOAT_TOLERANCE
+            )
+
+        with self.subTest(time_step=1):
+            self.polygon_file_spacing.filter_times(1)
+
+            self.assertLessEqual(
+                max_array_diff(
+                    self.polygon_file_spacing.time_values,
+                    [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]
+                ),
+                TEST_FLOAT_TOLERANCE
+            )
+
+    def test_filter_times_tolerance(self):
+        # Verifies that time steps can be filtered to a user-defined interval
+        # and tolerance
+        self.assertListEqual(
+            self.polygon_file_spacing.time_values,
+            list(np.arange(-5, 5.1, 0.1))
+        )
+
+        self.polygon_file_spacing.filter_times(interval=4, tolerance=0.15)
+
+        self.assertLessEqual(
+            max_array_diff(
+                self.polygon_file_spacing.time_values,
+                [-4.1, -4, -3.9, -0.1, 0, 0.1, 3.9, 4, 4.1]
+            ),
+            TEST_FLOAT_TOLERANCE
+        )
+
+
 class Test_PolygonFile_Parse(Test_PolygonFile):
     def test_parse_p1_t1(self):
         # Verifies that a polygon file with a single polygon and single time
