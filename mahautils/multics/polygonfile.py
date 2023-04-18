@@ -3,6 +3,7 @@ files which store polygon geometry used by the Maha Multics software.
 """
 
 import copy
+import math
 import pathlib
 import re
 from typing import List, Optional, Union
@@ -14,7 +15,7 @@ import pyxx
 
 from mahautils.shapes.geometry.polygon import Polygon
 from mahautils.shapes.geometry.shape import ClosedShape2D
-from mahautils.shapes.plotting import _figure_config
+from mahautils.shapes.plotting import _create_blank_plotly_figure, _figure_config
 from mahautils.shapes.layer import Layer
 from mahautils.utils.dictionary import Dictionary
 from .configfile import MahaMulticsConfigFile
@@ -436,14 +437,26 @@ class PolygonFile(MahaMulticsConfigFile):
         self.contents.clear()
         self.contents.extend(original_contents)
 
-    def plot(self):
+    def plot(self, delay: float = 100):
         """Generates an animated plot showing the geometry in the polygon file
 
         Polygons in the file are illustrated as filled, solid shapes, and
         construction geometry is illustrated as dotted outlines.
+
+        Parameters
+        ----------
+        delay : float, optional
+            The delay (in milliseconds) between each frame when animating the
+            plot (default is ``100``)
         """
-        # Verify that all polygons have the same units
+        # Verify that all polygons have the same units and determine range of
+        # coordinates
         units = None
+        xmin = math.inf
+        xmax = -math.inf
+        ymin = math.inf
+        ymax = -math.inf
+
         for t, layer in self._polygon_data.items():
             for polygon in layer:
                 if polygon.units is None:
@@ -461,15 +474,29 @@ class PolygonFile(MahaMulticsConfigFile):
                             f'{polygon.units} but previous polygons had units '
                             f'{units}')
 
+                x, y = polygon.xy_coordinates()
+                xmin = min(xmin, x.min())
+                xmax = max(xmax, x.max())
+                ymin = min(ymin, y.min())
+                ymax = max(ymax, y.max())
+
+        x_pad = 0.05*(xmax - xmin)
+        y_pad = 0.05*(ymax - ymin)
+
         # Determine maximum number of polygons per layer (since Plotly
         # animations require all frames to have the same number of traces)
-        max_layer_polygons \
-            = pyxx.arrays.max_list_item_len(self._polygon_data.values())
+        try:
+            max_layer_polygons \
+                = pyxx.arrays.max_list_item_len(self._polygon_data.values())
+        except ValueError:
+            max_layer_polygons = 0
 
         # Create frames
+        first_layer_fig = _create_blank_plotly_figure()
         frames = []
         for i, (t, layer) in enumerate(self._polygon_data.items()):
-            layer_fig = layer.plot(units=units, show=False, return_fig=True)
+            layer_fig: go.Figure = layer.plot(units=units, show=False,
+                                              return_fig=True)
 
             for _ in range(max_layer_polygons - len(layer)):
                 layer_fig.add_trace(go.Scatter(x=[], y=[]))
@@ -486,29 +513,31 @@ class PolygonFile(MahaMulticsConfigFile):
                            frames=frames)
 
         frame_args = {
-            'frame': {'duration': 0},
+            'frame': {'duration': delay},
             'mode': 'immediate',
             'fromcurrent': True,
-            'transition': {'duration': 0, 'easing': 'linear'},
+            'transition': {'duration': 0},
         }
 
         sliders = [{
-            'pad': {'b': 10, 't': 60},
-            'len': 0.9,
-            'x': 0.1,
-            'y': 0,
             'steps': [
                 {
                     'args': [[frame.name], frame_args],
                     'label': str(frame.name),
                     'method': 'animate',
                 } for frame in frames
-            ]
+            ],
+
+            # Styling
+            'x': 0.05,
+            'y': 0,
+            'len': 0.95,
+            'pad': {'b': 10, 't': 60},
         }]
 
         figure.update_layout(
-            xaxis={'range': [-30, 30], 'autorange': False},
-            yaxis={'range': [-1, 1], 'autorange': False},
+            xaxis={'range': [xmin-x_pad, xmax+x_pad], 'autorange': False},
+            yaxis={'range': [ymin-y_pad, ymax+y_pad], 'autorange': False},
             updatemenus=[{
                 'buttons': [
                     {
@@ -523,10 +552,12 @@ class PolygonFile(MahaMulticsConfigFile):
                     },
                 ],
                 'direction': 'left',
-                'pad': {'r': 10, 't': 70},
                 'type': 'buttons',
-                'x': 0.1,
+
+                # Styling
+                'x': 0.03,
                 'y': 0,
+                'pad': {'r': 10, 't': 80},
             }],
             sliders=sliders,
         )
