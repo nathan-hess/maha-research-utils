@@ -463,7 +463,8 @@ class PolygonFile(MahaMulticsConfigFile):
         self.contents.clear()
         self.contents.extend(original_contents)
 
-    def plot(self, delay: float = 100):
+    def plot(self, delay: float = 100, show: bool = True,
+             return_fig: bool = False) -> Union[go.Figure, None]:
         """Generates an animated plot showing the geometry in the polygon file
 
         Polygons in the file are illustrated as filled, solid shapes, and
@@ -474,6 +475,16 @@ class PolygonFile(MahaMulticsConfigFile):
         delay : float, optional
             The delay (in milliseconds) between each frame when animating the
             plot (default is ``100``)
+        show : bool, optional
+            Whether to open the figure in a browser (default is ``True``)
+        return_fig : bool, optional
+            Whether to return the figure (default is ``False``)
+
+        Returns
+        -------
+        go.Figure
+            An animated Plotly figure depicting the polygon file.  Returned if
+            and only if ``return_fig`` is ``True``
         """
         # Verify that all polygons have the same units and determine range of
         # coordinates
@@ -588,7 +599,13 @@ class PolygonFile(MahaMulticsConfigFile):
             sliders=sliders,
         )
 
-        figure.show(config=_figure_config)
+        if show:
+            figure.show(config=_figure_config)
+
+        if return_fig:
+            return figure
+
+        return None
 
     def time_step(self, units: Optional[str] = None) -> float:
         """Returns the time step for the polygon file
