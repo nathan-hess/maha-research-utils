@@ -140,23 +140,23 @@ class Test_PolygonFile_Properties(Test_PolygonFile):
     def test_time_step(self):
         # Verifies that time step is calculated correctly
         with self.subTest(num_time_steps=1):
-            self.assertEqual(self.polygon_file_001_p1_t1.get_time_step(), 0)
+            self.assertEqual(self.polygon_file_001_p1_t1.time_step(), 0)
 
         with self.subTest(num_time_steps=3):
-            self.assertEqual(self.polygon_file_003_p1_t3.get_time_step('ms'), 1)
+            self.assertEqual(self.polygon_file_003_p1_t3.time_step('ms'), 1)
 
         with self.subTest(num_time_steps=3, comment='unit_conversion'):
-            self.assertEqual(self.polygon_file_003_p1_t3.get_time_step('s'), 0.001)
+            self.assertEqual(self.polygon_file_003_p1_t3.time_step('s'), 0.001)
 
         with self.subTest(comment='missing_units'):
             with self.assertRaises(TypeError):
-                self.polygon_file_003_p1_t3.get_time_step()
+                self.polygon_file_003_p1_t3.time_step()
 
         with self.subTest(comment='non_constant_time_step'):
             self.polygon_file_003_p1_t3._polygon_data[200] = Layer()
 
             with self.assertRaises(PolygonFileFormatError):
-                self.polygon_file_003_p1_t3.get_time_step('ms')
+                self.polygon_file_003_p1_t3.time_step('ms')
 
 
 class Test_PolygonFile_Parse(Test_PolygonFile):

@@ -235,65 +235,6 @@ class PolygonFile(MahaMulticsConfigFile):
 
         raise PolygonFileFormatError(error_message)
 
-    def get_time_step(self, units: Optional[str] = None) -> float:
-        """Returns the time step for the polygon file
-
-        Verifies that the polygon file has a constant time step between
-        successive values in :py:attr:`time_values` and returns this time step.
-        If the polygon file has only a single time step, ``0`` is returned.
-
-        Parameters
-        ----------
-        units : str, optional
-            The units in which the time step should be returned.  Required to
-            be provided if the polygon file has more than one time step, but
-            optional otherwise (default is ``None``)
-
-        Returns
-        -------
-        float
-            The time step between successive values in :py:attr:`time_values`,
-            or ``0`` for polygon files with a single time step
-
-        Raises
-        ------
-        PolygonFileFormatError
-            If the polygon file has multiple time values but the time step
-            between them is not consistent
-
-        Notes
-        -----
-        The term "time" is used loosely for polygon files, and "time" may also
-        be given in terms of quantities such as shaft rotation angle.  For
-        more information, refer to the :ref:`fileref-polygon_file` page.
-        """
-        if self.num_time_steps <= 1:
-            return 0
-
-        if units is None:
-            raise TypeError(
-                f'Polygon file has {self.num_time_steps} time steps, so '
-                'argument "units" must be provided')
-
-        fp_tolerance = 1e-12
-
-        time_vals = np.array(self.time_values, dtype=np.float64)
-        time_steps = time_vals[1:] - time_vals[:-1]
-
-        mean_time_step = float(np.mean(time_steps))
-        max_diff = float(np.max(np.abs(time_steps - mean_time_step)))
-
-        if max_diff > fp_tolerance:
-            raise PolygonFileFormatError(
-                'Inconsistent time step in polygon file. The mean time step is '
-                f'{mean_time_step} {self.time_units} but individual time steps '
-                f'differ by up to {max_diff} {self.time_units}'
-            )
-
-        return float(self.unit_converter.convert(
-            quantity=mean_time_step,
-            from_unit=self.time_units, to_unit=units))
-
     def parse(self) -> None:
         """Parses the file content in the :py:attr:`contents` list and
         populates attributes (such as the dictionary returned by
@@ -492,6 +433,65 @@ class PolygonFile(MahaMulticsConfigFile):
         self.contents.clear()
         self.contents.extend(original_contents)
 
+    def time_step(self, units: Optional[str] = None) -> float:
+        """Returns the time step for the polygon file
+
+        Verifies that the polygon file has a constant time step between
+        successive values in :py:attr:`time_values` and returns this time step.
+        If the polygon file has only a single time step, ``0`` is returned.
+
+        Parameters
+        ----------
+        units : str, optional
+            The units in which the time step should be returned.  Required to
+            be provided if the polygon file has more than one time step, but
+            optional otherwise (default is ``None``)
+
+        Returns
+        -------
+        float
+            The time step between successive values in :py:attr:`time_values`,
+            or ``0`` for polygon files with a single time step
+
+        Raises
+        ------
+        PolygonFileFormatError
+            If the polygon file has multiple time values but the time step
+            between them is not consistent
+
+        Notes
+        -----
+        The term "time" is used loosely for polygon files, and "time" may also
+        be given in terms of quantities such as shaft rotation angle.  For
+        more information, refer to the :ref:`fileref-polygon_file` page.
+        """
+        if self.num_time_steps <= 1:
+            return 0
+
+        if units is None:
+            raise TypeError(
+                f'Polygon file has {self.num_time_steps} time steps, so '
+                'argument "units" must be provided')
+
+        fp_tolerance = 1e-12
+
+        time_vals = np.array(self.time_values, dtype=np.float64)
+        time_steps = time_vals[1:] - time_vals[:-1]
+
+        mean_time_step = float(np.mean(time_steps))
+        max_diff = float(np.max(np.abs(time_steps - mean_time_step)))
+
+        if max_diff > fp_tolerance:
+            raise PolygonFileFormatError(
+                'Inconsistent time step in polygon file. The mean time step is '
+                f'{mean_time_step} {self.time_units} but individual time steps '
+                f'differ by up to {max_diff} {self.time_units}'
+            )
+
+        return float(self.unit_converter.convert(
+            quantity=mean_time_step,
+            from_unit=self.time_units, to_unit=units))
+
     def update_contents(self) -> None:
         """Updates the :py:attr:`contents` list based on object attributes
 
@@ -521,7 +521,7 @@ class PolygonFile(MahaMulticsConfigFile):
                              f'{self.polygon_merge_method}')
 
         if self.num_time_steps > 1:
-            time_step = self.get_time_step(self.time_units)
+            time_step = self.time_step(self.time_units)
             if time_step <= 0:
                 raise PolygonFileFormatError(
                     'Polygon file time step cannot be negative or zero '
