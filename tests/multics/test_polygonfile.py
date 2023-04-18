@@ -21,6 +21,11 @@ class Test_PolygonFile(unittest.TestCase):
         self.polygon_file_003_p1_t3 = PolygonFile(SAMPLE_FILES_DIR / 'polygon_file_003.txt')
         self.polygon_file_004_p2_t3 = PolygonFile(SAMPLE_FILES_DIR / 'polygon_file_004.txt')
 
+        self.polygon_file_initialized = copy.deepcopy(self.polygon_file_blank)
+        self.polygon_file_initialized.polygon_merge_method = 0
+        self.polygon_file_initialized.time_extrap_method = 0
+        self.polygon_file_initialized.time_units = 's'
+
 
 class Test_PolygonFile_Properties(Test_PolygonFile):
     def test_num_time_steps(self):
@@ -157,6 +162,13 @@ class Test_PolygonFile_Properties(Test_PolygonFile):
 
             with self.assertRaises(PolygonFileFormatError):
                 self.polygon_file_003_p1_t3.time_step('ms')
+
+        with self.subTest(comment='negative_time_step'):
+            self.polygon_file_initialized.polygon_data[2] = Layer()
+            self.polygon_file_initialized.polygon_data[0] = Layer()
+
+            with self.assertRaises(PolygonFileFormatError):
+                self.polygon_file_initialized.time_step(units='s')
 
 
 class Test_PolygonFile_Parse(Test_PolygonFile):
@@ -508,11 +520,6 @@ class Test_PolygonFile_UpdateContents(Test_PolygonFile):
         self.square_coordinates = np.array(((0, 0), (1, 0), (1, 1), (0, 1)))
         self.square = Polygon(self.square_coordinates)
         self.square_units = Polygon(self.square_coordinates, units='mm')
-
-        self.polygon_file_initialized = copy.deepcopy(self.polygon_file_blank)
-        self.polygon_file_initialized.polygon_merge_method = 0
-        self.polygon_file_initialized.time_extrap_method = 0
-        self.polygon_file_initialized.time_units = 's'
 
     def test_update_contents_p1_t1(self):
         # Verifies that the "contents" attribute is correctly populated for

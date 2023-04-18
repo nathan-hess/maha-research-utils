@@ -436,7 +436,7 @@ class PolygonFile(MahaMulticsConfigFile):
     def time_step(self, units: Optional[str] = None) -> float:
         """Returns the time step for the polygon file
 
-        Verifies that the polygon file has a constant time step between
+        Verifies that the polygon file has a constant, positive time step between
         successive values in :py:attr:`time_values` and returns this time step.
         If the polygon file has only a single time step, ``0`` is returned.
 
@@ -488,9 +488,16 @@ class PolygonFile(MahaMulticsConfigFile):
                 f'differ by up to {max_diff} {self.time_units}'
             )
 
-        return float(self.unit_converter.convert(
+        time_step = float(self.unit_converter.convert(
             quantity=mean_time_step,
             from_unit=self.time_units, to_unit=units))
+
+        if time_step <= 0:
+            raise PolygonFileFormatError(
+                'Polygon file time step cannot be negative or zero '
+                f'(calculated time step is {time_step} {self.time_units})')
+
+        return time_step
 
     def update_contents(self) -> None:
         """Updates the :py:attr:`contents` list based on object attributes
@@ -522,10 +529,6 @@ class PolygonFile(MahaMulticsConfigFile):
 
         if self.num_time_steps > 1:
             time_step = self.time_step(self.time_units)
-            if time_step <= 0:
-                raise PolygonFileFormatError(
-                    'Polygon file time step cannot be negative or zero '
-                    f'(calculated time step is {time_step} {self.time_units})')
 
             self.contents.append(f'{self.time_units}: {self.time_values[0]} '
                                  f'{time_step} {self.time_extrap_method}')
