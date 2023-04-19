@@ -568,7 +568,7 @@ class PolygonFile(MahaMulticsConfigFile):
             'steps': [
                 {
                     'args': [[frame.name], frame_args],
-                    'label': str(frame.name),
+                    'label': f'{float(frame.name):.8g}',
                     'method': 'animate',
                 } for frame in frames
             ],
