@@ -10,6 +10,7 @@ from typing import List, Optional, Union
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import numpy as np
+import plotly.express as px        # type: ignore
 import plotly.graph_objects as go  # type: ignore
 import pyxx
 
@@ -363,7 +364,8 @@ class PolygonFile(MahaMulticsConfigFile):
 
         # Extract polygon coordinates
         for i in range(num_time_steps):
-            layer = Layer(print_multiline=False)
+            layer = Layer(print_multiline=False,
+                          color=px.colors.qualitative.Plotly[0])
 
             for _ in range(polygons_per_time_step):
                 if len(self.contents) < (line_idx + 2):
