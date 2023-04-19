@@ -522,13 +522,19 @@ class PolygonFile(MahaMulticsConfigFile):
         x_pad = 0.05*(xmax - xmin)
         y_pad = 0.05*(ymax - ymin)
 
-        # Determine maximum number of polygons per layer (since Plotly
+        # Determine maximum number of traces per layer (since Plotly
         # animations require all frames to have the same number of traces)
-        try:
-            max_layer_polygons \
-                = pyxx.arrays.max_list_item_len(self._polygon_data.values())
-        except ValueError:
-            max_layer_polygons = 0
+        max_layer_traces = 0
+        for layer in self._polygon_data.values():
+            layer_traces = 0
+
+            for polygon in layer:
+                if polygon.construction:
+                    layer_traces += 1
+                else:
+                    layer_traces += 2
+
+            max_layer_traces = max(max_layer_traces, layer_traces)
 
         # Create frames
         first_layer_fig = _create_blank_plotly_figure()
@@ -537,7 +543,7 @@ class PolygonFile(MahaMulticsConfigFile):
             layer_fig: go.Figure = layer.plot(units=units, show=False,
                                               return_fig=True)
 
-            for _ in range(max_layer_polygons - len(layer)):
+            for _ in range(max_layer_traces - len(layer_fig.data)):
                 layer_fig.add_trace(go.Scatter(x=[], y=[]))
 
             frames.append(
