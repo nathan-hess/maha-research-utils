@@ -3,15 +3,20 @@ files which store polygon geometry used by the Maha Multics software.
 """
 
 import copy
+import math
 import pathlib
 import re
 from typing import List, Optional, Union
 
+# Mypy type checking disabled for packages that are not PEP 561-compliant
 import numpy as np
+import plotly.express as px        # type: ignore
+import plotly.graph_objects as go  # type: ignore
 import pyxx
 
 from mahautils.shapes.geometry.polygon import Polygon
 from mahautils.shapes.geometry.shape import ClosedShape2D
+from mahautils.shapes.plotting import _create_blank_plotly_figure, _figure_config
 from mahautils.shapes.layer import Layer
 from mahautils.utils.dictionary import Dictionary
 from .configfile import MahaMulticsConfigFile
@@ -24,7 +29,8 @@ class PolygonFile(MahaMulticsConfigFile):
     The Maha Multics software uses polygon files to store geometry used for
     setting boundary conditions when running fluid simulations.  This class
     is capable of parsing such files and providing an interface through which
-    users can interact with and manipulate data in the file.
+    users can interact with and manipulate data in the file (through the
+    :py:attr:`polygon_data` attribute).
 
     .. note::
 
@@ -59,6 +65,82 @@ class PolygonFile(MahaMulticsConfigFile):
     def num_time_steps(self) -> int:
         """The number of time steps in the polygon file"""
         return len(self._polygon_data)
+
+    @property
+    def polygon_data(self) -> Dictionary[float, Layer]:
+        """A reference to the dictionary containing the polygon data in the
+        file
+
+        This method returns a :py:class:`mahautils.utils.Dictionary` instance
+        containing the polygon data in the file.  The keys are the time values
+        defined in the file (with units given by :py:attr:`time_units`) and
+        the values are :py:class:`Layer` instances containing the polygons
+        corresponding to each time step.  This dictionary can be directly
+        edited to modify the polygon file (adding new time steps, removing
+        time steps, changing polygon properties, etc.).
+
+        .. important::
+
+            The dictionary is returned **by reference**, so editing the
+            returned dictionary will directly edit data in the
+            :py:class:`PolygonFile` instance.
+
+        Notes
+        -----
+        This property can only be accessed if :py:attr:`polygon_merge_method`,
+        :py:attr:`time_extrap_method`, and :py:attr:`time_units` are all
+        defined (even for polygon files with a single time step, since
+        additional time steps may be added by modifying the polygon data
+        dictionary).  This ensures consistency of the data stored in the
+        :py:class:`PolygonFile` object.  To access the polygon data before
+        setting these properties, use :py:attr:`polygon_data_readonly`.
+
+        Any of the methods for adding or removing data provided by
+        :py:class:`mahautils.utils.Dictionary` can be used to modify polygon
+        data.  For instance, to insert a new time step prior to an existing
+        time, simply use :py:meth:`mahautils.utils.Dictionary.insert_before`.
+        *This is why there is no "add polygon" method -- accessing the
+        dictionary methods provides greater flexibility.*
+        """
+        # Verify that polygon file metadata is defined; otherwise it is
+        # ambiguous what units and meaning user-specified polygons and time
+        # steps have (i.e., if you add a new time step to the polygon data
+        # dictionary at t=2, what units are t=2?)
+        if None in [
+            self._polygon_merge_method,
+            self._time_extrap_method,
+            self._time_units,
+        ]:
+            raise PolygonFileMissingDataError(
+                'In order to edit or view the "polygon_data" dictionary, the '
+                'following attributes must be set: (\'polygon_merge_method\', '
+                '\'time_extrap_method\', \'time_units\')')
+
+        return self._polygon_data
+
+    @property
+    def polygon_data_readonly(self) -> Dictionary[float, Layer]:
+        """A copy of the dictionary containing the polygon data in the file
+
+        This method returns a :py:class:`mahautils.utils.Dictionary` instance
+        containing the polygon data in the file.  The keys are the time values
+        defined in the file (with units given by :py:attr:`time_units`) and
+        the values are :py:class:`Layer` instances containing the polygons
+        corresponding to each time step.
+
+        .. important::
+
+            The dictionary is returned **by copy**, so editing the
+            returned dictionary will **not** directly edit data in the
+            :py:class:`PolygonFile` instance.
+
+        Notes
+        -----
+        Unlike :py:attr:`polygon_data`, this method does **not** require the
+        :py:attr:`polygon_merge_method`, :py:attr:`time_extrap_method`, and
+        :py:attr:`time_units` properties to be defined defined.
+        """
+        return copy.deepcopy(self._polygon_data)
 
     @property
     def polygon_merge_method(self) -> int:
@@ -158,64 +240,31 @@ class PolygonFile(MahaMulticsConfigFile):
 
         raise PolygonFileFormatError(error_message)
 
-    def get_time_step(self, units: Optional[str] = None) -> float:
-        """Returns the time step for the polygon file
+    def filter_times(self, interval: float, tolerance: float = 1e-12) -> None:
+        """Reduces the number of time steps in a polygon file
 
-        Verifies that the polygon file has a constant time step between
-        successive values in :py:attr:`time_values` and returns this time step.
-        If the polygon file has only a single time step, ``0`` is returned.
+        Prunes time steps from a polygon file at user-specified intervals.
+        This can be useful, for instance, if you have a polygon file with a
+        time step of 0.01 seconds and you want to increase the time step to
+        0.1 seconds.
 
         Parameters
         ----------
-        units : str, optional
-            The units in which the time step should be returned.  Required to
-            be provided if the polygon file has more than one time step, but
-            optional otherwise (default is ``None``)
-
-        Returns
-        -------
-        float
-            The time step between successive values in :py:attr:`time_values`,
-            or ``0`` for polygon files with a single time step
-
-        Raises
-        ------
-        PolygonFileFormatError
-            If the polygon file has multiple time values but the time step
-            between them is not consistent
+        interval : float
+            The spacing at which to keep time steps, in units of
+            :py:attr:`time_units`
+        tolerance : float, optional
+            The allowable difference between retained time steps and intervals
+            of size ``interval`` (default is ``1e-12``)
 
         Notes
         -----
-        The term "time" is used loosely for polygon files, and "time" may also
-        be given in terms of quantities such as shaft rotation angle.  For
-        more information, refer to the :ref:`fileref-polygon_file` page.
+        Time steps are kept if they fall within a distance of ``tolerance``
+        of ``{..., -2*interval, -interval, 0, interval, 2*interval, ...}``
         """
-        if self.num_time_steps <= 1:
-            return 0
-
-        if units is None:
-            raise TypeError(
-                f'Polygon file has {self.num_time_steps} time steps, so '
-                'argument "units" must be provided')
-
-        fp_tolerance = 1e-12
-
-        time_vals = np.array(self.time_values, dtype=np.float64)
-        time_steps = time_vals[1:] - time_vals[:-1]
-
-        mean_time_step = float(np.mean(time_steps))
-        max_diff = float(np.max(np.abs(time_steps - mean_time_step)))
-
-        if max_diff > fp_tolerance:
-            raise PolygonFileFormatError(
-                'Inconsistent time step in polygon file. The mean time step is '
-                f'{mean_time_step} {self.time_units} but individual time steps '
-                f'differ by up to {max_diff} {self.time_units}'
-            )
-
-        return float(self.unit_converter.convert(
-            quantity=mean_time_step,
-            from_unit=self.time_units, to_unit=units))
+        for t in self.time_values:
+            if abs(interval*round(t / interval) - t) > tolerance:
+                del self._polygon_data[t]
 
     def parse(self) -> None:
         """Parses the file content in the :py:attr:`contents` list and
@@ -315,7 +364,8 @@ class PolygonFile(MahaMulticsConfigFile):
 
         # Extract polygon coordinates
         for i in range(num_time_steps):
-            layer = Layer(print_multiline=False)
+            layer = Layer(print_multiline=False,
+                          color=px.colors.qualitative.Plotly[0])
 
             for _ in range(polygons_per_time_step):
                 if len(self.contents) < (line_idx + 2):
@@ -415,52 +465,220 @@ class PolygonFile(MahaMulticsConfigFile):
         self.contents.clear()
         self.contents.extend(original_contents)
 
-    def polygon_data(self, writable: bool = False) -> Dictionary[float, Layer]:
-        """A copy of or a reference to the dictionary containing the polygon
-        data in the file
+    def plot(self, delay: float = 100, show: bool = True,
+             return_fig: bool = False) -> Union[go.Figure, None]:
+        """Generates an animated plot showing the geometry in the polygon file
 
-        This method returns a :py:class:`mahautils.utils.Dictionary` instance
-        containing the polygon data in the file.  The keys in the dictionary
-        are the time values (with units given by :py:attr:`time_units`) and
-        the values should be :py:class:`mahautils.shapes.Layer` instances
-        containing :py:class:`mahautils.shapes.Polygon` objects corresponding
-        to each time step.
-
-        .. important::
-
-            The dictionary can either be returned **by copy** or **by
-            reference**, depending on the value of the ``writable`` argument.
-            If returned by reference, then the dictionary can be directly
-            edited to modify the polygon file (adding new time steps, removing
-            time steps, changing polygon properties, etc.).
+        Polygons in the file are illustrated as filled, solid shapes, and
+        construction geometry is illustrated as dotted outlines.
 
         Parameters
         ----------
-        writable : bool, optional
-            Whether to return a reference to the object's polygon data
-            dictionary (default is ``False``)
+        delay : float, optional
+            The delay (in milliseconds) between each frame when animating the
+            plot (default is ``100``)
+        show : bool, optional
+            Whether to open the figure in a browser (default is ``True``)
+        return_fig : bool, optional
+            Whether to return the figure (default is ``False``)
+
+        Returns
+        -------
+        go.Figure
+            An animated Plotly figure depicting the polygon file.  Returned if
+            and only if ``return_fig`` is ``True``
+        """
+        # Verify that all polygons have the same units and determine range of
+        # coordinates
+        units = None
+        xmin = math.inf
+        xmax = -math.inf
+        ymin = math.inf
+        ymax = -math.inf
+
+        for t, layer in self._polygon_data.items():
+            for polygon in layer:
+                if polygon.units is None:
+                    raise PolygonFileMissingDataError(
+                        'Units were not provided for polygon at time '
+                        f'{t} {self.time_units}')
+
+                if units is None:
+                    units = polygon.units
+                elif polygon.units != units:
+                    raise PolygonFileFormatError(
+                        'Polygons must have the same units to be plotted. '
+                        f'Polygon at time {t} {self.time_units} has units '
+                        f'{polygon.units} but previous polygons had units '
+                        f'{units}')
+
+                x, y = polygon.xy_coordinates()
+                xmin = min(xmin, x.min())
+                xmax = max(xmax, x.max())
+                ymin = min(ymin, y.min())
+                ymax = max(ymax, y.max())
+
+        x_pad = 0.05*(xmax - xmin)
+        y_pad = 0.05*(ymax - ymin)
+
+        # Determine maximum number of traces per layer (since Plotly
+        # animations require all frames to have the same number of traces)
+        max_layer_traces = 0
+        for layer in self._polygon_data.values():
+            layer_traces = 0
+
+            for polygon in layer:
+                if polygon.construction:
+                    layer_traces += 1
+                else:
+                    layer_traces += 2
+
+            max_layer_traces = max(max_layer_traces, layer_traces)
+
+        # Create frames
+        first_layer_fig = _create_blank_plotly_figure()
+        frames = []
+        for i, (t, layer) in enumerate(self._polygon_data.items()):
+            layer_fig: go.Figure = layer.plot(units=units, show=False,
+                                              return_fig=True)
+
+            for _ in range(max_layer_traces - len(layer_fig.data)):
+                layer_fig.add_trace(go.Scatter(x=[], y=[]))
+
+            frames.append(
+                go.Frame(data=layer_fig.data, layout=layer_fig.layout, name=t))
+
+            if i == 0:
+                first_layer_fig = layer_fig
+
+        # Create main figure
+        figure = go.Figure(data=first_layer_fig.data,
+                           layout=first_layer_fig.layout,
+                           frames=frames)
+
+        frame_args = {
+            'frame': {'duration': delay},
+            'mode': 'immediate',
+            'fromcurrent': True,
+            'transition': {'duration': 0},
+        }
+
+        sliders = [{
+            'steps': [
+                {
+                    'args': [[frame.name], frame_args],
+                    'label': f'{float(frame.name):.8g}',
+                    'method': 'animate',
+                } for frame in frames
+            ],
+
+            # Styling
+            'x': 0.05,
+            'y': 0,
+            'len': 0.95,
+            'pad': {'b': 10, 't': 60},
+        }]
+
+        figure.update_layout(
+            xaxis={'range': [xmin-x_pad, xmax+x_pad], 'autorange': False},
+            yaxis={'range': [ymin-y_pad, ymax+y_pad], 'autorange': False},
+            updatemenus=[{
+                'buttons': [
+                    {
+                        'args': [None, frame_args],
+                        'label': '&#9654;',
+                        'method': 'animate',
+                    },
+                    {
+                        'args': [[None], frame_args],
+                        'label': '<b>||</b>',
+                        'method': 'animate',
+                    },
+                ],
+                'direction': 'left',
+                'type': 'buttons',
+
+                # Styling
+                'x': 0.03,
+                'y': 0,
+                'pad': {'r': 10, 't': 80},
+            }],
+            sliders=sliders,
+        )
+
+        if show:
+            figure.show(config=_figure_config)  # pragma: no cover
+
+        if return_fig:
+            return figure
+
+        return None
+
+    def time_step(self, units: Optional[str] = None) -> float:
+        """Returns the time step for the polygon file
+
+        Verifies that the polygon file has a constant, positive time step between
+        successive values in :py:attr:`time_values` and returns this time step.
+        If the polygon file has only a single time step, ``0`` is returned.
+
+        Parameters
+        ----------
+        units : str, optional
+            The units in which the time step should be returned.  Required to
+            be provided if the polygon file has more than one time step, but
+            optional otherwise (default is ``None``)
+
+        Returns
+        -------
+        float
+            The time step between successive values in :py:attr:`time_values`,
+            or ``0`` for polygon files with a single time step
+
+        Raises
+        ------
+        PolygonFileFormatError
+            If the polygon file has multiple time values but the time step
+            between them is not consistent
 
         Notes
         -----
-        If ``writable`` is ``True``, this method can only be accessed if
-        :py:attr:`polygon_merge_method`, :py:attr:`time_extrap_method`, and
-        :py:attr:`time_units` are all defined.  This ensures consistency of
-        the data stored in the :py:class:`PolygonFile` object.
+        The term "time" is used loosely for polygon files, and "time" may also
+        be given in terms of quantities such as shaft rotation angle.  For
+        more information, refer to the :ref:`fileref-polygon_file` page.
         """
-        if not writable:
-            return copy.deepcopy(self._polygon_data)
+        if self.num_time_steps <= 1:
+            return 0
 
-        if None in [
-            self._polygon_merge_method,
-            self._time_extrap_method,
-            self._time_units,
-        ]:
-            raise PolygonFileMissingDataError(
-                'In order to edit or view the "polygon_data" dictionary, the '
-                'following attributes must be set: (\'polygon_merge_method\', '
-                '\'time_extrap_method\', \'time_units\')')
+        if units is None:
+            raise TypeError(
+                f'Polygon file has {self.num_time_steps} time steps, so '
+                'argument "units" must be provided')
 
-        return self._polygon_data
+        fp_tolerance = 1e-12
+
+        time_vals = np.array(self.time_values, dtype=np.float64)
+        time_steps = time_vals[1:] - time_vals[:-1]
+
+        mean_time_step = float(np.mean(time_steps))
+        max_diff = float(np.max(np.abs(time_steps - mean_time_step)))
+
+        if max_diff > fp_tolerance:
+            raise PolygonFileFormatError(
+                'Inconsistent time step in polygon file. The mean time step is '
+                f'{mean_time_step} {self.time_units} but individual time steps '
+                f'differ by up to {max_diff} {self.time_units}'
+            )
+
+        time_step = float(self.unit_converter.convert(
+            quantity=mean_time_step,
+            from_unit=self.time_units, to_unit=units))
+
+        if time_step <= 0:
+            raise PolygonFileFormatError(
+                'Polygon file time step cannot be negative or zero '
+                f'(calculated time step is {time_step} {self.time_units})')
+
+        return time_step
 
     def update_contents(self) -> None:
         """Updates the :py:attr:`contents` list based on object attributes
@@ -469,11 +687,15 @@ class PolygonFile(MahaMulticsConfigFile):
         stored in the :py:class:`PolygonFile` attributes.  This step should
         generally be performed prior to calling :py:meth:`write`, as writing
         a file directly saves the data in :py:attr:`contents` to disk.
+
+        Construction polygons are not added to the :py:attr:`contents` list.
         """
         self.contents.clear()
 
-        # Determine number of polygons per time step
-        num_polygons = np.array([len(x) for x in self._polygon_data.values()])
+        # Determine number of non-construction polygons per time step
+        num_polygons = np.array(
+            [sum(not shape.construction for shape in x)
+             for x in self._polygon_data.values()])
         polygons_per_time_step = num_polygons[0]
 
         if not np.all(num_polygons == polygons_per_time_step):
@@ -487,19 +709,18 @@ class PolygonFile(MahaMulticsConfigFile):
                              f'{self.polygon_merge_method}')
 
         if self.num_time_steps > 1:
-            time_step = self.get_time_step(self.time_units)
-            if time_step <= 0:
-                raise PolygonFileFormatError(
-                    'Polygon file time step cannot be negative or zero '
-                    f'(calculated time step is {time_step} {self.time_units})')
+            time_step = self.time_step(self.time_units)
 
             self.contents.append(f'{self.time_units}: {self.time_values[0]} '
                                  f'{time_step} {self.time_extrap_method}')
 
         for t, layer in self._polygon_data.items():
             for polygon in layer:
+                if polygon.construction:
+                    continue
+
                 if polygon.units is None:
-                    raise PolygonFileFormatError(
+                    raise PolygonFileMissingDataError(
                         'Units were not provided for polygon at time '
                         f'{t} {self.time_units}')
 

@@ -2,13 +2,14 @@ import copy
 import unittest
 
 import numpy as np
+import plotly.graph_objects as go
 
 from mahautils.multics import PolygonFile
 from mahautils.multics.exceptions import (
     PolygonFileFormatError,
     PolygonFileMissingDataError,
 )
-from mahautils.shapes import Layer, Polygon, OpenShape2D
+from mahautils.shapes import Circle, Layer, Polygon, OpenShape2D
 from tests import max_array_diff, SAMPLE_FILES_DIR, TEST_FLOAT_TOLERANCE
 
 
@@ -20,6 +21,15 @@ class Test_PolygonFile(unittest.TestCase):
         self.polygon_file_002_p2_t1 = PolygonFile(SAMPLE_FILES_DIR / 'polygon_file_002.txt')
         self.polygon_file_003_p1_t3 = PolygonFile(SAMPLE_FILES_DIR / 'polygon_file_003.txt')
         self.polygon_file_004_p2_t3 = PolygonFile(SAMPLE_FILES_DIR / 'polygon_file_004.txt')
+
+        self.polygon_file_initialized = copy.deepcopy(self.polygon_file_blank)
+        self.polygon_file_initialized.polygon_merge_method = 0
+        self.polygon_file_initialized.time_extrap_method = 0
+        self.polygon_file_initialized.time_units = 's'
+
+        self.square_coordinates = np.array(((0, 0), (1, 0), (1, 1), (0, 1)))
+        self.square = Polygon(self.square_coordinates)
+        self.square_units = Polygon(self.square_coordinates, units='mm')
 
 
 class Test_PolygonFile_Properties(Test_PolygonFile):
@@ -41,13 +51,12 @@ class Test_PolygonFile_Properties(Test_PolygonFile):
             self.assertEqual(self.polygon_file_004_p2_t3.num_time_steps, 3)
 
     def test_polygon_data_read_only(self):
-        # Verifies that "polygon_data" property can always be read
+        # Verifies that "polygon_data_readonly" property can always be read
         with self.subTest(action='read'):
-            polygon_data = self.polygon_file_blank.polygon_data(writable=False)
-            self.assertDictEqual(polygon_data, {})
+            self.assertDictEqual(self.polygon_file_blank.polygon_data_readonly, {})
 
         with self.subTest(action='write'):
-            polygon_data[50] = Layer()
+            self.polygon_file_blank.polygon_data_readonly[50] = Layer()
             self.assertDictEqual(self.polygon_file_blank._polygon_data, {})
 
     def test_polygon_data_write(self):
@@ -55,21 +64,20 @@ class Test_PolygonFile_Properties(Test_PolygonFile):
         # operations if required attributes are set
         with self.subTest(action='read', accessible=False):
             with self.assertRaises(PolygonFileMissingDataError):
-                self.polygon_file_blank.polygon_data(writable=True)
+                self.polygon_file_blank.polygon_data
 
         with self.subTest(action='read', accessible=True):
             self.polygon_file_blank.polygon_merge_method = 0
             self.polygon_file_blank.time_extrap_method = 0
             self.polygon_file_blank.time_units = 's'
 
-            polygon_data = self.polygon_file_blank.polygon_data(writable=True)
-            self.assertDictEqual(polygon_data, {})
+            self.assertDictEqual(self.polygon_file_blank.polygon_data, {})
 
         with self.subTest(operation='write'):
             self.assertEqual(len(self.polygon_file_blank._polygon_data), 0)
-            polygon_data[50] = Layer()
+            self.polygon_file_blank.polygon_data[50] = Layer()
             self.assertEqual(len(self.polygon_file_blank._polygon_data), 1)
-            polygon_data[50.5] = Layer()
+            self.polygon_file_blank.polygon_data[50.5] = Layer()
             self.assertEqual(len(self.polygon_file_blank._polygon_data), 2)
 
     def test_polygon_merge_method(self):
@@ -142,30 +150,94 @@ class Test_PolygonFile_Properties(Test_PolygonFile):
     def test_time_step(self):
         # Verifies that time step is calculated correctly
         with self.subTest(num_time_steps=1):
-            self.assertEqual(self.polygon_file_001_p1_t1.get_time_step(), 0)
+            self.assertEqual(self.polygon_file_001_p1_t1.time_step(), 0)
 
         with self.subTest(num_time_steps=3):
-            self.assertEqual(self.polygon_file_003_p1_t3.get_time_step('ms'), 1)
+            self.assertEqual(self.polygon_file_003_p1_t3.time_step('ms'), 1)
 
         with self.subTest(num_time_steps=3, comment='unit_conversion'):
-            self.assertEqual(self.polygon_file_003_p1_t3.get_time_step('s'), 0.001)
+            self.assertEqual(self.polygon_file_003_p1_t3.time_step('s'), 0.001)
 
         with self.subTest(comment='missing_units'):
             with self.assertRaises(TypeError):
-                self.polygon_file_003_p1_t3.get_time_step()
+                self.polygon_file_003_p1_t3.time_step()
 
         with self.subTest(comment='non_constant_time_step'):
             self.polygon_file_003_p1_t3._polygon_data[200] = Layer()
 
             with self.assertRaises(PolygonFileFormatError):
-                self.polygon_file_003_p1_t3.get_time_step('ms')
+                self.polygon_file_003_p1_t3.time_step('ms')
+
+        with self.subTest(comment='negative_time_step'):
+            self.polygon_file_initialized.polygon_data[2] = Layer()
+            self.polygon_file_initialized.polygon_data[0] = Layer()
+
+            with self.assertRaises(PolygonFileFormatError):
+                self.polygon_file_initialized.time_step(units='s')
+
+
+class Test_PolygonFile_Filter(Test_PolygonFile):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.polygon_file_spacing = self.polygon_file_initialized
+        for t in np.arange(-5, 5.1, 0.1):
+            self.polygon_file_spacing.polygon_data[t] = Layer()
+
+    def test_filter_times(self):
+        # Verifies that time steps can be filtered to a user-defined interval
+        self.assertListEqual(
+            self.polygon_file_spacing.time_values,
+            list(np.arange(-5, 5.1, 0.1))
+        )
+
+        with self.subTest(time_step=0.5):
+            self.polygon_file_spacing.filter_times(0.5)
+
+            self.assertLessEqual(
+                max_array_diff(
+                    self.polygon_file_spacing.time_values,
+                    [-5, -4.5, -4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1,
+                     1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
+                ),
+                TEST_FLOAT_TOLERANCE
+            )
+
+        with self.subTest(time_step=1):
+            self.polygon_file_spacing.filter_times(1)
+
+            self.assertLessEqual(
+                max_array_diff(
+                    self.polygon_file_spacing.time_values,
+                    [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]
+                ),
+                TEST_FLOAT_TOLERANCE
+            )
+
+    def test_filter_times_tolerance(self):
+        # Verifies that time steps can be filtered to a user-defined interval
+        # and tolerance
+        self.assertListEqual(
+            self.polygon_file_spacing.time_values,
+            list(np.arange(-5, 5.1, 0.1))
+        )
+
+        self.polygon_file_spacing.filter_times(interval=4, tolerance=0.15)
+
+        self.assertLessEqual(
+            max_array_diff(
+                self.polygon_file_spacing.time_values,
+                [-4.1, -4, -3.9, -0.1, 0, 0.1, 3.9, 4, 4.1]
+            ),
+            TEST_FLOAT_TOLERANCE
+        )
 
 
 class Test_PolygonFile_Parse(Test_PolygonFile):
     def test_parse_p1_t1(self):
         # Verifies that a polygon file with a single polygon and single time
         # step is parsed correctly
-        layer = self.polygon_file_001_p1_t1.polygon_data()[0]
+        layer = self.polygon_file_001_p1_t1.polygon_data_readonly[0]
         self.assertEqual(len(layer), 1)
         polygon: Polygon = layer[0]
 
@@ -184,7 +256,7 @@ class Test_PolygonFile_Parse(Test_PolygonFile):
     def test_parse_p2_t3(self):
         # Verifies that a polygon file with multiple polygons and multiple time
         # steps is parsed correctly
-        layers = list(self.polygon_file_004_p2_t3.polygon_data().values())
+        layers = list(self.polygon_file_004_p2_t3.polygon_data.values())
         self.assertEqual(len(layers), 3)
 
         with self.subTest(t=0):
@@ -503,24 +575,202 @@ class Test_PolygonFile_Parse(Test_PolygonFile):
             self.polygon_file_blank.parse()
 
 
+class Test_PolygonFile_Plot(Test_PolygonFile):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.circle_mm = Circle(center=(2, 2), radius=1,
+                                default_num_coordinates=8, units='mm')
+
+        self.circle_inch = Circle(center=(2, 2), radius=1,
+                                  default_num_coordinates=8, units='in')
+
+    def test_plot_single_time_step(self):
+        # Verifies that a polygon file with a single time step containing a
+        # single polygon is plotted correctly
+        polygon_file = self.polygon_file_initialized
+        polygon_file.polygon_data[0] = Layer(self.square_units)
+
+        figure: go.Figure = polygon_file.plot(show=False, return_fig=True)
+
+        with self.subTest(check='frames'):
+            self.assertEqual(len(figure.frames), 1)
+
+        with self.subTest(check='data'):
+            # Two traces -- one for outline, one for fill
+            self.assertEqual(len(figure.frames[0].data), 2)
+
+            # Check that plotted coordinates are correct
+            x, y = self.square_units.xy_coordinates(repeat_end=True)
+
+            self.assertListEqual(list(figure.frames[0].data[0]['x']), list(x))
+            self.assertListEqual(list(figure.frames[0].data[0]['y']), list(y))
+
+            self.assertListEqual(list(figure.frames[0].data[1]['x']), list(x))
+            self.assertListEqual(list(figure.frames[0].data[1]['y']), list(y))
+
+    def test_plot_multiple_time_steps(self):
+        # Verifies that a polygon file with multiple time steps containing
+        # multiple polygons is plotted correctly
+        polygon_file = self.polygon_file_initialized
+        polygon_file.polygon_data[0] = Layer(self.square_units, self.circle_mm)
+        polygon_file.polygon_data[2] = Layer(self.square_units, self.square_units)
+        polygon_file.polygon_data[4] = Layer(self.circle_mm, self.circle_mm)
+
+        figure: go.Figure = polygon_file.plot(show=False, return_fig=True)
+
+        with self.subTest(check='frames'):
+            self.assertEqual(len(figure.frames), 3)
+
+        with self.subTest(check='data'):
+            # Four traces -- each shape has one for outline, one for fill
+            for i in range(3):
+                self.assertEqual(len(figure.frames[i].data), 4,
+                                 f'Incorrect number of traces for t={2*i}')
+
+            # Check that plotted coordinates are correct
+            x_square, y_square = self.square_units.xy_coordinates(repeat_end=True)
+            x_circle, y_circle = self.circle_mm.xy_coordinates(repeat_end=True)
+
+            with self.subTest(check='shapes', t=0):
+                self.assertListEqual(list(figure.frames[0].data[0]['x']), list(x_square))
+                self.assertListEqual(list(figure.frames[0].data[0]['y']), list(y_square))
+
+                self.assertListEqual(list(figure.frames[0].data[1]['x']), list(x_square))
+                self.assertListEqual(list(figure.frames[0].data[1]['y']), list(y_square))
+
+                self.assertListEqual(list(figure.frames[0].data[2]['x']), list(x_circle))
+                self.assertListEqual(list(figure.frames[0].data[2]['y']), list(y_circle))
+
+                self.assertListEqual(list(figure.frames[0].data[3]['x']), list(x_circle))
+                self.assertListEqual(list(figure.frames[0].data[3]['y']), list(y_circle))
+
+            with self.subTest(check='shapes', t=2):
+                for i in range(3):
+                    self.assertListEqual(list(figure.frames[1].data[i]['x']), list(x_square))
+                    self.assertListEqual(list(figure.frames[1].data[i]['y']), list(y_square))
+
+            with self.subTest(check='shapes', t=4):
+                for i in range(3):
+                    self.assertListEqual(list(figure.frames[2].data[i]['x']), list(x_circle))
+                    self.assertListEqual(list(figure.frames[2].data[i]['y']), list(y_circle))
+
+    def test_plot_multiple_time_steps_construction(self):
+        # Verifies that a polygon file with multiple time steps containing
+        # multiple polygons, including construction polygons, is plotted correctly
+        construction_shape = copy.deepcopy(self.square_units)
+        construction_shape.construction = True
+
+        polygon_file = self.polygon_file_initialized
+        polygon_file.polygon_data[0] = Layer(self.square_units, self.circle_mm)
+        polygon_file.polygon_data[2] = Layer(self.square_units)
+        polygon_file.polygon_data[4] = Layer(self.circle_mm, self.circle_mm, construction_shape)
+
+        figure: go.Figure = polygon_file.plot(show=False, return_fig=True)
+
+        with self.subTest(check='frames'):
+            self.assertEqual(len(figure.frames), 3)
+
+        with self.subTest(check='data'):
+            # Five traces -- each non-construction shape has one for outline,
+            # one for fill; construction shape has one for outline
+            for i in range(3):
+                self.assertEqual(len(figure.frames[i].data), 5,
+                                 f'Incorrect number of traces for t={2*i}')
+
+            # Check that plotted coordinates are correct
+            x_square, y_square = self.square_units.xy_coordinates(repeat_end=True)
+            x_circle, y_circle = self.circle_mm.xy_coordinates(repeat_end=True)
+
+            with self.subTest(check='shapes', t=0):
+                self.assertListEqual(list(figure.frames[0].data[0]['x']), list(x_square))
+                self.assertListEqual(list(figure.frames[0].data[0]['y']), list(y_square))
+
+                self.assertListEqual(list(figure.frames[0].data[1]['x']), list(x_square))
+                self.assertListEqual(list(figure.frames[0].data[1]['y']), list(y_square))
+
+                self.assertListEqual(list(figure.frames[0].data[2]['x']), list(x_circle))
+                self.assertListEqual(list(figure.frames[0].data[2]['y']), list(y_circle))
+
+                self.assertListEqual(list(figure.frames[0].data[3]['x']), list(x_circle))
+                self.assertListEqual(list(figure.frames[0].data[3]['y']), list(y_circle))
+
+                self.assertListEqual(list(figure.frames[0].data[4]['x']), [])
+                self.assertListEqual(list(figure.frames[0].data[4]['y']), [])
+
+            with self.subTest(check='shapes', t=2):
+                for i in range(5):
+                    if i < 2:
+                        self.assertListEqual(list(figure.frames[1].data[i]['x']), list(x_square))
+                        self.assertListEqual(list(figure.frames[1].data[i]['y']), list(y_square))
+                    else:
+                        self.assertListEqual(list(figure.frames[1].data[i]['x']), [])
+                        self.assertListEqual(list(figure.frames[1].data[i]['y']), [])
+
+            with self.subTest(check='shapes', t=4):
+                for i in range(5):
+                    if i < 4:
+                        self.assertListEqual(list(figure.frames[2].data[i]['x']), list(x_circle))
+                        self.assertListEqual(list(figure.frames[2].data[i]['y']), list(y_circle))
+                    else:
+                        self.assertListEqual(list(figure.frames[2].data[i]['x']), list(x_square))
+                        self.assertListEqual(list(figure.frames[2].data[i]['y']), list(y_square))
+
+    def test_plot_no_return(self):
+        # Verifies that if "return_fig" is "False," nothing is returned when
+        # plotting (prevents text being printed to the terminal)
+        polygon_file = self.polygon_file_initialized
+        polygon_file.polygon_data[0] = Layer(self.square_units)
+
+        self.assertIsNone(polygon_file.plot(show=False, return_fig=False))
+
+    def test_different_units(self):
+        # Verifies that an error is thrown if attempting to plot polygons with
+        # different units
+        polygon_file = self.polygon_file_initialized
+        polygon_file.polygon_data[0] = Layer(self.circle_mm, self.circle_inch)
+
+        with self.assertRaises(PolygonFileFormatError):
+            polygon_file.plot()
+
+    def test_missing_units(self):
+        # Verifies that an error is thrown if attempting to plot polygons
+        # without units
+        polygon_file = self.polygon_file_initialized
+        polygon_file.polygon_data[0] = Layer(self.square, self.circle_mm)
+
+        with self.assertRaises(PolygonFileMissingDataError):
+            polygon_file.plot()
+
+
 class Test_PolygonFile_UpdateContents(Test_PolygonFile):
     def setUp(self) -> None:
         super().setUp()
 
-        self.square_coordinates = np.array(((0, 0), (1, 0), (1, 1), (0, 1)))
-        self.square = Polygon(self.square_coordinates)
-        self.square_units = Polygon(self.square_coordinates, units='mm')
-
-        self.polygon_file_initialized = copy.deepcopy(self.polygon_file_blank)
-        self.polygon_file_initialized.polygon_merge_method = 0
-        self.polygon_file_initialized.time_extrap_method = 0
-        self.polygon_file_initialized.time_units = 's'
-
     def test_update_contents_p1_t1(self):
         # Verifies that the "contents" attribute is correctly populated for
         # a polygon file with a single polygon and a single time step
-        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
-        polygon_data[6955] = Layer(self.square_units)
+        self.polygon_file_initialized.polygon_data[6955] = Layer(self.square_units)
+        self.polygon_file_initialized.update_contents()
+
+        self.assertListEqual(
+            self.polygon_file_initialized.contents,
+            [
+             '1 1 0',
+             '4 1',
+             'mm: 0.0 1.0 1.0 0.0',
+             'mm: 0.0 0.0 1.0 1.0',
+            ]
+        )
+
+    def test_update_contents_construction(self):
+        # Verifies that construction polygons are not added to the "contents"
+        # attribute when populating file contents
+        square_construction = copy.deepcopy(self.square_units)
+        square_construction.construction = True
+
+        self.polygon_file_initialized.polygon_data[6955] = Layer(
+            self.square_units, square_construction)
         self.polygon_file_initialized.update_contents()
 
         self.assertListEqual(
@@ -536,16 +786,15 @@ class Test_PolygonFile_UpdateContents(Test_PolygonFile):
     def test_update_contents_p2_t3(self):
         # Verifies that the "contents" attribute is correctly populated for
         # a polygon file with a single polygon and a single time step
-        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
-        polygon_data[6955] = Layer(
+        self.polygon_file_initialized.polygon_data[6955] = Layer(
             self.square_units,
             Polygon(self.square_coordinates + 1, units='mm'),
         )
-        polygon_data[6964] = Layer(
+        self.polygon_file_initialized.polygon_data[6964] = Layer(
             Polygon(self.square_coordinates + 4, units='m', polygon_file_enclosed_conv=0),
             self.square_units,
         )
-        polygon_data[6973] = Layer(
+        self.polygon_file_initialized.polygon_data[6973] = Layer(
             Polygon(self.square_coordinates - 8, units='in'),
             self.square_units,
         )
@@ -614,8 +863,7 @@ class Test_PolygonFile_UpdateContents(Test_PolygonFile):
         # Verifies that the "contents" attribute is correctly populated for
         # a polygon file with a single polygon and a single time step with
         # different "polygon_merge"
-        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
-        polygon_data[6955] = Layer(self.square_units)
+        self.polygon_file_initialized.polygon_data[6955] = Layer(self.square_units)
         self.polygon_file_initialized.update_contents()
 
         self.assertListEqual(
@@ -629,35 +877,33 @@ class Test_PolygonFile_UpdateContents(Test_PolygonFile):
     def test_different_num_polygons(self):
         # Verifies that an error is thrown if there are different numbers of
         # polygons for different time steps
-        self.polygon_file_initialized.polygon_data(writable=True)[0] = Layer(self.square)
-        self.polygon_file_initialized.polygon_data(writable=True)[1] = Layer(self.square, self.square)
+        self.polygon_file_initialized.polygon_data[0] = Layer(self.square)
+        self.polygon_file_initialized.polygon_data[1] = Layer(self.square, self.square)
 
         with self.assertRaises(PolygonFileFormatError):
             self.polygon_file_initialized.update_contents()
 
     def test_negative_time_step(self):
         # Verifies that an error is thrown if time step is negative
-        self.polygon_file_initialized.polygon_data(writable=True)[2] = Layer(self.square)
-        self.polygon_file_initialized.polygon_data(writable=True)[0] = Layer(self.square)
+        self.polygon_file_initialized.polygon_data[2] = Layer(self.square)
+        self.polygon_file_initialized.polygon_data[0] = Layer(self.square)
 
         with self.assertRaises(PolygonFileFormatError):
             self.polygon_file_initialized.update_contents()
 
     def test_missing_units(self):
-        # Verifies that an error is thrown if time step is negative
-        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
-        polygon_data[2] = Layer(self.square)
-        polygon_data[3] = Layer(self.square)
+        # Verifies that an error is thrown if polygons are missing units
+        self.polygon_file_initialized.polygon_data[2] = Layer(self.square)
+        self.polygon_file_initialized.polygon_data[3] = Layer(self.square)
 
-        with self.assertRaises(PolygonFileFormatError):
+        with self.assertRaises(PolygonFileMissingDataError):
             self.polygon_file_initialized.update_contents()
 
     def test_not_closed_shape(self):
         # Verifies that an error is thrown if shapes are not subclasses
         # of `ClosedShape`
-        polygon_data = self.polygon_file_initialized.polygon_data(writable=True)
-        polygon_data[2] = Layer(self.square_units)
-        polygon_data[3] = Layer(OpenShape2D(units='mm'))
+        self.polygon_file_initialized.polygon_data[2] = Layer(self.square_units)
+        self.polygon_file_initialized.polygon_data[3] = Layer(OpenShape2D(units='mm'))
 
         with self.assertRaises(PolygonFileFormatError):
             self.polygon_file_initialized.update_contents()

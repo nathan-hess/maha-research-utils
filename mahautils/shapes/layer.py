@@ -132,6 +132,12 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
             Whether to open the figure in a browser (default is ``True``)
         return_fig : bool, optional
             Whether to return the figure (default is ``False``)
+
+        Returns
+        -------
+        go.Figure
+            A Plotly figure depicting the layer.  Returned if and only if
+            ``return_fig`` is ``True``
         """
         if not isinstance(figure, go.Figure):
             figure = _create_blank_plotly_figure(units)
