@@ -505,13 +505,12 @@ class PolygonFile(MahaMulticsConfigFile):
 
                 if units is None:
                     units = polygon.units
-                else:
-                    if polygon.units != units:
-                        raise PolygonFileFormatError(
-                            'Polygons must have the same units to be plotted. '
-                            f'Polygon at time {t} {self.time_units} has units '
-                            f'{polygon.units} but previous polygons had units '
-                            f'{units}')
+                elif polygon.units != units:
+                    raise PolygonFileFormatError(
+                        'Polygons must have the same units to be plotted. '
+                        f'Polygon at time {t} {self.time_units} has units '
+                        f'{polygon.units} but previous polygons had units '
+                        f'{units}')
 
                 x, y = polygon.xy_coordinates()
                 xmin = min(xmin, x.min())
@@ -608,7 +607,7 @@ class PolygonFile(MahaMulticsConfigFile):
         )
 
         if show:
-            figure.show(config=_figure_config)
+            figure.show(config=_figure_config)  # pragma: no cover
 
         if return_fig:
             return figure

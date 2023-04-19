@@ -2,13 +2,14 @@ import copy
 import unittest
 
 import numpy as np
+import plotly.graph_objects as go
 
 from mahautils.multics import PolygonFile
 from mahautils.multics.exceptions import (
     PolygonFileFormatError,
     PolygonFileMissingDataError,
 )
-from mahautils.shapes import Layer, Polygon, OpenShape2D
+from mahautils.shapes import Circle, Layer, Polygon, OpenShape2D
 from tests import max_array_diff, SAMPLE_FILES_DIR, TEST_FLOAT_TOLERANCE
 
 
@@ -25,6 +26,10 @@ class Test_PolygonFile(unittest.TestCase):
         self.polygon_file_initialized.polygon_merge_method = 0
         self.polygon_file_initialized.time_extrap_method = 0
         self.polygon_file_initialized.time_units = 's'
+
+        self.square_coordinates = np.array(((0, 0), (1, 0), (1, 1), (0, 1)))
+        self.square = Polygon(self.square_coordinates)
+        self.square_units = Polygon(self.square_coordinates, units='mm')
 
 
 class Test_PolygonFile_Properties(Test_PolygonFile):
@@ -570,13 +575,177 @@ class Test_PolygonFile_Parse(Test_PolygonFile):
             self.polygon_file_blank.parse()
 
 
-class Test_PolygonFile_UpdateContents(Test_PolygonFile):
+class Test_PolygonFile_Plot(Test_PolygonFile):
     def setUp(self) -> None:
         super().setUp()
 
-        self.square_coordinates = np.array(((0, 0), (1, 0), (1, 1), (0, 1)))
-        self.square = Polygon(self.square_coordinates)
-        self.square_units = Polygon(self.square_coordinates, units='mm')
+        self.circle_mm = Circle(center=(2, 2), radius=1,
+                                default_num_coordinates=8, units='mm')
+
+        self.circle_inch = Circle(center=(2, 2), radius=1,
+                                  default_num_coordinates=8, units='in')
+
+    def test_plot_single_time_step(self):
+        # Verifies that a polygon file with a single time step containing a
+        # single polygon is plotted correctly
+        polygon_file = self.polygon_file_initialized
+        polygon_file.polygon_data[0] = Layer(self.square_units)
+
+        figure: go.Figure = polygon_file.plot(show=False, return_fig=True)
+
+        with self.subTest(check='frames'):
+            self.assertEqual(len(figure.frames), 1)
+
+        with self.subTest(check='data'):
+            # Two traces -- one for outline, one for fill
+            self.assertEqual(len(figure.frames[0].data), 2)
+
+            # Check that plotted coordinates are correct
+            x, y = self.square_units.xy_coordinates(repeat_end=True)
+
+            self.assertListEqual(list(figure.frames[0].data[0]['x']), list(x))
+            self.assertListEqual(list(figure.frames[0].data[0]['y']), list(y))
+
+            self.assertListEqual(list(figure.frames[0].data[1]['x']), list(x))
+            self.assertListEqual(list(figure.frames[0].data[1]['y']), list(y))
+
+    def test_plot_multiple_time_steps(self):
+        # Verifies that a polygon file with multiple time steps containing
+        # multiple polygons is plotted correctly
+        polygon_file = self.polygon_file_initialized
+        polygon_file.polygon_data[0] = Layer(self.square_units, self.circle_mm)
+        polygon_file.polygon_data[2] = Layer(self.square_units, self.square_units)
+        polygon_file.polygon_data[4] = Layer(self.circle_mm, self.circle_mm)
+
+        figure: go.Figure = polygon_file.plot(show=False, return_fig=True)
+
+        with self.subTest(check='frames'):
+            self.assertEqual(len(figure.frames), 3)
+
+        with self.subTest(check='data'):
+            # Four traces -- each shape has one for outline, one for fill
+            for i in range(3):
+                self.assertEqual(len(figure.frames[i].data), 4,
+                                 f'Incorrect number of traces for t={2*i}')
+
+            # Check that plotted coordinates are correct
+            x_square, y_square = self.square_units.xy_coordinates(repeat_end=True)
+            x_circle, y_circle = self.circle_mm.xy_coordinates(repeat_end=True)
+
+            with self.subTest(check='shapes', t=0):
+                self.assertListEqual(list(figure.frames[0].data[0]['x']), list(x_square))
+                self.assertListEqual(list(figure.frames[0].data[0]['y']), list(y_square))
+
+                self.assertListEqual(list(figure.frames[0].data[1]['x']), list(x_square))
+                self.assertListEqual(list(figure.frames[0].data[1]['y']), list(y_square))
+
+                self.assertListEqual(list(figure.frames[0].data[2]['x']), list(x_circle))
+                self.assertListEqual(list(figure.frames[0].data[2]['y']), list(y_circle))
+
+                self.assertListEqual(list(figure.frames[0].data[3]['x']), list(x_circle))
+                self.assertListEqual(list(figure.frames[0].data[3]['y']), list(y_circle))
+
+            with self.subTest(check='shapes', t=2):
+                for i in range(3):
+                    self.assertListEqual(list(figure.frames[1].data[i]['x']), list(x_square))
+                    self.assertListEqual(list(figure.frames[1].data[i]['y']), list(y_square))
+
+            with self.subTest(check='shapes', t=4):
+                for i in range(3):
+                    self.assertListEqual(list(figure.frames[2].data[i]['x']), list(x_circle))
+                    self.assertListEqual(list(figure.frames[2].data[i]['y']), list(y_circle))
+
+    def test_plot_multiple_time_steps_construction(self):
+        # Verifies that a polygon file with multiple time steps containing
+        # multiple polygons, including construction polygons, is plotted correctly
+        construction_shape = copy.deepcopy(self.square_units)
+        construction_shape.construction = True
+
+        polygon_file = self.polygon_file_initialized
+        polygon_file.polygon_data[0] = Layer(self.square_units, self.circle_mm)
+        polygon_file.polygon_data[2] = Layer(self.square_units)
+        polygon_file.polygon_data[4] = Layer(self.circle_mm, self.circle_mm, construction_shape)
+
+        figure: go.Figure = polygon_file.plot(show=False, return_fig=True)
+
+        with self.subTest(check='frames'):
+            self.assertEqual(len(figure.frames), 3)
+
+        with self.subTest(check='data'):
+            # Five traces -- each non-construction shape has one for outline,
+            # one for fill; construction shape has one for outline
+            for i in range(3):
+                self.assertEqual(len(figure.frames[i].data), 5,
+                                 f'Incorrect number of traces for t={2*i}')
+
+            # Check that plotted coordinates are correct
+            x_square, y_square = self.square_units.xy_coordinates(repeat_end=True)
+            x_circle, y_circle = self.circle_mm.xy_coordinates(repeat_end=True)
+
+            with self.subTest(check='shapes', t=0):
+                self.assertListEqual(list(figure.frames[0].data[0]['x']), list(x_square))
+                self.assertListEqual(list(figure.frames[0].data[0]['y']), list(y_square))
+
+                self.assertListEqual(list(figure.frames[0].data[1]['x']), list(x_square))
+                self.assertListEqual(list(figure.frames[0].data[1]['y']), list(y_square))
+
+                self.assertListEqual(list(figure.frames[0].data[2]['x']), list(x_circle))
+                self.assertListEqual(list(figure.frames[0].data[2]['y']), list(y_circle))
+
+                self.assertListEqual(list(figure.frames[0].data[3]['x']), list(x_circle))
+                self.assertListEqual(list(figure.frames[0].data[3]['y']), list(y_circle))
+
+                self.assertListEqual(list(figure.frames[0].data[4]['x']), [])
+                self.assertListEqual(list(figure.frames[0].data[4]['y']), [])
+
+            with self.subTest(check='shapes', t=2):
+                for i in range(5):
+                    if i < 2:
+                        self.assertListEqual(list(figure.frames[1].data[i]['x']), list(x_square))
+                        self.assertListEqual(list(figure.frames[1].data[i]['y']), list(y_square))
+                    else:
+                        self.assertListEqual(list(figure.frames[1].data[i]['x']), [])
+                        self.assertListEqual(list(figure.frames[1].data[i]['y']), [])
+
+            with self.subTest(check='shapes', t=4):
+                for i in range(5):
+                    if i < 4:
+                        self.assertListEqual(list(figure.frames[2].data[i]['x']), list(x_circle))
+                        self.assertListEqual(list(figure.frames[2].data[i]['y']), list(y_circle))
+                    else:
+                        self.assertListEqual(list(figure.frames[2].data[i]['x']), list(x_square))
+                        self.assertListEqual(list(figure.frames[2].data[i]['y']), list(y_square))
+
+    def test_plot_no_return(self):
+        # Verifies that if "return_fig" is "False," nothing is returned when
+        # plotting (prevents text being printed to the terminal)
+        polygon_file = self.polygon_file_initialized
+        polygon_file.polygon_data[0] = Layer(self.square_units)
+
+        self.assertIsNone(polygon_file.plot(show=False, return_fig=False))
+
+    def test_different_units(self):
+        # Verifies that an error is thrown if attempting to plot polygons with
+        # different units
+        polygon_file = self.polygon_file_initialized
+        polygon_file.polygon_data[0] = Layer(self.circle_mm, self.circle_inch)
+
+        with self.assertRaises(PolygonFileFormatError):
+            polygon_file.plot()
+
+    def test_missing_units(self):
+        # Verifies that an error is thrown if attempting to plot polygons
+        # without units
+        polygon_file = self.polygon_file_initialized
+        polygon_file.polygon_data[0] = Layer(self.square, self.circle_mm)
+
+        with self.assertRaises(PolygonFileMissingDataError):
+            polygon_file.plot()
+
+
+class Test_PolygonFile_UpdateContents(Test_PolygonFile):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_update_contents_p1_t1(self):
         # Verifies that the "contents" attribute is correctly populated for
