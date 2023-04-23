@@ -1,3 +1,4 @@
+import math
 import unittest
 from unittest.mock import Mock
 
@@ -148,6 +149,22 @@ class Test_Shape(unittest.TestCase):
                          np.array([4.5, 0.6]), np.array([-6.7, 7]))
         for i, point in enumerate(points):
             self.assertTrue(np.array_equal(point, points_actual[i]))
+
+    def test_convert_angle(self):
+        # Verifies that angle argument for shape rotations is converted to
+        # radians correctly
+        shape = Shape2D(is_closed=True)
+
+        with self.subTest(inputs='rad'):
+            self.assertEqual(shape._convert_rotate_angle(angle=0.2102, angle_units='rad'), 0.2102)
+            self.assertEqual(shape._convert_rotate_angle(angle=-5, angle_units='rad'), -5)
+
+        with self.subTest(inputs='deg'):
+            self.assertEqual(shape._convert_rotate_angle(angle=25, angle_units='deg'), 25*math.pi/180)
+
+        with self.subTest(inputs='invalid'):
+            with self.assertRaises(ValueError):
+                shape._convert_rotate_angle(angle=25, angle_units='mm')
 
 
 class Test_ClosedShape(unittest.TestCase):
