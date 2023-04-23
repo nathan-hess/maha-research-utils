@@ -166,6 +166,12 @@ class Test_CartesianPoint2D(unittest.TestCase):
             (pnt3 := CartesianPoint2D()).coordinates = [7.8, -9.12]
             self.assertTupleEqual(pnt3._coordinates, (7.8, -9.12))
 
+        with self.subTest(type='attributes'):
+            (pnt4 := CartesianPoint2D()).coordinates = (0, 0)
+            pnt4.x = 0.24
+            pnt4.y = -6.1
+            self.assertTupleEqual(pnt4._coordinates, (0.24, -6.1))
+
     def test_set_coordinates_invalid(self):
         # Verifies that appropriate errors are thrown if attempting to set
         # point coordinates to an invalid value

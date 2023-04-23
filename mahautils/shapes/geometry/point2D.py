@@ -173,10 +173,18 @@ class CartesianPoint2D(Shape2D, Point):
         """The x-coordinate of the point"""
         return self.coordinates[0]
 
+    @x.setter
+    def x(self, x: float) -> None:
+        self.coordinates = (x, self.y)
+
     @property
     def y(self):
         """The y-coordinate of the point"""
         return self.coordinates[1]
+
+    @y.setter
+    def y(self, y: float) -> None:
+        self.coordinates = (self.x, y)
 
     def distance_to(self, point: Union[Array_Float2, 'CartesianPoint2D']):
         """Computes the distance to another point
