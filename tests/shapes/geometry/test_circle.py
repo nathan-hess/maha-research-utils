@@ -169,6 +169,25 @@ class Test_Circle(unittest.TestCase):
                 for i in range(num_coordinates):
                     self.assertTrue(np.allclose(points[i], expected_points[i]))
 
+    def test_translate(self):
+        # Verifies that circle can be translated
+        self.assertEqual(self.circle.center, CartesianPoint2D(1.2, 3.5))
+
+        with self.subTest(direction='x'):
+            circle = copy.deepcopy(self.circle)
+            circle.translate(x=6)
+            self.assertEqual(circle.center, CartesianPoint2D(7.2, 3.5))
+
+        with self.subTest(direction='y'):
+            circle = copy.deepcopy(self.circle)
+            circle.translate(y=-3.5)
+            self.assertEqual(circle.center, CartesianPoint2D(1.2, 0))
+
+        with self.subTest(direction='x,y'):
+            circle = copy.deepcopy(self.circle)
+            circle.translate(x=6, y=-3.5)
+            self.assertEqual(circle.center, CartesianPoint2D(7.2, 0))
+
     def test_xy_coordinates(self):
         # Verifies that x- and y-coordinates of circle circumference can be
         # generated correctly

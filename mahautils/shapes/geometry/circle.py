@@ -210,6 +210,10 @@ class Circle(ClosedShape2D):
             repeat_end=repeat_end,
         )
 
+    def translate(self, x: float = 0, y: float = 0) -> None:
+        self.center.x += x
+        self.center.y += y
+
     def xy_coordinates(self, repeat_end: bool = False,
                        num_coordinates: Optional[int] = None,
                        ) -> Tuple[np.ndarray, np.ndarray]:
