@@ -1,3 +1,4 @@
+import copy
 import unittest
 
 import numpy as np
@@ -95,6 +96,32 @@ class Test_Polygon(unittest.TestCase):
             self.assertTrue(np.array_equal(
                 self.polygon_ccw.points(repeat_end=False),
                 np.array([[3, 4], [3, 6], [1.5, 6], [1, 3.5], [2, 2]])
+            ))
+
+    def test_translate(self):
+        # Verifies that polygon can be translated
+        with self.subTest(direction='x'):
+            polygon = copy.deepcopy(self.polygon_ccw)
+            polygon.translate(x=6)
+            self.assertTrue(np.array_equal(
+                polygon.points(repeat_end=True),
+                np.array([[9, 4], [9, 6], [7.5, 6], [7, 3.5], [8, 2], [9, 4]])
+            ))
+
+        with self.subTest(direction='y'):
+            polygon = copy.deepcopy(self.polygon_ccw)
+            polygon.translate(y=-3.5)
+            self.assertTrue(np.array_equal(
+                polygon.points(repeat_end=True),
+                np.array([[3, 0.5], [3, 2.5], [1.5, 2.5], [1, 0], [2, -1.5], [3, 0.5]])
+            ))
+
+        with self.subTest(direction='x,y'):
+            polygon = copy.deepcopy(self.polygon_ccw)
+            polygon.translate(x=6, y=-3.5)
+            self.assertTrue(np.array_equal(
+                polygon.points(repeat_end=True),
+                np.array([[9, 0.5], [9, 2.5], [7.5, 2.5], [7, 0], [8, -1.5], [9, 0.5]])
             ))
 
     def test_xy_coordinates(self):

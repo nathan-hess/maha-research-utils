@@ -142,6 +142,10 @@ class Polygon(ClosedShape2D):
     def points(self, repeat_end: bool = False) -> Tuple[np.ndarray, ...]:
         return self._convert_xy_coordinates_to_points(repeat_end=repeat_end)
 
+    def translate(self, x: float = 0, y: float = 0) -> None:
+        self._vertices[:, 0] += x
+        self._vertices[:, 1] += y
+
     def xy_coordinates(self, repeat_end: bool = False
                        ) -> Tuple[np.ndarray, np.ndarray]:
         points = self.vertices
