@@ -9,6 +9,7 @@ to allow greater freedom in building complex geometry.
 
 from .circle import Circle
 from .geometry import Geometry
-from .point import CartesianPoint2D, Point
+from .point import Point
+from .point2D import CartesianPoint2D
 from .polygon import Polygon
 from .shape import ClosedShape2D, OpenShape2D, Shape2D

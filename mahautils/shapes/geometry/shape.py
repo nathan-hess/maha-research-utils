@@ -10,7 +10,8 @@ from typing import Optional, Tuple, Union
 import numpy as np
 
 from .geometry import Geometry
-from .point import Array_Float2, CartesianPoint2D
+from .point import Array_Float2
+from .point2D import CartesianPoint2D
 
 
 class Shape2D(Geometry):
