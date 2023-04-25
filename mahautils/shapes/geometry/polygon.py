@@ -13,7 +13,7 @@ import numpy as np
 
 from .point import Array_Float2, Point
 from .point2D import CartesianPoint2D
-from .shape import ClosedShape2D
+from .shape_open_closed import ClosedShape2D
 
 ListOfPoints2D = Union[
     List[Array_Float2], Tuple[Array_Float2, ...], np.ndarray,

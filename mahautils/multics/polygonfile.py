@@ -15,7 +15,7 @@ import plotly.graph_objects as go  # type: ignore
 import pyxx
 
 from mahautils.shapes.geometry.polygon import Polygon
-from mahautils.shapes.geometry.shape import ClosedShape2D
+from mahautils.shapes.geometry.shape_open_closed import ClosedShape2D
 from mahautils.shapes.plotting import _create_blank_plotly_figure, _figure_config
 from mahautils.shapes.layer import Layer
 from mahautils.utils.dictionary import Dictionary
