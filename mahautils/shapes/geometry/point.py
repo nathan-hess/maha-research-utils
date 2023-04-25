@@ -75,6 +75,7 @@ class Point(Geometry):
         return True
 
     def __iter__(self):
+        self.__iter_index = 0
         return self
 
     def __len__(self):
@@ -82,6 +83,7 @@ class Point(Geometry):
 
     def __next__(self):
         if self.__iter_index >= len(self._coordinates):
+            self.__iter_index = 0
             raise StopIteration
 
         self.__iter_index += 1
