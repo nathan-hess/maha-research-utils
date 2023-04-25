@@ -19,7 +19,8 @@ Array_Float2 = Union[List[float], Tuple[float, float], np.ndarray]
 
 
 class Point(Geometry):
-    """Base class representing an arbitrary point in space
+    """Base class representing an arbitrary point in a space of an arbitrary
+    number of dimensions
 
     This is a generic class that represents an arbitrary point in any
     coordinate system.  In general, this class should be inherited by
@@ -35,7 +36,7 @@ class Point(Geometry):
     :py:attr:`coordinates` attributes of the same shape and values.
     """
 
-    def __init__(self, units: Optional[str] = None):
+    def __init__(self, units: Optional[str] = None, **kwargs):
         """Creates an instance of a :py:class:`Point` class and sets the point
         coordinates to an empty tuple
 
@@ -46,7 +47,7 @@ class Point(Geometry):
             indicate dimensionless geometry or that units are to be ignored
             (default is ``None``)
         """
-        super().__init__(units=units)
+        super().__init__(units=units, **kwargs)
 
         self._coordinates: Tuple[float, ...] = ()
 

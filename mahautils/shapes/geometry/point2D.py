@@ -5,12 +5,15 @@ a two-dimensional space.
 """
 
 import math
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
+
+import numpy as np
 
 from .point import Array_Float2, Point
+from .shape import Shape2D
 
 
-class CartesianPoint2D(Point):
+class CartesianPoint2D(Shape2D, Point):
     """Class representing a point in 2D Cartesian coordinates
 
     This class can be used to represent a point in the 2D Cartesian coordinate
@@ -91,7 +94,7 @@ class CartesianPoint2D(Point):
         arguments *must* be specified: ``x`` and ``y``.  Both arguments must
         be numeric types (integer or floating-point values).
         """
-        super().__init__(units=units)
+        super().__init__(units=units, is_closed=False)
 
         # Variable that indicates whether the point coordinates have already
         # been stored
@@ -165,6 +168,16 @@ class CartesianPoint2D(Point):
                     'All point coordinates must be of a numeric type '
                     '(float, int, etc.)') from exception
 
+    @property
+    def x(self):
+        """The x-coordinate of the point"""
+        return self.coordinates[0]
+
+    @property
+    def y(self):
+        """The y-coordinate of the point"""
+        return self.coordinates[1]
+
     def distance_to(self, point: Union[Array_Float2, 'CartesianPoint2D']):
         """Computes the distance to another point
 
@@ -185,12 +198,8 @@ class CartesianPoint2D(Point):
         pnt = CartesianPoint2D(point)
         return math.sqrt((self.x - pnt.x)**2 + (self.y - pnt.y)**2)
 
-    @property
-    def x(self):
-        """The x-coordinate of the point"""
-        return self.coordinates[0]
+    def points(self) -> Tuple[np.ndarray, ...]:
+        return (np.array([self.x, self.y]),)
 
-    @property
-    def y(self):
-        """The y-coordinate of the point"""
-        return self.coordinates[1]
+    def xy_coordinates(self) -> Tuple[np.ndarray, np.ndarray]:
+        return (np.array(self.x), np.array([self.y]))
