@@ -10,7 +10,7 @@ import plotly.express as px        # type: ignore
 import plotly.graph_objects as go  # type: ignore
 import pyxx
 
-from mahautils.shapes.geometry.shape import ClosedShape2D, Shape2D
+from mahautils.shapes.geometry.shape_open_closed import ClosedShape2D, Shape2D
 from .plotting import _figure_config, _create_blank_plotly_figure
 
 

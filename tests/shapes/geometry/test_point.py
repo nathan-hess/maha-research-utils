@@ -255,3 +255,16 @@ class Test_CartesianPoint2D(unittest.TestCase):
     def test_get_y(self):
         # Verifies that the y-coordinate of a point is retrieved correctly
         self.assertEqual(self.pnt1.y, -4)
+
+    def test_points(self):
+        # Verifies that x- and y-coordinates are generated correctly
+        points = self.pnt1.points()
+
+        self.assertEqual(len(points), 1)
+        self.assertTrue(np.array_equal(points[0], np.array([3.09, -4])))
+
+    def test_xy_coordinates(self):
+        # Verifies that x- and y-coordinates are generated correctly
+        self.assertTupleEqual(
+            self.pnt1.xy_coordinates(), (np.array(3.09), np.array(-4))
+        )

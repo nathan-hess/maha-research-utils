@@ -9,8 +9,9 @@ from typing import Optional, Tuple, Union
 
 import numpy as np
 
-from .point import Array_Float2, CartesianPoint2D
-from .shape import ClosedShape2D
+from .point import Array_Float2
+from .point2D import CartesianPoint2D
+from .shape_open_closed import ClosedShape2D
 
 
 class Circle(ClosedShape2D):
