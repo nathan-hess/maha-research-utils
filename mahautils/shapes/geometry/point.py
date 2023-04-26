@@ -9,7 +9,7 @@ floating-point numbers.
 """
 
 import math
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, overload, Tuple, Union
 
 import numpy as np
 
@@ -73,6 +73,17 @@ class Point(Geometry):
                 return False
 
         return True
+
+    @overload
+    def __getitem__(self, index: int) -> float:
+        ...  # pragma: no cover
+
+    @overload
+    def __getitem__(self, index: slice) -> Tuple[float, ...]:
+        ...  # pragma: no cover
+
+    def __getitem__(self, idx):
+        return self._coordinates[idx]
 
     def __iter__(self):
         self.__iter_index = 0
