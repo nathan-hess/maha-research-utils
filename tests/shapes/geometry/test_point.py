@@ -84,10 +84,35 @@ class Test_Point(unittest.TestCase):
         with self.subTest(dim=3):
             self.assertEqual(str(self.point3D), '(3, 4, 5)')
 
+    def test_getitem(self):
+        # Verifies that point coordinates can be retrieved by index
+        with self.subTest(dimensions=2):
+            with self.subTest(access='int'):
+                self.assertEqual(self.point2D[0], 1.5)
+                self.assertEqual(self.point2D[1], 2.5)
+
+            with self.subTest(access='slice'):
+                self.assertTupleEqual(self.point2D[0:], (1.5, 2.5))
+
+        with self.subTest(dimensions=3):
+            with self.subTest(access='int'):
+                self.assertEqual(self.point3D[0], 3)
+                self.assertEqual(self.point3D[1], 4)
+                self.assertEqual(self.point3D[2], 5)
+
+            with self.subTest(access='slice'):
+                self.assertTupleEqual(self.point3D[1:], (4, 5))
+
     def test_iterable(self):
-        # Verifies that it is possible to iterate over the coordinates of
-        # the point
+        # Verifies that it is possible to iterate over the coordinates of the
+        # point. Each is tested twice to ensure iterables "reset" correctly
         self.assertListEqual(list(self.point2D), [1.5, 2.5])
+        self.assertListEqual(list(self.point2D), [1.5, 2.5])
+
+        next(self.point2D)
+        self.assertListEqual(list(self.point2D), [1.5, 2.5])
+
+        self.assertTupleEqual(tuple(self.point3D), (3, 4, 5))
         self.assertTupleEqual(tuple(self.point3D), (3, 4, 5))
 
     def test_get_coordinates(self):
