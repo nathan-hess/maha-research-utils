@@ -6,13 +6,15 @@ from a variety of simpler shapes.
 """
 
 import math
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, TYPE_CHECKING, Union
 
 import numpy as np
 
 from .geometry import Geometry
 from .point import Array_Float2
-from .point2D import CartesianPoint2D
+
+if TYPE_CHECKING:
+    from .point2D import CartesianPoint2D  # pragma: no cover
 
 
 class Shape2D(Geometry):
@@ -141,7 +143,7 @@ class Shape2D(Geometry):
         """
         raise NotImplementedError  # pragma: no cover
 
-    def rotate(self, center: Union[Array_Float2, CartesianPoint2D],
+    def rotate(self, center: Union[Array_Float2, 'CartesianPoint2D'],
                angle: float, angle_units: str = 'rad') -> None:
         """Rotates the shape in the :math:`xy`-plane
 
