@@ -1,9 +1,11 @@
 import copy
+import math
 import unittest
 
 import numpy as np
 
 from mahautils.shapes import Polygon
+from tests import max_array_diff, TEST_FLOAT_TOLERANCE
 
 
 class Test_Polygon(unittest.TestCase):
@@ -123,6 +125,52 @@ class Test_Polygon(unittest.TestCase):
                 polygon.points(repeat_end=True),
                 np.array([[9, 0.5], [9, 2.5], [7.5, 2.5], [7, 0], [8, -1.5], [9, 0.5]])
             ))
+
+    def test_rotate(self):
+        # Verifies that the polygon can be rotated about a point
+        with self.subTest(center=(0, 0)):
+            with self.subTest(angle=90):
+                polygon = Polygon([[0, 0], [4, 0], [1, 3]])
+                polygon.rotate(center=(0, 0), angle=90, angle_units='deg')
+                self.assertLessEqual(
+                    max_array_diff(polygon.vertices, [[0, 0], [0, 4], [-3, 1]]),
+                    TEST_FLOAT_TOLERANCE,
+                )
+
+            with self.subTest(angle=-120):
+                polygon = Polygon([[0, 0], [4, 0], [1, 3]])
+                polygon.rotate(center=(0, 0), angle=-120, angle_units='deg')
+
+                angle_rad = math.radians(-120)
+                self.assertLessEqual(
+                    max_array_diff(polygon.vertices,
+                                   [[0, 0], [-2, -2*3**0.5],
+                                    [math.cos(angle_rad) - 3*math.sin(angle_rad),
+                                     math.sin(angle_rad) + 3*math.cos(angle_rad)]]),
+                    TEST_FLOAT_TOLERANCE,
+                )
+
+        with self.subTest(center=(5, 0)):
+            with self.subTest(angle=90):
+                polygon = Polygon([[0, 0], [4, 0], [1, 3]])
+                polygon.rotate(center=(5, 0), angle=90, angle_units='deg')
+                self.assertLessEqual(
+                    max_array_diff(polygon.vertices, [[5, -5], [5, -1], [2, -4]]),
+                    TEST_FLOAT_TOLERANCE,
+                )
+
+            with self.subTest(angle=-120):
+                polygon = Polygon([[0, 0], [4, 0], [1, 3]])
+                polygon.rotate(center=(5, 0), angle=-120, angle_units='deg')
+
+                angle_rad = math.radians(-120)
+                self.assertLessEqual(
+                    max_array_diff(polygon.vertices,
+                                   [[7.5, 2.5*3**0.5], [5.5, 0.5*3**0.5],
+                                    [5 - 4*math.cos(angle_rad) - 3*math.sin(angle_rad),
+                                     -4*math.sin(angle_rad) + 3*math.cos(angle_rad)]]),
+                    TEST_FLOAT_TOLERANCE,
+                )
 
     def test_xy_coordinates(self):
         # Verify that polygon coordinates are retrieved correctly
