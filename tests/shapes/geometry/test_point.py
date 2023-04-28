@@ -7,6 +7,7 @@ from mahautils.shapes import (
     CartesianPoint2D,
     Point,
 )
+from tests import max_array_diff, TEST_FLOAT_TOLERANCE
 
 
 class Test_Point(unittest.TestCase):
@@ -19,6 +20,8 @@ class Test_Point(unittest.TestCase):
         self.point3D = Point()
         self.point3D._coordinates = (3, 4, 5)
 
+
+class Test_Point_Properties(Test_Point):
     def test_initialize(self):
         # Verifies that `Point` class is initialized with empty coordinates
         self.assertTupleEqual(self.point._coordinates, ())
@@ -135,6 +138,8 @@ class Test_CartesianPoint2D(unittest.TestCase):
         self.pnt2 = CartesianPoint2D(83.3, 494.82)
         self.pnt1_pnt2_distance = 505.2277075735257
 
+
+class Test_CartesianPoint2D_Properties(Test_CartesianPoint2D):
     def test_eq(self):
         # Verify that equality between `CartesianPoint2D` objects functions as expected
         with self.subTest(case='same_point'):
@@ -234,26 +239,6 @@ class Test_CartesianPoint2D(unittest.TestCase):
             with self.assertRaises(TypeError):
                 CartesianPoint2D(0, 1, x=2, y=3)
 
-    def test_distance_to(self):
-        # Verifies that the distance between two points is calculated correctly
-        with self.subTest(type='self'):
-            self.assertAlmostEqual(self.pnt1.distance_to(self.pnt1), 0.0)
-            self.assertAlmostEqual(self.pnt2.distance_to(self.pnt2), 0.0)
-
-        with self.subTest(type='CartesianPoint2D'):
-            self.assertAlmostEqual(self.pnt1.distance_to(self.pnt2),
-                                   self.pnt1_pnt2_distance)
-            self.assertAlmostEqual(self.pnt2.distance_to(self.pnt1),
-                                   self.pnt1_pnt2_distance)
-
-        with self.subTest(type='tuple'):
-            self.assertAlmostEqual(self.pnt1.distance_to((83.3, 494.82)),
-                                   self.pnt1_pnt2_distance)
-
-        with self.subTest(type='list'):
-            self.assertAlmostEqual(self.pnt1.distance_to([83.3, 494.82]),
-                                   self.pnt1_pnt2_distance)
-
     def test_get_x(self):
         # Verifies that the x-coordinate of a point is retrieved correctly
         self.assertEqual(self.pnt1.x, 3.09)
@@ -274,3 +259,80 @@ class Test_CartesianPoint2D(unittest.TestCase):
         self.assertTupleEqual(
             self.pnt1.xy_coordinates(), (np.array(3.09), np.array(-4))
         )
+
+
+class Test_CartesianPoint2D_Distance(Test_CartesianPoint2D):
+    def test_distance_to(self):
+        # Verifies that the distance between two points is calculated correctly
+        with self.subTest(type='self'):
+            self.assertAlmostEqual(self.pnt1.distance_to(self.pnt1), 0.0)
+            self.assertAlmostEqual(self.pnt2.distance_to(self.pnt2), 0.0)
+
+        with self.subTest(type='CartesianPoint2D'):
+            self.assertAlmostEqual(self.pnt1.distance_to(self.pnt2),
+                                   self.pnt1_pnt2_distance)
+            self.assertAlmostEqual(self.pnt2.distance_to(self.pnt1),
+                                   self.pnt1_pnt2_distance)
+
+        with self.subTest(type='tuple'):
+            self.assertAlmostEqual(self.pnt1.distance_to((83.3, 494.82)),
+                                   self.pnt1_pnt2_distance)
+
+        with self.subTest(type='list'):
+            self.assertAlmostEqual(self.pnt1.distance_to([83.3, 494.82]),
+                                   self.pnt1_pnt2_distance)
+
+
+class Test_CartesianPoint2D_Transform(Test_CartesianPoint2D):
+    def test_rotate(self):
+        # Verifies that a point can be rotated about another point
+        with self.subTest(center=(0, 0)):
+            with self.subTest(angle=90):
+                point = CartesianPoint2D(2, 0)
+                point.rotate(center=(0, 0), angle=90, angle_units='deg')
+                self.assertLessEqual(
+                    max_array_diff(point, CartesianPoint2D(0, 2)),
+                    TEST_FLOAT_TOLERANCE,
+                )
+
+            with self.subTest(angle=-120):
+                point = CartesianPoint2D(2, 0)
+                point.rotate(center=(0, 0), angle=-120, angle_units='deg')
+                self.assertLessEqual(
+                    max_array_diff(point, CartesianPoint2D(-1, -3**0.5)),
+                    TEST_FLOAT_TOLERANCE,
+                )
+
+        with self.subTest(center=(5, 0)):
+            with self.subTest(angle=90):
+                point = CartesianPoint2D(2, 0)
+                point.rotate(center=(5, 0), angle=90, angle_units='deg')
+                self.assertLessEqual(
+                    max_array_diff(point, CartesianPoint2D(5, -3)),
+                    TEST_FLOAT_TOLERANCE,
+                )
+
+            with self.subTest(angle=-120):
+                point = CartesianPoint2D(2, 0)
+                point.rotate(center=(5, 0), angle=-120, angle_units='deg')
+                self.assertLessEqual(
+                    max_array_diff(point, CartesianPoint2D(6.5, 1.5*3**0.5)),
+                    TEST_FLOAT_TOLERANCE,
+                )
+
+    def test_translate(self):
+        # Verifies that point can be translated
+        with self.subTest(direction='x'):
+            point = CartesianPoint2D(1.2, 3.5)
+            point.translate(x=6)
+            self.assertEqual(point, CartesianPoint2D(7.2, 3.5))
+
+        with self.subTest(direction='y'):
+            point = CartesianPoint2D(1.2, 3.5)
+            point.translate(y=-3.5)
+            self.assertEqual(point, CartesianPoint2D(1.2, 0))
+
+        with self.subTest(direction='x,y'):
+            point = CartesianPoint2D(1.2, 3.5)
+            point.translate(x=6, y=-3.5)
+            self.assertEqual(point, CartesianPoint2D(7.2, 0))

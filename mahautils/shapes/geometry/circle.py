@@ -212,25 +212,10 @@ class Circle(ClosedShape2D):
 
     def rotate(self, center: Union[Array_Float2, CartesianPoint2D],
                angle: float, angle_units: str = 'rad') -> None:
-        # Convert angle to radians
-        angle = self._convert_rotate_angle(angle, angle_units)
-
-        # Shift geometry to origin
-        center = CartesianPoint2D(center)
-        x_offset = self.center.x - center.x
-        y_offset = self.center.y - center.y
-
-        # Rotate center about origin
-        self.center.x = x_offset*math.cos(angle) - y_offset*math.sin(angle)
-        self.center.y = x_offset*math.sin(angle) + y_offset*math.cos(angle)
-
-        # Shift geometry back to center of rotation
-        self.center.x += center.x
-        self.center.y += center.y
+        self.center.rotate(center=center, angle=angle, angle_units=angle_units)
 
     def translate(self, x: float = 0, y: float = 0) -> None:
-        self.center.x += x
-        self.center.y += y
+        self.center.translate(x=x, y=y)
 
     def xy_coordinates(self, repeat_end: bool = False,
                        num_coordinates: Optional[int] = None,
