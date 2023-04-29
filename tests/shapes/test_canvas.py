@@ -176,3 +176,34 @@ class Test_Canvas_Plot(Test_Canvas):
 
         # Verify that figure was displayed
         existing_figure.show.assert_called_once()
+
+
+class Test_Canvas_Transform(Test_Canvas):
+    def setUp(self):
+        super().setUp()
+
+        self.layer1 = Layer()
+        self.layer2 = Layer()
+        self.canvas = Canvas(self.layer1, self.layer2)
+
+        self.layer1.rotate = Mock()
+        self.layer1.rotate = Mock()
+
+        self.layer1.translate = Mock()
+        self.layer1.translate = Mock()
+
+    def test_rotate(self):
+        # Verifies that rotating a canvas rotates all layers in the canvas
+        self.canvas.rotate(center=(8, 9), angle=1000, angle_units='in')
+
+        self.layer1.rotate.assert_called_once_with(
+            center=(8, 9), angle=1000, angle_units='in')
+        self.layer1.rotate.assert_called_once_with(
+            center=(8, 9), angle=1000, angle_units='in')
+
+    def test_translate(self):
+        # Verifies that translating a canvas translates all layers in the canvas
+        self.canvas.translate(x=569, y=62)
+
+        self.layer1.translate.assert_called_once_with(x=569, y=62)
+        self.layer1.translate.assert_called_once_with(x=569, y=62)

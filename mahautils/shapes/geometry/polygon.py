@@ -5,6 +5,7 @@ Cartesian coordinate system.
 """
 
 import copy
+import math
 from typing import List, Optional, Tuple, Union
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
@@ -141,6 +142,29 @@ class Polygon(ClosedShape2D):
 
     def points(self, repeat_end: bool = False) -> Tuple[np.ndarray, ...]:
         return self._convert_xy_coordinates_to_points(repeat_end=repeat_end)
+
+    def rotate(self, center: Union[Array_Float2, CartesianPoint2D],
+               angle: float, angle_units: str = 'rad') -> None:
+        # Convert angle to radians
+        angle = self._convert_rotate_angle(angle, angle_units)
+
+        # Shift geometry to origin
+        center = CartesianPoint2D(center)
+        self.translate(x=(-center.x), y=(-center.y))
+
+        # Rotate geometry about origin
+        rotation_matrix = np.array([
+            [ math.cos(angle), math.sin(angle)],  # noqa: E201
+            [-math.sin(angle), math.cos(angle)],
+        ])
+        self._vertices = np.matmul(self._vertices, rotation_matrix)
+
+        # Shift geometry back to center of rotation
+        self.translate(x=center.x, y=center.y)
+
+    def translate(self, x: float = 0, y: float = 0) -> None:
+        self._vertices[:, 0] += x
+        self._vertices[:, 1] += y
 
     def xy_coordinates(self, repeat_end: bool = False
                        ) -> Tuple[np.ndarray, np.ndarray]:

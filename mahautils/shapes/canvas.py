@@ -9,6 +9,8 @@ from typing import Optional, Union
 import plotly.graph_objects as go  # type: ignore
 import pyxx
 
+from mahautils.shapes.geometry.point import Array_Float2
+from mahautils.shapes.geometry.point2D import CartesianPoint2D
 from .layer import Layer
 from .plotting import _figure_config, _create_blank_plotly_figure
 
@@ -125,3 +127,37 @@ class Canvas(pyxx.arrays.TypedListWithID[Layer]):
             return figure
 
         return None
+
+    def rotate(self, center: Union[Array_Float2, CartesianPoint2D],
+               angle: float, angle_units: str = 'rad') -> None:
+        """Rotates all shapes in all layers of the canvas a given angle in
+        the :math:`xy`-plane about a user-specified point
+
+        Parameters
+        ----------
+        center : list or tuple or CartesianPoint2D
+            The center of rotation about which to rotate the shapes
+        angle : float
+            The angle by which to rotate the shapes about ``center``
+        angle_units : str, optional
+            The units (radians or degrees) of the ``angle`` argument.  Must be
+            either ``'rad'`` or ``'deg'`` (default is ``'rad'``)
+        """
+        for layer in self:
+            layer.rotate(center=center, angle=angle, angle_units=angle_units)
+
+    def translate(self, x: float = 0, y: float = 0) -> None:
+        """Translates all shapes in all layers of the canvas a user-specified
+        distance in the :math:`x`- and/or :math:`y`-directions
+
+        Parameters
+        ----------
+        x : float, optional
+            The distance to translate the shapes in the :math:`x`-direction
+            (default is ``0``)
+        y : float, optional
+            The distance to translate the shapes in the :math:`y`-direction
+            (default is ``0``)
+        """
+        for layer in self:
+            layer.translate(x=x, y=y)

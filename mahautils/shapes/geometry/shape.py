@@ -5,11 +5,16 @@ to be used in "drawing" utilities in which complex 2D geometry is assembed
 from a variety of simpler shapes.
 """
 
-from typing import Optional, Tuple
+import math
+from typing import Optional, Tuple, TYPE_CHECKING, Union
 
 import numpy as np
 
 from .geometry import Geometry
+from .point import Array_Float2
+
+if TYPE_CHECKING:
+    from .point2D import CartesianPoint2D  # pragma: no cover
 
 
 class Shape2D(Geometry):
@@ -96,6 +101,15 @@ class Shape2D(Geometry):
 
             self._default_num_coordinates = int(default_num_coordinates)
 
+    def _convert_rotate_angle(self, angle: float, angle_units: str) -> float:
+        if angle_units == 'rad':
+            return angle
+
+        if angle_units == 'deg':
+            return math.radians(angle)
+
+        raise ValueError('Argument "angle_units" must be either "rad" or "deg"')
+
     def _convert_xy_coordinates_to_points(self, **kwargs
                                           ) -> Tuple[np.ndarray, ...]:
         x_coordinates, y_coordinates = self.xy_coordinates(**kwargs)
@@ -126,6 +140,42 @@ class Shape2D(Geometry):
             that points are returned as a list, where each entry is a point on
             the perimeter of the shape (essentially the transpose of
             :py:meth:`xy_coordinates`)
+        """
+        raise NotImplementedError  # pragma: no cover
+
+    def rotate(self, center: Union[Array_Float2, 'CartesianPoint2D'],
+               angle: float, angle_units: str = 'rad') -> None:
+        """Rotates the shape in the :math:`xy`-plane
+
+        Rotates the shape the shape a given angle in the :math:`xy`-plane
+        about a user-specified point.
+
+        Parameters
+        ----------
+        center : list or tuple or CartesianPoint2D
+            The center of rotation about which to rotate the shape
+        angle : float
+            The angle by which to rotate the shape about ``center``
+        angle_units : str, optional
+            The units (radians or degrees) of the ``angle`` argument.  Must be
+            either ``'rad'`` or ``'deg'`` (default is ``'rad'``)
+        """
+        raise NotImplementedError  # pragma: no cover
+
+    def translate(self, x: float = 0, y: float = 0) -> None:
+        """Translates the shape in the :math:`xy`-plane
+
+        Translates the shape a user-specified distance in the :math:`x`- and/or
+        :math:`y`-directions.
+
+        Parameters
+        ----------
+        x : float, optional
+            The distance to translate the shape in the :math:`x`-direction
+            (default is ``0``)
+        y : float, optional
+            The distance to translate the shape in the :math:`y`-direction
+            (default is ``0``)
         """
         raise NotImplementedError  # pragma: no cover
 

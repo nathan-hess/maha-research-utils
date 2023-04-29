@@ -173,10 +173,18 @@ class CartesianPoint2D(Shape2D, Point):
         """The x-coordinate of the point"""
         return self.coordinates[0]
 
+    @x.setter
+    def x(self, x: float) -> None:
+        self.coordinates = (x, self.y)
+
     @property
     def y(self):
         """The y-coordinate of the point"""
         return self.coordinates[1]
+
+    @y.setter
+    def y(self, y: float) -> None:
+        self.coordinates = (self.x, y)
 
     def distance_to(self, point: Union[Array_Float2, 'CartesianPoint2D']):
         """Computes the distance to another point
@@ -200,6 +208,28 @@ class CartesianPoint2D(Shape2D, Point):
 
     def points(self) -> Tuple[np.ndarray, ...]:
         return (np.array([self.x, self.y]),)
+
+    def rotate(self, center: Union[Array_Float2, 'CartesianPoint2D'],
+               angle: float, angle_units: str = 'rad') -> None:
+        # Convert angle to radians
+        angle = self._convert_rotate_angle(angle, angle_units)
+
+        # Shift geometry to origin
+        center = CartesianPoint2D(center)
+        x_offset = self.x - center.x
+        y_offset = self.y - center.y
+
+        # Rotate point about origin
+        self.x = x_offset*math.cos(angle) - y_offset*math.sin(angle)
+        self.y = x_offset*math.sin(angle) + y_offset*math.cos(angle)
+
+        # Shift geometry back to center of rotation
+        self.x += center.x
+        self.y += center.y
+
+    def translate(self, x: float = 0, y: float = 0) -> None:
+        self.x += x
+        self.y += y
 
     def xy_coordinates(self) -> Tuple[np.ndarray, np.ndarray]:
         return (np.array(self.x), np.array([self.y]))

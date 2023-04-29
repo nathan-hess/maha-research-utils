@@ -7,6 +7,7 @@ from mahautils.shapes import (
     CartesianPoint2D,
     Circle,
 )
+from tests import max_array_diff, TEST_FLOAT_TOLERANCE
 
 
 class Test_Circle(unittest.TestCase):
@@ -168,6 +169,61 @@ class Test_Circle(unittest.TestCase):
 
                 for i in range(num_coordinates):
                     self.assertTrue(np.allclose(points[i], expected_points[i]))
+
+    def test_rotate(self):
+        # Verifies that circle can be rotated about a point
+        with self.subTest(center=(0, 0)):
+            with self.subTest(angle=90):
+                circle = Circle(center=(2, 0), radius=1)
+                circle.rotate(center=(0, 0), angle=90, angle_units='deg')
+                self.assertLessEqual(
+                    max_array_diff(circle.center, CartesianPoint2D(0, 2)),
+                    TEST_FLOAT_TOLERANCE,
+                )
+
+            with self.subTest(angle=-120):
+                circle = Circle(center=(2, 0), radius=1)
+                circle.rotate(center=(0, 0), angle=-120, angle_units='deg')
+                self.assertLessEqual(
+                    max_array_diff(circle.center, CartesianPoint2D(-1, -3**0.5)),
+                    TEST_FLOAT_TOLERANCE,
+                )
+
+        with self.subTest(center=(5, 0)):
+            with self.subTest(angle=90):
+                circle = Circle(center=(2, 0), radius=1)
+                circle.rotate(center=(5, 0), angle=90, angle_units='deg')
+                self.assertLessEqual(
+                    max_array_diff(circle.center, CartesianPoint2D(5, -3)),
+                    TEST_FLOAT_TOLERANCE,
+                )
+
+            with self.subTest(angle=-120):
+                circle = Circle(center=(2, 0), radius=1)
+                circle.rotate(center=(5, 0), angle=-120, angle_units='deg')
+                self.assertLessEqual(
+                    max_array_diff(circle.center, CartesianPoint2D(6.5, 1.5*3**0.5)),
+                    TEST_FLOAT_TOLERANCE,
+                )
+
+    def test_translate(self):
+        # Verifies that circle can be translated
+        self.assertEqual(self.circle.center, CartesianPoint2D(1.2, 3.5))
+
+        with self.subTest(direction='x'):
+            circle = copy.deepcopy(self.circle)
+            circle.translate(x=6)
+            self.assertEqual(circle.center, CartesianPoint2D(7.2, 3.5))
+
+        with self.subTest(direction='y'):
+            circle = copy.deepcopy(self.circle)
+            circle.translate(y=-3.5)
+            self.assertEqual(circle.center, CartesianPoint2D(1.2, 0))
+
+        with self.subTest(direction='x,y'):
+            circle = copy.deepcopy(self.circle)
+            circle.translate(x=6, y=-3.5)
+            self.assertEqual(circle.center, CartesianPoint2D(7.2, 0))
 
     def test_xy_coordinates(self):
         # Verifies that x- and y-coordinates of circle circumference can be
