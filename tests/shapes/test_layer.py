@@ -273,3 +273,37 @@ class Test_Layer_Plot(Test_Layer):
         with self.assertRaises(ValueError):
             self.layer.append(self.circle_no_units)
             self.layer.plot(units=self.units, show=False)
+
+
+class Test_Layer_Transform(Test_Layer):
+    def setUp(self):
+        super().setUp()
+
+        self.layer = Layer(self.circle1, self.circle2, self.closed_shape)
+
+        self.circle1.rotate = Mock()
+        self.circle2.rotate = Mock()
+        self.closed_shape.rotate = Mock()
+
+        self.circle1.translate = Mock()
+        self.circle2.translate = Mock()
+        self.closed_shape.translate = Mock()
+
+    def test_rotate(self):
+        # Verifies that rotating a layer rotates all shapes in the layer
+        self.layer.rotate(center=(5, 6), angle=700, angle_units='mm')
+
+        self.circle1.rotate.assert_called_once_with(
+            center=(5, 6), angle=700, angle_units='mm')
+        self.circle2.rotate.assert_called_once_with(
+            center=(5, 6), angle=700, angle_units='mm')
+        self.closed_shape.rotate.assert_called_once_with(
+            center=(5, 6), angle=700, angle_units='mm')
+
+    def test_translate(self):
+        # Verifies that translating a layer translates all shapes in the layer
+        self.layer.translate(x=4627, y=510)
+
+        self.circle1.translate.assert_called_once_with(x=4627, y=510)
+        self.circle2.translate.assert_called_once_with(x=4627, y=510)
+        self.closed_shape.translate.assert_called_once_with(x=4627, y=510)
