@@ -3,6 +3,8 @@ centipoise
 centistoke
 CSV
 customizations
+dimensioned
+discretize
 discretized
 discretizing
 dropdown
@@ -25,6 +27,7 @@ parsers
 Plotly
 piecewise
 pre
+preprocessing
 programmatically
 rescaled
 rescaling

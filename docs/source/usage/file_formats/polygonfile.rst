@@ -557,6 +557,8 @@ Taken together, these parameters result in the following polygon file:
     cm: 0  2.5  0
 
 
+.. _fileref-polygon_file-example3:
+
 Single, Moving Polygon
 ^^^^^^^^^^^^^^^^^^^^^^
 
