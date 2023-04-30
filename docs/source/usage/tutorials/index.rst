@@ -27,6 +27,7 @@ section.
     :caption: Polygon Files
     :maxdepth: 1
 
+    polygon_file_write
     polygon_file_read
 
 |
