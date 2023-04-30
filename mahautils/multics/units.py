@@ -163,12 +163,12 @@ _MAHA_MULTICS_DEFAULT_UNITS: Dict[str, Dict[str, Any]] = {
     },
 
     ## DIMENSIONLESS QUANTITIES ----------------------------------------------
-    '-': {
+    'dimensionless': {
         'unit': MahaMulticsUnit((0, 0, 0, 0, 0, 0, 0), scale=1, offset=0),
         'tags': ('dimensionless',),
         'name': 'dimensionless',
         'description': 'Unit assigned to dimensionless numbers',
-        'aliases': ('null',),
+        'aliases': ('-', 'unitless', 'null',),
     },
 
     ## PERCENTAGES -----------------------------------------------------------
