@@ -100,7 +100,7 @@ shown in the :ref:`previous diagrams <section-tutorials_polygonfile_write-geomet
 A few things to notice about these definitions:
 
 - Units were specified with the ``units`` keyword argument.  The commands above
-  would still have worked even if we ommitted this argument, but this would cause
+  would still have worked even if we omitted this argument, but this would cause
   issues later when writing the polygon file.
 - When plotting shapes with the :py:mod:`mahautils.shapes` package, the shapes are
   discretized into discrete points for plotting.  The ``default_num_coordinates``

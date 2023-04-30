@@ -3,6 +3,8 @@ centipoise
 centistoke
 CSV
 customizations
+dimensioned
+discretize
 discretized
 discretizing
 dropdown
