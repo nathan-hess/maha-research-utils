@@ -1,0 +1,30 @@
+name: Code Coverage
+
+on: push
+
+jobs:
+  coverage:
+    name: Codecov Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Repository Files
+        uses: actions/checkout@v3
+
+      - name: Run Setup Action
+        uses: ./.github/workflows/composite-actions/setup
+        with:
+          python-version: release
+
+      - name: Run Python Tests
+        run: |
+          coverage run
+          coverage json
+          coverage report
+
+      - name: Upload Code Coverage Report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: coverage.json
+          fail_ci_if_error: true
+          verbose: false
