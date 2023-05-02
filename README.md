@@ -1,6 +1,7 @@
 # MahaUtils
 
 [![CI/CD](https://github.com/nathan-hess/maha-research-utils/actions/workflows/cicd.yml/badge.svg)](https://github.com/nathan-hess/maha-research-utils/actions/workflows/cicd.yml)
+[![codecov](https://codecov.io/gh/nathan-hess/maha-research-utils/branch/main/graph/badge.svg)](https://codecov.io/gh/nathan-hess/maha-research-utils)
 [![Documentation Status](https://readthedocs.org/projects/mahautils/badge/?version=latest)](https://mahautils.readthedocs.io)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/mahautils?label=PyPI%20downloads&logo=python&logoColor=yellow)](https://pypi.org/project/mahautils)
 
