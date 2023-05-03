@@ -836,3 +836,50 @@ class Test_SimResults_UpdateContents(Test_SimResults):
                 '}',
             ]
         )
+
+    def test_update_content_no_compile_options(self):
+        # Verifies that "contents" attribute can be updated with a simulation results
+        # file populated with data but no compilation options
+        self.sim_results_01.compile_options.clear()
+        self.sim_results_01.update_contents()
+
+        self.assertListEqual(
+            self.sim_results_01.contents,
+            [
+                '# Title: Sample simulation Results 1',
+                '',
+                'printDict{',
+                '    @t           [s]',
+                '',
+                '    # Body Position',
+                '    ?xBody       [m]',
+                '    ?yBody       [mm]',
+                '    ?zBody       [m]',
+                '',
+                '    # Speed',
+                '    ?vxBody      [micron/s]',
+                '',
+                '    # Spring Force',
+                '    ?FxSpring    [N]',
+                '    ?FySpring    [N]',
+                '    ?FzSpring    [N]',
+                '',
+                '    # Torque',
+                '    ?MxBody      [N*m]',
+                '}',
+                ('$t:s:Sim Time$xBody:m:Body casing frame position in x'
+                 '$yBody:mm:Body casing frame position in y$zBody:m:$FxSpring:N:'
+                 '$FySpring:N:Spring Force y$FzSpring:N:Spring Force z'),
+                '0.0 3.4 4.2 2.1 -1000.0 933.0 0.0',
+                '1.0 0.0 0.0 -4.0 9.0 3.0 933.0',
+                '2.0 9.0 3.32 3.0 99.3 3.0 0.0021',
+                '3.0 434.0 23.323 93.24323 3.0 0.0 -220.32332',
+                '4.0 323.0 43.323 399.0 -0.3 32.0 959.0',
+                '5.0 4.32 23.5 69.0 32.0 -0.32 3.54993',
+                '6.0 34.0 0.42343 2.34e-08 3.21 5.0 1.0',
+                '7.0 4.3 34.0 990.0 3.0 1.0 2.0',
+                '8.0 3000.0 -232.0 43.0 3.32 0.543 114.0',
+                '9.0 0.0 0.001 3693.3 9.4 0.1 3332.4',
+                '10.0 10.0 10.0 10.0 10.0 10.0 10.0',
+            ]
+        )
