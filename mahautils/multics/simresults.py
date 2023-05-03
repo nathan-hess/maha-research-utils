@@ -1003,9 +1003,10 @@ class SimResults(MahaMulticsConfigFile):
                 self.contents.append(data_vars)
 
                 # Compilation options
-                compile_opts_str = ', '.join(
-                    [f'{k} = {v}' for k, v in self.compile_options.items()])
-                self.contents.append(f'#_OPTIONs: {compile_opts_str}'.strip())
+                if len(self.compile_options) > 0:
+                    compile_opts_str = ', '.join(
+                        [f'{k} = {v}' for k, v in self.compile_options.items()])
+                    self.contents.append(f'#_OPTIONs: {compile_opts_str}'.strip())
 
                 # Simulation results data
                 for line in np.transpose(np.array(data_array, dtype=np.float64)):
