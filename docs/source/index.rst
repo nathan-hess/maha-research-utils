@@ -33,6 +33,7 @@ general-purpose research tasks as well as simplify interaction with the
     :hidden:
 
     usage/tutorials/index
+    usage/simviewer/simviewer
     usage/file_formats/index
     usage/reference/index
 
