@@ -13,6 +13,8 @@ MahaUtils provides a collection of Python tools to support research work at the 
 > **Warning**
 > The MahaUtils source code and documentation refers to the "Maha Multics" software in a number of places.  **The "Maha Multics" software is NOT related to the [Multics operating system](https://en.wikipedia.org/wiki/Multics).**  It is an unrelated fluid simulation software designed for analyzing hydraulic pumps and motors.
 
+Most of the tools in this package were originally separate scripts, written by Nathan Hess during various research work.  They were combined into a single Python package as a way to reduce duplicate code, ensure these "utility scripts" were tested and robust, and make it easier to share the code.
+
 
 ## Installation
 
@@ -30,6 +32,83 @@ For more information about configuring Python and using packages, refer to the o
 Detailed documentation for the MahaUtils project can be found here: https://mahautils.readthedocs.io.
 
 The project documentation contains example code, file format specifications, and detailed API reference.  If you're still not certain how to do something after reading it, feel free to [create a discussion post](https://github.com/nathan-hess/maha-research-utils/discussions/categories/q-a)!
+
+
+## Feature Highlights
+
+### SimViewer GUI
+
+The MahaUtils package includes an interactive tool for plotting and exploring Maha Multics simulation results.  SimViewer runs in a web browser, so it is compatible with nearly any operating system and platform.
+
+Once you've installed the MahaUtils package, simply open a terminal and launch SimViewer by running:
+
+```shell
+$ SimViewer
+```
+
+Here's a demonstration of what it looks like in action:
+
+![Demonstration of plotting Maha Multics simulation results with MahaUtils SimViewer GUI](docs/source/usage/simviewer/images/simviewer_demo.gif)
+
+
+### Reading and Editing Maha Multics Files
+
+MahaUtils includes utilities to make it easier to interact with Maha Multics input and output files.  Rather than interacting with the raw content of the files, MahaUtils provides Python-based interfaces to edit file attributes.  This avoids the need to understand and ensure that your files are correctly formatted -- MahaUtils performs error checks and formats the file behind-the-scenes before writing it.
+
+For instance, here's an example of how to extract data from and edit a Maha Multics simulation results file:
+
+```python
+from mahautils.multics import SimResults
+
+# Read the file
+sim_results = SimResults('simulation_results.txt')
+
+# Print a list of variables in the file
+print(sim_results.variables)
+
+# Extract data from the file, with automatic unit conversions
+position_meters = sim_results.get_data('xBlock', 'm')
+position_inches = sim_results.get_data('xBlock', 'in')
+
+# Edit data in the file
+sim_results.set_description('xBlock', 'Position of the block')
+sim_results.overwrite()
+```
+
+Similar tools are available for interacting with fluid property files, polygon files, and VTK files.
+
+
+### Generating Polygon Geometry
+
+Maha Multics uses "polygon files" to specify geometry and apply boundary conditions in simulations.  It can be tedious to create these files manually and ensure the correct format.
+
+MahaUtils makes this process easier.  It provides methods to create common geometric shapes and add them to polygon files, and then plot the file to ensure the geometry matches your expectations.
+
+```python
+from mahautils.multics import PolygonFile
+from mahautils.shapes import Circle, Layer
+
+# Initialize the file
+polygon_file = PolygonFile()
+
+polygon_file.polygon_merge_method = 0
+polygon_file.time_extrap_method = 0
+polygon_file.time_units = 's'
+
+# Add a translating circle
+for i in range(25):
+    polygon_file.polygon_data[i] = Layer(
+        Circle(center=(i, 0), radius=4, units='mm',
+               default_num_coordinates=1000),
+        color='blue',
+    )
+
+# Preview the polygon file geometry
+polygon_file.plot()
+
+# Write to a file
+polygon_file.write('my_polygon_file.txt')
+```
 
 
 ## Acknowledgments
