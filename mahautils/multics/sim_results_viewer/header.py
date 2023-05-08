@@ -5,7 +5,7 @@
 import dash                              # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 
-from .constants import GUI_SHORT_NAME, PROJECT_NAME, VERSION
+from .constants import GUI_SHORT_NAME, PROJECT_NAME
 
 button_style = {
     'borderRadius': '8px',

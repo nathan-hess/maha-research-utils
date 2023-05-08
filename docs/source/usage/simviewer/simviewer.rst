@@ -3,6 +3,7 @@
 .. spelling:word-list::
 
     SimViewer
+    ve
 
 
 SimViewer GUI
