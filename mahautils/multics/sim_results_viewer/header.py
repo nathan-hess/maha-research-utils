@@ -5,7 +5,7 @@
 import dash                              # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 
-from .constants import GUI_SHORT_NAME, PROJECT_NAME, VERSION
+from .constants import GUI_SHORT_NAME, PROJECT_NAME
 
 button_style = {
     'borderRadius': '8px',
@@ -23,7 +23,7 @@ def app_header():
             # Left side of header: app name
             dbc.Row([
                 dash.html.H1(
-                    f'{PROJECT_NAME} {GUI_SHORT_NAME} v{VERSION}',
+                    f'{PROJECT_NAME} {GUI_SHORT_NAME}',
                     style={
                         'fontSize': 24,
                         'marginLeft': '10px',

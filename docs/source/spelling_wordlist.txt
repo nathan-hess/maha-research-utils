@@ -23,6 +23,7 @@ Matplotlib
 megapascal
 megapascals
 multiline
+overdamped
 parsers
 Plotly
 piecewise
@@ -33,5 +34,6 @@ rescaled
 rescaling
 subclasses
 Subclasses
+underdamped
 Whitespace
 whitespace
