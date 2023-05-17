@@ -48,7 +48,7 @@ $ SimViewer
 
 Here's a demonstration of what it looks like in action:
 
-![Demonstration of plotting Maha Multics simulation results with MahaUtils SimViewer GUI](docs/source/usage/simviewer/images/simviewer_demo.gif)
+![](https://raw.githubusercontent.com/nathan-hess/maha-research-utils/main/docs/source/usage/simviewer/images/simviewer_demo.gif)
 
 
 ### Reading and Editing Maha Multics Files
