@@ -46,9 +46,17 @@ Once you've installed the MahaUtils package, simply open a terminal and launch S
 $ SimViewer
 ```
 
-Here's a demonstration of what it looks like in action:
+> :test_tube: **Try It Out!**
+>
+> Want to give the GUI a try?  The quickest way is to launch a GitHub Codespaces instance:
+>
+> [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/nathan-hess/maha-research-utils)
+>
+> If you need some files to experiment with, give these a try: [`sim_results_underdamped.txt`](https://github.com/nathan-hess/maha-research-utils/blob/main/demo_files/sim_results_underdamped.txt) and [`sim_results_overdamped.txt`](https://github.com/nathan-hess/maha-research-utils/blob/main/demo_files/sim_results_overdamped.txt)
 
-![Demonstration of plotting Maha Multics simulation results with MahaUtils SimViewer GUI](docs/source/usage/simviewer/images/simviewer_demo.gif)
+The primary aim of the SimViewer GUI is to provide a visually-appealing, configurable interface for quickly reviewing and comparing simulation results, with sufficient control over plot styling to generate and export presentation-quality plots.  Here's a demonstration of what it looks like in action:
+
+![](https://raw.githubusercontent.com/nathan-hess/maha-research-utils/main/docs/source/usage/simviewer/images/simviewer_demo.gif)
 
 
 ### Reading and Editing Maha Multics Files
