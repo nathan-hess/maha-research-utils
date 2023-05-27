@@ -54,7 +54,7 @@ $ SimViewer
 >
 > If you need some files to experiment with, give these a try: [`sim_results_underdamped.txt`](https://github.com/nathan-hess/maha-research-utils/blob/main/demo_files/sim_results_underdamped.txt) and [`sim_results_overdamped.txt`](https://github.com/nathan-hess/maha-research-utils/blob/main/demo_files/sim_results_overdamped.txt)
 
-Here's a demonstration of what it looks like in action:
+The primary aim of the SimViewer GUI is to provide a visually-appealing, configurable interface for quickly reviewing and comparing simulation results, with sufficient control over plot styling to generate and export presentation-quality plots.  Here's a demonstration of what it looks like in action:
 
 ![](https://raw.githubusercontent.com/nathan-hess/maha-research-utils/main/docs/source/usage/simviewer/images/simviewer_demo.gif)
 
