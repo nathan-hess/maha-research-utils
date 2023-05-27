@@ -173,7 +173,7 @@ and :math:`t = 2\ ms` on the same plot, we could use the following commands:
 >>> fig.show()  # doctest: +SKIP
 
 The result should look similar to this, where the polygon data for
-:math:`t = 0\ ms` is red and the data for :math:`t = 2\ ms` is blue:
+:math:`t = 0\ ms` is blue and the data for :math:`t = 2\ ms` is red:
 
 .. figure:: ./images/polygon_file_read_t0_t2.png
 
