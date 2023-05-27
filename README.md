@@ -46,6 +46,14 @@ Once you've installed the MahaUtils package, simply open a terminal and launch S
 $ SimViewer
 ```
 
+> :test_tube: **Try It Out!**
+>
+> Want to give the GUI a try?  The quickest way is to launch a GitHub Codespaces instance:
+>
+> [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/nathan-hess/maha-research-utils)
+>
+> If you need some files to experiment with, give these a try: [`sim_results_underdamped.txt`](https://github.com/nathan-hess/maha-research-utils/blob/main/demo_files/sim_results_underdamped.txt) and [`sim_results_overdamped.txt`](https://github.com/nathan-hess/maha-research-utils/blob/main/demo_files/sim_results_overdamped.txt)
+
 Here's a demonstration of what it looks like in action:
 
 ![](https://raw.githubusercontent.com/nathan-hess/maha-research-utils/main/docs/source/usage/simviewer/images/simviewer_demo.gif)
