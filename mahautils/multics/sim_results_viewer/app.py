@@ -514,7 +514,11 @@ def update_plot_config(
 
         # Plot configuration settings for x-axis
         if x_variable != config_x['variable']:
-            x_units = None
+            if x_variable in ('', None):
+                x_units = None
+            else:
+                x_units = (_sim_results_files[list(_sim_results_files.keys())[0]]
+                           .get_units(x_variable))
 
         config_x['variable'] = x_variable
         config_x['units'] = x_units
@@ -542,7 +546,11 @@ def update_plot_config(
                 trace = config_y['axes'][y_axis_idx]['traces'][trace_idx]
 
                 if trace_variable != trace['variable']:
-                    trace_units = None
+                    if trace_variable in ('', None):
+                        trace_units = None
+                    else:
+                        trace_units = (_sim_results_files[trace_file]
+                                       .get_units(trace_variable))
 
                 trace['name'] = trace_name
                 trace['file'] = trace_file
