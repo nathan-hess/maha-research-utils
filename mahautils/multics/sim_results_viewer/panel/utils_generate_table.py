@@ -25,14 +25,39 @@ def generate_file_table_body(sim_results_files: SIM_RESULTS_DICT_T,
                              metadata: Dict[str, Dict[str, Any]]):
     """Populates the simulation results file table with all currently uploaded
     simulation results files"""
+    description_style = {
+        'fontSize': 12,
+        'marginTop': 0,
+        'marginBottom': 0,
+        'paddingTop': 0,
+        'paddingBottom': 0,
+    }
+
     contents = []
     for _, key in enumerate(sim_results_files.keys()):
+        display_metadata = []
+        if (title := sim_results_files[key].title) is not None:
+            display_metadata.append(
+                dash.html.P(
+                    dash.html.I(f'Title: {title}'),
+                    style=description_style,
+                )
+            )
+
+        if len(display_metadata) == 0:
+            file_id_description = dash.html.H6(key)
+        else:
+            file_id_description = dash.html.Details(
+                [dash.html.Summary(key, style={'marginBottom': 5})]
+                + display_metadata
+            )
+
         contents.append(dash.html.Tr([
             dash.html.Td(dbc.Switch(
                 value=metadata[key]['enabled'],
                 id={'component': 'file-table-switch', 'key': key},
             )),
-            dash.html.Td(dash.html.H6(key)),
+            dash.html.Td(file_id_description),
             dash.html.Td(dbc.Button(
                 dash.html.I(className='bi bi-trash'),
                 color='danger',
