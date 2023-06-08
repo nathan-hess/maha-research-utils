@@ -274,6 +274,95 @@ class Test_SimResults_Parse(Test_SimResults):
             SimResults(SAMPLE_FILES_DIR / 'simulation_results_08.txt')
 
 
+class Test_SimResults_RemoveAsteriskVars(Test_SimResults):
+    def test_replace_variables(self):
+        # Verifies that variables with an asterisk are removed prior to
+        # parsing simulation results files
+        self.sim_results_blank.set_contents(
+            [
+                'printDict{',
+                '    @firstVar_** [m]',
+                '    @secondVar [m]',
+                '    ?thirdVar_** [m]',
+                '    @fourthVar_*(1,5) [m]',
+                '    @fifthVar_*(1,5) [m]',
+                '    ?sixthVar [m]',
+                '    ?seventhVar_**.*(1,2)data [m]',
+                '    ?eighthVar [m]',
+                '}',
+                ('$firstVar_1::$firstVar_2::$secondVar::$fourthVar_3::$fourthVar_60::'
+                 '$fourthVar_7::$seventhVar_12.3data::$seventhVar_3.142data::'),
+            ],
+            trailing_newline=True,
+        )
+
+        self.sim_results_blank._remove_vars_with_asterisk()
+
+        self.assertListEqual(
+            self.sim_results_blank.contents,
+            [
+                'printDict{',
+                '    @firstVar_1 [m]',
+                '    @firstVar_2 [m]',
+                '    @secondVar [m]',
+                '    @fourthVar_3 [m]',
+                '    @fourthVar_60 [m]',
+                '    @fourthVar_7 [m]',
+                '    ?sixthVar [m]',
+                '    ?seventhVar_12.3data [m]',
+                '    ?seventhVar_3.142data [m]',
+                '    ?eighthVar [m]',
+                '}',
+                ('$firstVar_1::$firstVar_2::$secondVar::$fourthVar_3::$fourthVar_60::'
+                 '$fourthVar_7::$seventhVar_12.3data::$seventhVar_3.142data::'),
+            ],
+        )
+
+    def test_replace_variables_first_line(self):
+        # Verifies that variables with an asterisk are removed prior to
+        # parsing simulation results files
+        self.sim_results_blank.set_contents(
+            [
+                'printDict{@firstVar_** [m]',
+                '    @secondVar [m]',
+                '    ?thirdVar_** [m]',
+                '}',
+                '$firstVar_1::$firstVar_2::$secondVar::',
+            ],
+            trailing_newline=True,
+        )
+
+        self.sim_results_blank._remove_vars_with_asterisk()
+
+        self.assertListEqual(
+            self.sim_results_blank.contents,
+            [
+                'printDict{',
+                '    @firstVar_1 [m]',
+                '    @firstVar_2 [m]',
+                '    @secondVar [m]',
+                '}',
+                '$firstVar_1::$firstVar_2::$secondVar::',
+            ],
+        )
+
+    def test_missing_sim_results(self):
+        # Verifies that if variables with an asterisk are present in the
+        # "printDict" section but no simulation results data are present, an
+        # exception is thrown
+        self.sim_results_blank.set_contents(
+            [
+                'printDict{',
+                '    @myVar** [m]',
+                '}',
+            ],
+            trailing_newline=True,
+        )
+
+        with self.assertRaises(SimResultsDataNotFoundError):
+            self.sim_results_blank.parse()
+
+
 class Test_SimResults_ReadProperties(Test_SimResults):
     def setUp(self) -> None:
         super().setUp()
