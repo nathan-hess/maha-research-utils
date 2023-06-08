@@ -169,6 +169,9 @@ class SimResults(MahaMulticsConfigFile):
         """
         super().__init__(path=path, unit_converter=unit_converter)
 
+        self.__printdict_begin_regex = r'^\s*printDict\s*{\s*'
+        self.__printdict_end_regex = r'^\s*}\s*$'
+
         # Initialize variables
         self._compile_options: Dict[str, str] = {}
         self._data: Dictionary[str, _SimResultsEntry] = Dictionary(
@@ -268,6 +271,88 @@ class SimResults(MahaMulticsConfigFile):
                     representation += '\n'.join(var_str) + '\n'
 
         return representation.strip('\n')
+
+    def _remove_vars_with_asterisk(self) -> None:
+        # Extract names of all simulation results variables whose data are
+        # included in the file
+        data_vars: List[str] = []
+        i = 0
+        while i < len(self.contents):
+            if (line := self.contents[i]).startswith('$'):
+                data_vars = [var.split(':')[0] for var in line.split('$')[1:]]
+                break
+
+            i += 1
+
+        i = 0
+        while i < len(self.contents):
+            line = self.contents[i]
+
+            if (
+                groups := re.search(self.__printdict_begin_regex + r'(.*)', line)
+            ) is not None:
+                if (line := groups.groups()[-1]) != '':
+                    self.contents[i] = 'printDict{'
+                    self.contents.insert(i + 1, '    ' + line)
+
+                i += 1
+                line = self.contents[i]
+
+                while not re.match(self.__printdict_end_regex, line):
+                    # Identify problematic keys (with asterisks)
+                    line_groups = re.search(
+                        r'^\s*([@?])\s*([\w\d\._\*\(\,\)]+)\s+\[([^\s]+)\]\s*$',
+                        line)
+
+                    # If key with asterisk was found, remove it and replace
+                    # with simulation results variables
+                    if line_groups is not None:
+                        asterisk_key = line_groups.group(2)
+
+                        if '*' in asterisk_key:
+                            if len(data_vars) == 0:
+                                raise SimResultsDataNotFoundError(
+                                    'Simulation results files with asterisks (*) '
+                                    'in variable names can only be read if the '
+                                    'line beginning with "$" providing detailed '
+                                    'variable names and descriptions is present')
+
+                            # Find any matching simulation results variables
+                            asterisk_seqs = (
+                                re.findall(r'\*\(\d+\,\d+\)', asterisk_key)
+                                + ['**']
+                            )
+
+                            key_regex = asterisk_key
+                            for seq in asterisk_seqs:
+                                key_regex = key_regex.replace(seq, '*')
+
+                            key_regex = re.escape(key_regex).replace(r'\*', r'\d+')
+
+                            matching_keys = []
+                            for var in data_vars:
+                                if re.match(key_regex, var):
+                                    matching_keys.append(var)
+
+                            matching_keys.reverse()
+
+                            # Add matching simulation results variables to file
+                            del self.contents[i]
+
+                            for var in matching_keys:
+                                self.contents.insert(
+                                    i, line.replace(asterisk_key, var))
+
+                            i += len(matching_keys) - 1
+
+                    i += 1
+                    line = self.contents[i]
+
+                # Coverage.py is unable to detect 'break' statements
+                # https://github.com/nedbat/coveragepy/issues/772
+                break  # pragma: no cover
+
+            i += 1
 
     def append(self, key: str, required: bool, units: str,
                data: Optional[
@@ -517,11 +602,13 @@ class SimResults(MahaMulticsConfigFile):
             remove_blank_lines = True
         )
 
+        self._remove_vars_with_asterisk()
+
         # Extract list of variables in "printDict"
         sim_results_vars, comments, _, num_sec = self.extract_section_by_keyword(
             section_label      = 'printDict',
-            begin_regex        = r'^\s*printDict\s*{\s*',
-            end_regex          = r'^\s*}\s*$',
+            begin_regex        = self.__printdict_begin_regex,
+            end_regex          = self.__printdict_end_regex,
             section_line_regex = r'^\s*([@?])\s*([\w\d\._]+)\s+\[([^\s]+)\]\s*$',
             max_sections       = 1,
         )
