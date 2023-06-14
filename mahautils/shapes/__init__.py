@@ -9,6 +9,7 @@ locations for pumps and motors.
 from .canvas import Canvas
 from .geometry import (
     CartesianPoint2D,
+    CartesianPoint3D,
     Circle,
     ClosedShape2D,
     Geometry,
