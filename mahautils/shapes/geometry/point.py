@@ -17,6 +17,9 @@ from .geometry import Geometry
 # Type alias for a list or tuple containing two floating-point numbers
 Array_Float2 = Union[List[float], Tuple[float, float], np.ndarray]
 
+# Type alias for a list or tuple containing three floating-point numbers
+Array_Float3 = Union[List[float], Tuple[float, float, float], np.ndarray]
+
 
 class Point(Geometry):
     """Base class representing an arbitrary point in a space of an arbitrary

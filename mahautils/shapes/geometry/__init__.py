@@ -10,6 +10,7 @@ from .circle import Circle
 from .geometry import Geometry
 from .point import Point
 from .point2D import CartesianPoint2D
+from .point3D import CartesianPoint3D
 from .polygon import Polygon
 from .shape import Shape2D
 from .shape_open_closed import ClosedShape2D, OpenShape2D
