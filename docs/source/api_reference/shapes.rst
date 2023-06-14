@@ -21,7 +21,7 @@ The classes below can be used to specify and generate geometric shapes.  These
 objects provide the "backend" of the :py:mod:`mahautils.shapes` module,
 and they are used by other tools in this module when generating geometry.
 
-.. inheritance-diagram:: Geometry Point Shape2D ClosedShape2D OpenShape2D CartesianPoint2D Circle Polygon
+.. inheritance-diagram:: Geometry Point Shape2D ClosedShape2D OpenShape2D CartesianPoint2D Circle Polygon CartesianPoint3D
     :parts: 1
 
 |
@@ -56,6 +56,16 @@ Abstract Geometry
     CartesianPoint2D
     Circle
     Polygon
+
+
+3D Geometry
+^^^^^^^^^^^
+
+.. autosummary::
+    :toctree: ./api
+    :template: ../_templates/api_reference_class_template.rst
+
+    CartesianPoint3D
 
 
 Layers and Canvases
