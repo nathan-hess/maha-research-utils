@@ -5,6 +5,7 @@ import numpy as np
 
 from mahautils.shapes import (
     CartesianPoint2D,
+    CartesianPoint3D,
     Point,
 )
 from tests import max_array_diff, TEST_FLOAT_TOLERANCE
@@ -336,3 +337,150 @@ class Test_CartesianPoint2D_Transform(Test_CartesianPoint2D):
             point = CartesianPoint2D(1.2, 3.5)
             point.translate(x=6, y=-3.5)
             self.assertEqual(point, CartesianPoint2D(7.2, 0))
+
+
+class Test_CartesianPoint3D(unittest.TestCase):
+    def setUp(self):
+        self.pnt1 = CartesianPoint3D(3.09, -4, 9.5)
+
+        self.pnt2 = CartesianPoint3D(83.3, 494.82, 449.5)
+        self.pnt1_pnt2_distance = 669.9664443089669
+
+
+class Test_CartesianPoint3D_Properties(Test_CartesianPoint3D):
+    def test_eq(self):
+        # Verify that equality between `CartesianPoint3D` objects functions as expected
+        with self.subTest(case='same_point'):
+            self.assertEqual(self.pnt1, self.pnt1)
+            self.assertEqual(self.pnt2, self.pnt2)
+
+        with self.subTest(case='different_values'):
+            self.assertNotEqual(CartesianPoint3D(-1.23, 45, 6), CartesianPoint3D(-1.24, 45, 6))
+
+        with self.subTest(case='different_type'):
+            (point := Point())._coordinates = (1, 2, 3)
+            self.assertNotEqual(point, CartesianPoint3D(1, 2, 3))
+
+    def test_get_coordinates(self):
+        # Verifies that point coordinates are retrieved correctly
+        self.assertTupleEqual(self.pnt1.coordinates, (3.09, -4, 9.5))
+
+    def test_set_coordinates(self):
+        # Verifies that "coordinates" attribute can be set correctly
+        with self.subTest(type='CartesianPoint3D'):
+            (pnt1 := CartesianPoint3D()).coordinates = self.pnt1
+            self.assertTupleEqual(pnt1._coordinates, (3.09, -4, 9.5))
+
+        with self.subTest(type='tuple'):
+            (pnt2 := CartesianPoint3D()).coordinates = (5, 6, 7)
+            self.assertTupleEqual(pnt2._coordinates, (5, 6, 7))
+
+        with self.subTest(type='list'):
+            (pnt3 := CartesianPoint3D()).coordinates = [7.8, -9.12, 13.14]
+            self.assertTupleEqual(pnt3._coordinates, (7.8, -9.12, 13.14))
+
+        with self.subTest(type='attributes'):
+            (pnt4 := CartesianPoint3D()).coordinates = (0, 0, 0)
+            pnt4.x = 0.24
+            pnt4.y = -6.1
+            pnt4.z = 5.2
+            self.assertTupleEqual(pnt4._coordinates, (0.24, -6.1, 5.2))
+
+    def test_set_coordinates_invalid(self):
+        # Verifies that appropriate errors are thrown if attempting to set
+        # point coordinates to an invalid value
+        with self.subTest(issue='no_length_attr'):
+            with self.assertRaises(ValueError):
+                CartesianPoint3D().coordinates = 12.345
+
+        with self.subTest(issue='length_not_3'):
+            with self.assertRaises(ValueError):
+                CartesianPoint3D().coordinates = (1, 2)
+
+        with self.subTest(issue='not_numeric'):
+            with self.assertRaises(ValueError):
+                CartesianPoint3D().coordinates = ('abc', 123, 456)
+
+    def test_initialize(self):
+        # Verifies that the `CartesianPoint3D` constructor correctly initializes
+        # point location using different input formats
+        with self.subTest(arg='none'):
+            self.assertTupleEqual(CartesianPoint3D()._coordinates, ())
+            self.assertTupleEqual(CartesianPoint3D(w=2, v=4)._coordinates, ())
+
+        with self.subTest(arg='positional'):
+            with self.subTest(type='float'):
+                self.assertTupleEqual(CartesianPoint3D(-1, 2.3, 4)._coordinates, (-1.0, 2.3, 4))
+
+            with self.subTest(type='tuple'):
+                self.assertTupleEqual(CartesianPoint3D((-1, 2.3, 4))._coordinates, (-1.0, 2.3, 4))
+
+            with self.subTest(type='list'):
+                self.assertTupleEqual(CartesianPoint3D([-1, 2.3, 4])._coordinates, (-1.0, 2.3, 4))
+
+            with self.subTest(type='np.ndarray'):
+                self.assertTupleEqual(CartesianPoint3D(np.array([-1, 2.3, 4]))._coordinates, (-1.0, 2.3, 4))
+
+        with self.subTest(arg='keyword'):
+            self.assertTupleEqual(CartesianPoint3D(x=-1, y=2.3, z=4)._coordinates, (-1.0, 2.3, 4))
+
+    def test_initialize_invalid(self):
+        # Verifies that the `CartesianPoint3D` constructor throws an error if
+        # provided invalid arguments
+        with self.subTest(arg='positional'):
+            with self.assertRaises(ValueError):
+                CartesianPoint3D(1, 2, 3, 4)
+
+            with self.assertRaises(ValueError):
+                CartesianPoint3D(1, 2)
+
+        with self.subTest(arg='keyword'):
+            with self.assertRaises(TypeError):
+                CartesianPoint3D(x=1)
+
+            with self.assertRaises(TypeError):
+                CartesianPoint3D(x=1, z=2)
+
+            with self.assertRaises(TypeError):
+                CartesianPoint3D(y=1)
+
+            with self.assertRaises(TypeError):
+                CartesianPoint3D(y=1, z=2)
+
+        with self.subTest(arg='both'):
+            with self.assertRaises(TypeError):
+                CartesianPoint3D(0, 1, 2, x=3, y=4, z=5)
+
+    def test_get_x(self):
+        # Verifies that the x-coordinate of a point is retrieved correctly
+        self.assertEqual(self.pnt1.x, 3.09)
+
+    def test_get_y(self):
+        # Verifies that the y-coordinate of a point is retrieved correctly
+        self.assertEqual(self.pnt1.y, -4)
+
+    def test_get_z(self):
+        # Verifies that the z-coordinate of a point is retrieved correctly
+        self.assertEqual(self.pnt1.z, 9.5)
+
+
+class Test_CartesianPoint3D_Distance(Test_CartesianPoint3D):
+    def test_distance_to(self):
+        # Verifies that the distance between two points is calculated correctly
+        with self.subTest(type='self'):
+            self.assertAlmostEqual(self.pnt1.distance_to(self.pnt1), 0.0)
+            self.assertAlmostEqual(self.pnt2.distance_to(self.pnt2), 0.0)
+
+        with self.subTest(type='CartesianPoint3D'):
+            self.assertAlmostEqual(self.pnt1.distance_to(self.pnt2),
+                                   self.pnt1_pnt2_distance)
+            self.assertAlmostEqual(self.pnt2.distance_to(self.pnt1),
+                                   self.pnt1_pnt2_distance)
+
+        with self.subTest(type='tuple'):
+            self.assertAlmostEqual(self.pnt1.distance_to((83.3, 494.82, 449.5)),
+                                   self.pnt1_pnt2_distance)
+
+        with self.subTest(type='list'):
+            self.assertAlmostEqual(self.pnt1.distance_to([83.3, 494.82, 449.5]),
+                                   self.pnt1_pnt2_distance)
