@@ -67,11 +67,9 @@ install the package on your system, you can use
 `GitHub Codespaces <https://github.com/features/codespaces>`__ to test the
 GUI.  Note that a GitHub account is required.
 
-.. button-link:: https://codespaces.new/nathan-hess/maha-research-utils
-    :color: dark
-    :tooltip: Launch a GitHub Codespaces instance containing the MahaUtils repository
+.. raw:: html
 
-    Open in GitHub Codespaces
+    <a href='https://codespaces.new/nathan-hess/maha-research-utils'><img src='https://github.com/codespaces/badge.svg' alt='Open in GitHub Codespaces' style='max-width: 100%;'></a>
 
 
 Command-Line Options
