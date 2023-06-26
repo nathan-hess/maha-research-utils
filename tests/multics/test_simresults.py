@@ -388,23 +388,30 @@ class Test_SimResults_ReadProperties(Test_SimResults):
         with self.subTest(file_read=False):
             self.assertEqual(SimResults().num_time_steps, 0)
 
-    def test_title(self):
-        # Verifies that title is read correctly from simulation results file
-        with self.subTest(title_present=True):
-            self.assertEqual(self.sim_results_01.title, 'Sample simulation Results 1')
+    def test_metadata(self):
+        # Verifies that metadata fields are read correctly from simulation results file
+        attributes = ['title', 'maha_multics_version', 'maha_multics_commit', 'sim_version']
+        values = ['Sample simulation Results 1', 'v4116.7.30', 'fb8aa721e23fb7b0c751ec31c258cdc3f85a4c31', 'v8.2.8']
 
-        with self.subTest(title_present=False):
-            self.assertIsNone(self.sim_results_02.title)
+        for attr, value in zip(attributes, values):
+            with self.subTest(field=attr):
+                with self.subTest(attr_present=True):
+                    self.assertEqual(getattr(self.sim_results_01, attr), value)
 
-    def test_set_title(self):
-        # Verifies that the title can be changed
-        with self.subTest(valid=True):
-            self.sim_results_01.title = 'my New Title'
-            self.assertEqual(self.sim_results_01.title, 'my New Title')
+                with self.subTest(attr_present=False):
+                    self.assertIsNone(getattr(self.sim_results_02, attr))
 
-        with self.subTest(valid=False):
-            with self.assertRaises(TypeError):
-                self.sim_results_01.title = 75992
+    def test_set_metadata(self):
+        # Verifies that metadata fields can be changed
+        for attr in ['title', 'maha_multics_version', 'maha_multics_commit', 'sim_version']:
+            with self.subTest(field=attr):
+                with self.subTest(valid=True):
+                    setattr(self.sim_results_01, attr, 'my New Title')
+                    self.assertEqual(getattr(self.sim_results_01, attr), 'my New Title')
+
+                with self.subTest(valid=False):
+                    with self.assertRaises(TypeError):
+                        setattr(self.sim_results_01, attr, 75992)
 
     def test_variables(self):
         # Verifies that "variables" attribute functions correctly
@@ -876,6 +883,9 @@ class Test_SimResults_UpdateContents(Test_SimResults):
                 '    # Torque',
                 '    ?MxBody      [N*m]',
                 '}',
+                '# Multics Version: v4116.7.30',
+                '# Multics Git Commit Hash: fb8aa721e23fb7b0c751ec31c258cdc3f85a4c31',
+                '# Main Sketch Version: v8.2.8',
                 ('$t:s:Sim Time$xBody:m:Body casing frame position in x'
                  '$yBody:mm:Body casing frame position in y$zBody:m:$FxSpring:N:'
                  '$FySpring:N:Spring Force y$FzSpring:N:Spring Force z'),
@@ -923,6 +933,9 @@ class Test_SimResults_UpdateContents(Test_SimResults):
                 '    # Torque',
                 '    ?MxBody      [N*m]',
                 '}',
+                '# Multics Version: v4116.7.30',
+                '# Multics Git Commit Hash: fb8aa721e23fb7b0c751ec31c258cdc3f85a4c31',
+                '# Main Sketch Version: v8.2.8',
             ]
         )
 
@@ -956,6 +969,9 @@ class Test_SimResults_UpdateContents(Test_SimResults):
                 '    # Torque',
                 '    ?MxBody      [N*m]',
                 '}',
+                '# Multics Version: v4116.7.30',
+                '# Multics Git Commit Hash: fb8aa721e23fb7b0c751ec31c258cdc3f85a4c31',
+                '# Main Sketch Version: v8.2.8',
                 ('$t:s:Sim Time$xBody:m:Body casing frame position in x'
                  '$yBody:mm:Body casing frame position in y$zBody:m:$FxSpring:N:'
                  '$FySpring:N:Spring Force y$FzSpring:N:Spring Force z'),
