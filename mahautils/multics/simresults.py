@@ -172,13 +172,20 @@ class SimResults(MahaMulticsConfigFile):
         self.__printdict_begin_regex = r'^\s*printDict\s*{\s*'
         self.__printdict_end_regex = r'^\s*}\s*$'
 
+        self.__maha_multics_version_identifier = 'Multics Version'
+        self.__maha_multics_commit_identifier = 'Multics Git Commit Hash'
+        self.__sim_version_identifier = 'Main Sketch Version'
+
         # Initialize variables
         self._compile_options: Dict[str, str] = {}
         self._data: Dictionary[str, _SimResultsEntry] = Dictionary(
             custom_except_class=SimResultsKeyError,
             custom_except_msg='Variable "%s" not found in simulation results file'
         )
+        self._maha_multics_commit: Union[str, None] = None
+        self._maha_multics_version: Union[str, None] = None
         self._num_time_steps: int = 0
+        self._sim_version: Union[str, None] = None
         self._title: Union[str, None] = None
         self.trailing_newline = True
 
@@ -217,10 +224,52 @@ class SimResults(MahaMulticsConfigFile):
         return self._compile_options
 
     @property
+    def maha_multics_commit(self) -> Union[str, None]:
+        """The Git commit hash of the Maha Multics software with which the simulation
+        was compiled"""
+        return self._maha_multics_commit
+
+    @maha_multics_commit.setter
+    def maha_multics_commit(self, maha_multics_commit: Union[str, None]) -> None:
+        if not isinstance(maha_multics_commit, (str, type(None))):
+            raise TypeError('Argument "maha_multics_commit" must be of type '
+                            '"str" or "None"')
+
+        self._maha_multics_commit = maha_multics_commit
+
+    @property
+    def maha_multics_version(self) -> Union[str, None]:
+        """The version of the Maha Multics software with which the simulation
+        was compiled"""
+        return self._maha_multics_version
+
+    @maha_multics_version.setter
+    def maha_multics_version(self, maha_multics_version: Union[str, None]) -> None:
+        if not isinstance(maha_multics_version, (str, type(None))):
+            raise TypeError('Argument "maha_multics_version" must be of type '
+                            '"str" or "None"')
+
+        self._maha_multics_version = maha_multics_version
+
+    @property
     def num_time_steps(self) -> int:
         """The number of time steps in the data array of the simulation
         results file"""
         return self._num_time_steps
+
+    @property
+    def sim_version(self) -> Union[str, None]:
+        """The simulation version of the ``main.cpp`` file which was used to
+        generate the data in the simulation results file"""
+        return self._sim_version
+
+    @sim_version.setter
+    def sim_version(self, sim_version: Union[str, None]) -> None:
+        if not isinstance(sim_version, (str, type(None))):
+            raise TypeError('Argument "sim_version" must be of type '
+                            '"str" or "None"')
+
+        self._sim_version = sim_version
 
     @property
     def title(self) -> Union[str, None]:
@@ -230,7 +279,7 @@ class SimResults(MahaMulticsConfigFile):
     @title.setter
     def title(self, title: Union[str, None]) -> None:
         if not isinstance(title, (str, type(None))):
-            raise TypeError('Argument "title" must be of type "str"')
+            raise TypeError('Argument "title" must be of type "str" or "None"')
 
         self._title = title
 
@@ -271,6 +320,13 @@ class SimResults(MahaMulticsConfigFile):
                     representation += '\n'.join(var_str) + '\n'
 
         return representation.strip('\n')
+
+    def __parse_metadata_comment(self, identifier: str) -> Union[str, None]:
+        for line in self.contents:
+            if re.match(r'^\s*#\s*' + re.escape(identifier) + r'\:', line):
+                return line.split(f'{identifier}:', maxsplit=1)[1].strip()
+
+        return None
 
     def _remove_vars_with_asterisk(self) -> None:
         # Extract names of all simulation results variables whose data are
@@ -576,12 +632,13 @@ class SimResults(MahaMulticsConfigFile):
         original_contents = copy.deepcopy(self.contents)
 
         # Extract title
-        for line in self.contents:
-            if re.match(r'^\s*#\s*Title', line):
-                self.title = line.split('Title:', maxsplit=1)[1].strip()
-                break
-
-            self.title = None
+        self.title = self.__parse_metadata_comment('Title')
+        self.maha_multics_version \
+            = self.__parse_metadata_comment(self.__maha_multics_version_identifier)
+        self.maha_multics_commit \
+            = self.__parse_metadata_comment(self.__maha_multics_commit_identifier)
+        self.sim_version \
+            = self.__parse_metadata_comment(self.__sim_version_identifier)
 
         # Extract options with which Maha Multics software was compiled
         for line in self.contents:
@@ -1068,6 +1125,19 @@ class SimResults(MahaMulticsConfigFile):
             self.contents.append('')
 
         self.contents[-1] = '}'
+
+        # Write additional metadata
+        if self.maha_multics_version is not None:
+            self.contents.append(f'# {self.__maha_multics_version_identifier}: '
+                                 f'{self.maha_multics_version}')
+
+        if self.maha_multics_commit is not None:
+            self.contents.append(f'# {self.__maha_multics_commit_identifier}: '
+                                 f'{self.maha_multics_commit}')
+
+        if self.sim_version is not None:
+            self.contents.append(f'# {self.__sim_version_identifier}: '
+                                 f'{self.sim_version}')
 
         # Write simulation data, if available
         if add_sim_data:

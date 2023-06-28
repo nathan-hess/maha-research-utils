@@ -21,7 +21,9 @@ printDict{
     # Torque
     ?MxBody     [N*m]
 }
-
+# Multics Version: v4116.7.30
+# Multics Git Commit Hash: fb8aa721e23fb7b0c751ec31c258cdc3f85a4c31
+# Main Sketch Version: v8.2.8
 $t:s:Sim Time$xBody:m:Body casing frame position in x$yBody:mm:Body casing frame position in y$zBody:m:$FxSpring:N:$FySpring:N:Spring Force y$FzSpring:N:Spring Force z
 #_OPTIONs: THERMAL = 0, CAV = 0, FFI = 1, MASS_CON = 0, INTERP = 1
 0       3.4     4.2   2.1    -1000    933   0
