@@ -67,7 +67,9 @@ def generate_file_table_body(sim_results_files: SIM_RESULTS_DICT_T,
         maha_multics_version = sim_results_files[key].maha_multics_version
         maha_multics_commit = sim_results_files[key].maha_multics_commit
         if (maha_multics_version is not None) or (maha_multics_commit is not None):
-            display_metadata.append(dash.html.P())
+            if (title is not None) or (sim_version is not None):
+                display_metadata.append(dash.html.P())
+
             display_metadata.append(
                 dash.html.B('Maha Multics Metadata',
                             style=description_header_style)
