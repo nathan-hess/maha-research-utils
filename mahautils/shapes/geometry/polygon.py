@@ -11,7 +11,7 @@ from typing import List, Optional, Tuple, Union
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import matplotlib.path  # type: ignore
 import numpy as np
-import shapely
+import shapely          # type: ignore
 
 from .point import Array_Float2, Point
 from .point2D import CartesianPoint2D
