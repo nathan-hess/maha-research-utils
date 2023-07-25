@@ -65,6 +65,10 @@ class Test_Circle(unittest.TestCase):
             "<class 'mahautils.shapes.geometry.circle.Circle'> center=(1.2, 3.5), radius=5.0"
         )
 
+    def test_area(self):
+        # Verifies that the circle area is calculated correctly
+        self.assertAlmostEqual(self.circle.area, 78.53981633974483)
+
     def test_set_center(self):
         # Verifies that circle center point can be set correctly
         with self.subTest(method='constructor'):

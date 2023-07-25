@@ -136,6 +136,11 @@ class Circle(ClosedShape2D):
         return self.__repr__()
 
     @property
+    def area(self) -> float:
+        """The area of the circle"""
+        return math.pi * (self.radius**2)
+
+    @property
     def center(self) -> CartesianPoint2D:
         """The center of the circle"""
         return self._center
