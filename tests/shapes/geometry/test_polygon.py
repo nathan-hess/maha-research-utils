@@ -18,6 +18,16 @@ class Test_Polygon(unittest.TestCase):
         # Polygon with points ordered clockwise
         self.polygon_cw = Polygon(list(reversed(self.vertices)))
 
+    def test_area(self):
+        # Verifies that the polygon area is computed correctly
+        with self.subTest(shape='triangle'):
+            self.assertEqual(Polygon([[0, 0], [3, 0], [0, 2]]).area, 3.0)
+            self.assertEqual(Polygon([[0, 2], [0, 0], [3, 0]]).area, 3.0)
+
+        with self.subTest(shape='pentagon'):
+            self.assertEqual(self.polygon_ccw.area, 5.625)
+            self.assertEqual(self.polygon_cw.area, 5.625)
+
     def test_set_vertices(self):
         # Verifies that polygon vertices are set correctly
         with self.subTest(repeat=False):

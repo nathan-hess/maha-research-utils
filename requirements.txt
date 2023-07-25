@@ -22,4 +22,5 @@ pandas
 plotly
 pyxx
 scipy
+shapely
 vtk

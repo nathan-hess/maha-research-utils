@@ -11,6 +11,7 @@ from typing import List, Optional, Tuple, Union
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import matplotlib.path  # type: ignore
 import numpy as np
+import shapely
 
 from .point import Array_Float2, Point
 from .point2D import CartesianPoint2D
@@ -84,6 +85,11 @@ class Polygon(ClosedShape2D):
             polygon_file_enclosed_conv=polygon_file_enclosed_conv,
             units=units,
         )
+
+    @property
+    def area(self) -> float:
+        """Returns the area of the polygon"""
+        return shapely.Polygon(self.vertices).area
 
     @property
     def vertices(self) -> np.ndarray:
