@@ -1,4 +1,5 @@
 import copy
+import math
 import unittest
 
 import numpy as np
@@ -123,6 +124,56 @@ class Test_Circle(unittest.TestCase):
 
         with self.subTest(metric='diameter'):
             self.assertEqual(self.circle.diameter, 2*self.circle_radius)
+
+    def test_intersection_area(self):
+        # Verifies that the intersection area of two circles is calculated correctly
+        r = 68.25331284
+        dx = 673
+        dy = 3.2
+        circle1 = Circle(center=(dx, r + dy), radius=r)
+        circle2 = Circle(center=(r + dx, dy), radius=r)
+
+        analytical_area = r**2 * 0.25 * (2*math.pi - 4)
+        self.assertAlmostEqual(circle1.intersection_area(circle2), analytical_area)
+        self.assertAlmostEqual(circle2.intersection_area(circle1), analytical_area)
+
+    def test_intersection_area_zero(self):
+        # Verifies that the intersection area of two circles is calculated correctly
+        circle1 = Circle(center=(0, 0), radius=5)
+        circle2 = Circle(center=(0, 50), radius=5)
+        circle3 = Circle(center=(0, -10), radius=5)
+
+        self.assertEqual(circle1.intersection_area(circle2), 0)
+        self.assertEqual(circle2.intersection_area(circle1), 0)
+
+        self.assertEqual(circle1.intersection_area(circle3), 0)
+        self.assertEqual(circle3.intersection_area(circle1), 0)
+
+    def test_intersection_area_contained(self):
+        # Verifies that the intersection area of two circles is calculated correctly
+        circle1 = Circle(center=(0.5, 6.7), radius=50)
+        circle2 = Circle(center=(5, 6.7), radius=5)
+
+        self.assertEqual(circle1.intersection_area(circle2), circle2.area)
+        self.assertEqual(circle2.intersection_area(circle1), circle2.area)
+
+    def test_intersection_area_invalid_units(self):
+        # Verifies that an exception is thrown if attempting to find the area of
+        # intersection of two circles with different units
+        circle1 = Circle(center=(0, 0), radius=5, units='mm')
+        circle2 = Circle(center=(0, 50), radius=5)
+
+        with self.assertRaises(ValueError):
+            circle1.intersection_area(circle2)
+
+    def test_intersection_area_invalid_shape(self):
+        # Verifies that an exception is thrown if attempting to find the area of
+        # intersection of a circle and a shape that isn't a circle
+        circle1 = Circle(center=(0, 0), radius=5, units='mm')
+        shape2 = CartesianPoint2D(0, 0)
+
+        with self.assertRaises(TypeError):
+            circle1.intersection_area(shape2)
 
     def test_is_inside(self):
         # Verifies that points can be correctly identified as inside or
