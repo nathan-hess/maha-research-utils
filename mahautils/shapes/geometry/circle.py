@@ -185,7 +185,7 @@ class Circle(ClosedShape2D):
         Returns
         -------
         float
-            The area of interection between this circle and ``circle``
+            The area of intersection between this circle and ``circle``
         """
         if not isinstance(circle, Circle):
             raise TypeError(
