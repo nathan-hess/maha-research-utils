@@ -262,6 +262,10 @@ class Circle(ClosedShape2D):
             repeat_end=repeat_end,
         )
 
+    def reflect(self, pntA: Union[Array_Float2, 'CartesianPoint2D'],
+                pntB: Union[Array_Float2, 'CartesianPoint2D']) -> None:
+        self.center.reflect(pntA=pntA, pntB=pntB)
+
     def rotate(self, center: Union[Array_Float2, CartesianPoint2D],
                angle: float, angle_units: str = 'rad') -> None:
         self.center.rotate(center=center, angle=angle, angle_units=angle_units)

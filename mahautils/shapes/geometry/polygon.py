@@ -149,6 +149,16 @@ class Polygon(ClosedShape2D):
     def points(self, repeat_end: bool = False) -> Tuple[np.ndarray, ...]:
         return self._convert_xy_coordinates_to_points(repeat_end=repeat_end)
 
+    def reflect(self, pntA: Union[Array_Float2, 'CartesianPoint2D'],
+                pntB: Union[Array_Float2, 'CartesianPoint2D']) -> None:
+        reflected_vertices = []
+        for vertex in self._vertices:
+            point = CartesianPoint2D(vertex)
+            point.reflect(pntA=pntA, pntB=pntB)
+            reflected_vertices.append(list(point))
+
+        self._vertices = np.array(reflected_vertices)
+
     def rotate(self, center: Union[Array_Float2, CartesianPoint2D],
                angle: float, angle_units: str = 'rad') -> None:
         # Convert angle to radians
