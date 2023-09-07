@@ -209,6 +209,32 @@ class CartesianPoint2D(Shape2D, Point):
     def points(self) -> Tuple[np.ndarray, ...]:
         return (np.array([self.x, self.y]),)
 
+    def reflect(self, pntA: Union[Array_Float2, 'CartesianPoint2D'],
+                pntB: Union[Array_Float2, 'CartesianPoint2D']) -> None:
+        pntA = CartesianPoint2D(pntA)
+        pntB = CartesianPoint2D(pntB)
+
+        if pntA.distance_to(pntB) == 0:
+            raise ValueError('Points on the line must be at a nonzero '
+                             'distance from each other')
+
+        # Slope of line across which point is to be reflected
+        mL = (pntB.y - pntA.y) / (pntB.x - pntA.x)
+
+        # Slope of line between original point and reflected point
+        mR = -(pntB.x - pntA.x) / (pntB.y - pntA.y)
+
+        # x-coordinate of intersection point of two lines whose slopes
+        # were calculated above
+        xi = (mL*pntA.x - mR*self.x + self.y - pntA.y) / (mL - mR)
+
+        # Reflected point coordinates
+        xR = 2*(xi - self.x)
+        yR = mR*(xR - self.x) + self.y
+
+        self.x = xR
+        self.y = yR
+
     def rotate(self, center: Union[Array_Float2, 'CartesianPoint2D'],
                angle: float, angle_units: str = 'rad') -> None:
         # Convert angle to radians
