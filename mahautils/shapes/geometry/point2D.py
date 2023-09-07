@@ -214,35 +214,19 @@ class CartesianPoint2D(Shape2D, Point):
         pntA = CartesianPoint2D(pntA)
         pntB = CartesianPoint2D(pntB)
 
-        # Algorithm based on https://math.stackexchange.com/a/1367732
-        R = pntA.distance_to(pntB)
-        if R == 0:
+        if pntA.distance_to(pntB) == 0:
             raise ValueError('Points on the line must be at a nonzero '
                              'distance from each other')
 
         # Find two possible intersection points
-        ax = 0.5 * (pntA.x + pntB.x)
-        ay = 0.5 * (pntA.y + pntB.y)
+        numerator = (((self.x - pntA.x) / (pntB.x - pntA.x))
+                     - ((self.y - pntA.y) / (pntB.y - pntA.y)))
+        denominator = (((pntB.x - pntA.x) / (pntB.y - pntA.y))
+                       + ((pntB.y - pntA.y) / (pntB.x - pntA.x)))
+        t = 2.0 * numerator / denominator
 
-        rA = self.distance_to(pntA)
-        rB = self.distance_to(pntB)
-        b = 0.5 * (rA**2 - rB**2) / R**2
-        bx = b * (pntB.x - pntA.x)
-        by = b * (pntB.y - pntA.y)
-
-        c = (0.5*(rA**2 + rB**2)/R**2 - b**2 - 0.25)**0.5
-        cx = c * (pntB.y - pntA.y)
-        cy = c * (pntA.x - pntB.x)
-
-        p1 = CartesianPoint2D(ax + bx + cx, ay + by + cy)
-        p2 = CartesianPoint2D(ax + bx - cx, ay + by - cy)
-
-        if self.distance_to(p1) > self.distance_to(p2):
-            self.x = p2.x
-            self.y = p2.y
-        else:
-            self.x = p1.x
-            self.y = p1.y
+        self.x += (pntA.y - pntB.y) * t
+        self.y += (pntB.x - pntA.x) * t
 
     def rotate(self, center: Union[Array_Float2, 'CartesianPoint2D'],
                angle: float, angle_units: str = 'rad') -> None:
