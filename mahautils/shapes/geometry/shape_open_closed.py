@@ -57,6 +57,11 @@ class ClosedShape2D(Shape2D):
         self.polygon_file_enclosed_conv = polygon_file_enclosed_conv
 
     @property
+    def area(self) -> float:
+        """Returns the area enclosed by the shape"""
+        raise NotImplementedError  # pragma: no cover
+
+    @property
     def polygon_file_enclosed_conv(self) -> int:
         """Convention for considering enclosed area when generating a polygon
         file from :py:class:`ClosedShape2D` objects

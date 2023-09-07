@@ -1,4 +1,5 @@
 import copy
+import math
 import unittest
 
 import numpy as np
@@ -65,6 +66,10 @@ class Test_Circle(unittest.TestCase):
             "<class 'mahautils.shapes.geometry.circle.Circle'> center=(1.2, 3.5), radius=5.0"
         )
 
+    def test_area(self):
+        # Verifies that the circle area is calculated correctly
+        self.assertAlmostEqual(self.circle.area, 78.53981633974483)
+
     def test_set_center(self):
         # Verifies that circle center point can be set correctly
         with self.subTest(method='constructor'):
@@ -120,6 +125,56 @@ class Test_Circle(unittest.TestCase):
         with self.subTest(metric='diameter'):
             self.assertEqual(self.circle.diameter, 2*self.circle_radius)
 
+    def test_intersection_area(self):
+        # Verifies that the intersection area of two circles is calculated correctly
+        r = 68.25331284
+        dx = 673
+        dy = 3.2
+        circle1 = Circle(center=(dx, r + dy), radius=r)
+        circle2 = Circle(center=(r + dx, dy), radius=r)
+
+        analytical_area = r**2 * 0.25 * (2*math.pi - 4)
+        self.assertAlmostEqual(circle1.intersection_area(circle2), analytical_area)
+        self.assertAlmostEqual(circle2.intersection_area(circle1), analytical_area)
+
+    def test_intersection_area_zero(self):
+        # Verifies that the intersection area of two circles is calculated correctly
+        circle1 = Circle(center=(0, 0), radius=5)
+        circle2 = Circle(center=(0, 50), radius=5)
+        circle3 = Circle(center=(0, -10), radius=5)
+
+        self.assertEqual(circle1.intersection_area(circle2), 0)
+        self.assertEqual(circle2.intersection_area(circle1), 0)
+
+        self.assertEqual(circle1.intersection_area(circle3), 0)
+        self.assertEqual(circle3.intersection_area(circle1), 0)
+
+    def test_intersection_area_contained(self):
+        # Verifies that the intersection area of two circles is calculated correctly
+        circle1 = Circle(center=(0.5, 6.7), radius=50)
+        circle2 = Circle(center=(5, 6.7), radius=5)
+
+        self.assertEqual(circle1.intersection_area(circle2), circle2.area)
+        self.assertEqual(circle2.intersection_area(circle1), circle2.area)
+
+    def test_intersection_area_invalid_units(self):
+        # Verifies that an exception is thrown if attempting to find the area of
+        # intersection of two circles with different units
+        circle1 = Circle(center=(0, 0), radius=5, units='mm')
+        circle2 = Circle(center=(0, 50), radius=5)
+
+        with self.assertRaises(ValueError):
+            circle1.intersection_area(circle2)
+
+    def test_intersection_area_invalid_shape(self):
+        # Verifies that an exception is thrown if attempting to find the area of
+        # intersection of a circle and a shape that isn't a circle
+        circle1 = Circle(center=(0, 0), radius=5, units='mm')
+        shape2 = CartesianPoint2D(0, 0)
+
+        with self.assertRaises(TypeError):
+            circle1.intersection_area(shape2)
+
     def test_is_inside(self):
         # Verifies that points can be correctly identified as inside or
         # outside the circle
@@ -169,6 +224,22 @@ class Test_Circle(unittest.TestCase):
 
                 for i in range(num_coordinates):
                     self.assertTrue(np.allclose(points[i], expected_points[i]))
+
+    def test_reflect(self):
+        # Verifies that a circle can be reflected about an arbitrary line
+        pntA = CartesianPoint2D(6, 0)
+        pntB = CartesianPoint2D(6, 3)
+
+        self.circle.reflect(pntA=pntA, pntB=pntB)
+
+        with self.subTest(quantity='position'):
+            self.assertLessEqual(
+                self.circle.center.distance_to(CartesianPoint2D(10.8, 3.5)),
+                TEST_FLOAT_TOLERANCE,
+            )
+
+        with self.subTest(quantity='radius'):
+            self.assertEqual(self.circle.radius, self.circle_radius)
 
     def test_rotate(self):
         # Verifies that circle can be rotated about a point

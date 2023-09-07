@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from mahautils.shapes import Polygon
+from mahautils.shapes import CartesianPoint2D, Polygon
 from tests import max_array_diff, TEST_FLOAT_TOLERANCE
 
 
@@ -17,6 +17,16 @@ class Test_Polygon(unittest.TestCase):
 
         # Polygon with points ordered clockwise
         self.polygon_cw = Polygon(list(reversed(self.vertices)))
+
+    def test_area(self):
+        # Verifies that the polygon area is computed correctly
+        with self.subTest(shape='triangle'):
+            self.assertEqual(Polygon([[0, 0], [3, 0], [0, 2]]).area, 3.0)
+            self.assertEqual(Polygon([[0, 2], [0, 0], [3, 0]]).area, 3.0)
+
+        with self.subTest(shape='pentagon'):
+            self.assertEqual(self.polygon_ccw.area, 5.625)
+            self.assertEqual(self.polygon_cw.area, 5.625)
 
     def test_set_vertices(self):
         # Verifies that polygon vertices are set correctly
@@ -125,6 +135,30 @@ class Test_Polygon(unittest.TestCase):
                 polygon.points(repeat_end=True),
                 np.array([[9, 0.5], [9, 2.5], [7.5, 2.5], [7, 0], [8, -1.5], [9, 0.5]])
             ))
+
+    def test_reflect(self):
+        # Verifies that a polygon can be reflected about an arbitrary line
+        test_cases = {
+            'counterclockwise': self.polygon_ccw,
+            'clockwise': self.polygon_cw,
+        }
+
+        pntA = CartesianPoint2D(33, -3.075)
+        pntB = CartesianPoint2D(13, 260)
+
+        for direction, polygon in test_cases.items():
+            with self.subTest(direction=direction):
+                original_polygon = copy.deepcopy(polygon)
+                polygon.reflect(pntA=pntA, pntB=pntB)
+
+                for i, vertex in enumerate(polygon.vertices):
+                    original_vertex = CartesianPoint2D(original_polygon.vertices[i])
+                    original_vertex.reflect(pntA=pntA, pntB=pntB)
+
+                    self.assertLessEqual(
+                        CartesianPoint2D(vertex).distance_to(original_vertex),
+                        TEST_FLOAT_TOLERANCE,
+                    )
 
     def test_rotate(self):
         # Verifies that the polygon can be rotated about a point

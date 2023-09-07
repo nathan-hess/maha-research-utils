@@ -285,6 +285,78 @@ class Test_CartesianPoint2D_Distance(Test_CartesianPoint2D):
 
 
 class Test_CartesianPoint2D_Transform(Test_CartesianPoint2D):
+    def test_reflect(self):
+        # Verifies that a point can be reflected about an arbitrary line
+        with self.subTest(line='horizontal'):
+            pntA = CartesianPoint2D(-1, 4)
+            pntB = CartesianPoint2D(5, 4)
+
+            point = CartesianPoint2D(2, -21)
+            point.reflect(pntA=pntA, pntB=pntB)
+
+            self.assertEqual(point, CartesianPoint2D(2, 29))
+
+        with self.subTest(line='vertical'):
+            pntA = CartesianPoint2D(-1, 4)
+            pntB = CartesianPoint2D(-1, 9)
+
+            point = CartesianPoint2D(2, -21)
+            point.reflect(pntA=pntA, pntB=pntB)
+
+            self.assertEqual(point, CartesianPoint2D(-4, -21))
+
+        with self.subTest(line='angled'):
+            pntA = CartesianPoint2D(0, 0)
+            pntB = CartesianPoint2D(4, 3)
+
+            point = CartesianPoint2D(1, 7)
+            point.reflect(pntA=pntA, pntB=pntB)
+
+            self.assertEqual(point, CartesianPoint2D(7, -1))
+
+        with self.subTest(line='on_line'):
+            pntA = CartesianPoint2D(-1, 4)
+            pntB = CartesianPoint2D(5, 4)
+
+            point = CartesianPoint2D(2, 4)
+            point.reflect(pntA=pntA, pntB=pntB)
+
+            self.assertEqual(point, CartesianPoint2D(2, 4))
+
+        with self.subTest(line='tuple'):
+            pntA = (-1, 4)
+            pntB = (5, 4)
+
+            point = CartesianPoint2D(2, -21)
+            point.reflect(pntA=pntA, pntB=pntB)
+
+            self.assertEqual(point, CartesianPoint2D(2, 29))
+
+    def test_reflect_x(self):
+        # Verifies that a point can be reflected about the x-axis
+        point = CartesianPoint2D(2, -21)
+        point.reflect_x()
+
+        self.assertEqual(point, CartesianPoint2D(2, 21))
+
+    def test_reflect_y(self):
+        # Verifies that a point can be reflected about the y-axis
+        point = CartesianPoint2D(2, -21)
+        point.reflect_y()
+
+        self.assertEqual(point, CartesianPoint2D(-2, -21))
+
+    def test_reflect_invalid(self):
+        # Verifies that an exception is thrown if attempting to specify a
+        # line with one point
+        pntA = CartesianPoint2D(-1, 4)
+        pntB = CartesianPoint2D(-1, 4)
+
+        point = CartesianPoint2D(2, -21)
+
+        with self.assertRaises(ValueError):
+            point.reflect(pntA=pntA, pntB=pntB)
+
     def test_rotate(self):
         # Verifies that a point can be rotated about another point
         with self.subTest(center=(0, 0)):

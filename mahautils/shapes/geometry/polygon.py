@@ -11,6 +11,7 @@ from typing import List, Optional, Tuple, Union
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import matplotlib.path  # type: ignore
 import numpy as np
+import shapely          # type: ignore
 
 from .point import Array_Float2, Point
 from .point2D import CartesianPoint2D
@@ -86,6 +87,11 @@ class Polygon(ClosedShape2D):
         )
 
     @property
+    def area(self) -> float:
+        """Returns the area of the polygon"""
+        return shapely.Polygon(self.vertices).area
+
+    @property
     def vertices(self) -> np.ndarray:
         """Returns a copy of a NumPy array containing the vertices of the
         polygon
@@ -142,6 +148,16 @@ class Polygon(ClosedShape2D):
 
     def points(self, repeat_end: bool = False) -> Tuple[np.ndarray, ...]:
         return self._convert_xy_coordinates_to_points(repeat_end=repeat_end)
+
+    def reflect(self, pntA: Union[Array_Float2, 'CartesianPoint2D'],
+                pntB: Union[Array_Float2, 'CartesianPoint2D']) -> None:
+        reflected_vertices = []
+        for vertex in self._vertices:
+            point = CartesianPoint2D(vertex)
+            point.reflect(pntA=pntA, pntB=pntB)
+            reflected_vertices.append(list(point))
+
+        self._vertices = np.array(reflected_vertices)
 
     def rotate(self, center: Union[Array_Float2, CartesianPoint2D],
                angle: float, angle_units: str = 'rad') -> None:

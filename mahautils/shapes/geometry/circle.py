@@ -136,6 +136,11 @@ class Circle(ClosedShape2D):
         return self.__repr__()
 
     @property
+    def area(self) -> float:
+        """The area of the circle"""
+        return math.pi * (self.radius**2)
+
+    @property
     def center(self) -> CartesianPoint2D:
         """The center of the circle"""
         return self._center
@@ -164,6 +169,53 @@ class Circle(ClosedShape2D):
             raise ValueError('Circle radius cannot be negative')
 
         self._radius = float(radius)
+
+    def intersection_area(self, circle: 'Circle'):
+        """Calculates the area of intersection with another circle
+
+        Calculates the overlapping area of intersection between this circle and
+        another :py:class:`Circle` instance.  Mathematical formulas based on
+        https://mathworld.wolfram.com/Circle-CircleIntersection.html.
+
+        Parameters
+        ----------
+        circle : Circle
+            The circle with which area of intersection is to be calculated
+
+        Returns
+        -------
+        float
+            The area of intersection between this circle and ``circle``
+        """
+        if not isinstance(circle, Circle):
+            raise TypeError(
+                'Intersection area can only be calculated with another circle')
+
+        if not self._has_identical_units(circle):
+            raise ValueError(
+                'Circles have different units. Cannot compute intersection area')
+
+        # Distance between circle centers
+        d = self.center.distance_to(circle.center)
+
+        # Maximum and minimum circle radius
+        R = max(self.radius, circle.radius)
+        r = min(self.radius, circle.radius)
+
+        if d >= R + r:
+            # Circles don't overlap
+            return 0.0
+
+        if d <= R - r:
+            # The smaller circle is completely enclosed by the larger circle
+            return math.pi*(r**2)
+
+        return (
+            r**2 * math.acos((d**2 + r**2 - R**2) / (2*d*r))
+            + R**2 * math.acos((d**2 + R**2 - r**2) / (2*d*R))
+            - 0.5 * math.sqrt((-d + r + R) * (d + r - R)
+                              * (d - r + R) * (d + r + R))
+        )
 
     def is_inside(self, point: Union[Array_Float2, CartesianPoint2D],
                   perimeter_is_inside: bool = True) -> bool:
@@ -209,6 +261,10 @@ class Circle(ClosedShape2D):
             num_coordinates=num_coordinates,
             repeat_end=repeat_end,
         )
+
+    def reflect(self, pntA: Union[Array_Float2, 'CartesianPoint2D'],
+                pntB: Union[Array_Float2, 'CartesianPoint2D']) -> None:
+        self.center.reflect(pntA=pntA, pntB=pntB)
 
     def rotate(self, center: Union[Array_Float2, CartesianPoint2D],
                angle: float, angle_units: str = 'rad') -> None:

@@ -209,6 +209,26 @@ class CartesianPoint2D(Shape2D, Point):
     def points(self) -> Tuple[np.ndarray, ...]:
         return (np.array([self.x, self.y]),)
 
+    def reflect(self, pntA: Union[Array_Float2, 'CartesianPoint2D'],
+                pntB: Union[Array_Float2, 'CartesianPoint2D']) -> None:
+        pntA = CartesianPoint2D(pntA)
+        pntB = CartesianPoint2D(pntB)
+
+        if pntA.distance_to(pntB) == 0:
+            raise ValueError('Points on the line must be at a nonzero '
+                             'distance from each other')
+
+        A = np.array([[pntB.x - pntA.x, pntB.y - pntA.y],
+                      [pntB.y - pntA.y, pntA.x - pntB.x]])
+        b = np.array([[self.x - pntA.x],
+                      [self.y - pntA.y]])
+        x = np.linalg.solve(A, b)
+
+        t = 2.0 * x[1]
+
+        self.x += (pntA.y - pntB.y) * t
+        self.y += (pntB.x - pntA.x) * t
+
     def rotate(self, center: Union[Array_Float2, 'CartesianPoint2D'],
                angle: float, angle_units: str = 'rad') -> None:
         # Convert angle to radians
