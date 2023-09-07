@@ -214,26 +214,35 @@ class CartesianPoint2D(Shape2D, Point):
         pntA = CartesianPoint2D(pntA)
         pntB = CartesianPoint2D(pntB)
 
-        if pntA.distance_to(pntB) == 0:
+        # Algorithm based on https://math.stackexchange.com/a/1367732
+        R = pntA.distance_to(pntB)
+        if R == 0:
             raise ValueError('Points on the line must be at a nonzero '
                              'distance from each other')
 
-        # Slope of line across which point is to be reflected
-        mL = (pntB.y - pntA.y) / (pntB.x - pntA.x)
+        # Find two possible intersection points
+        ax = 0.5 * (pntA.x + pntB.x)
+        ay = 0.5 * (pntA.y + pntB.y)
 
-        # Slope of line between original point and reflected point
-        mR = -(pntB.x - pntA.x) / (pntB.y - pntA.y)
+        rA = self.distance_to(pntA)
+        rB = self.distance_to(pntB)
+        b = 0.5 * (rA**2 - rB**2) / R**2
+        bx = b * (pntB.x - pntA.x)
+        by = b * (pntB.y - pntA.y)
 
-        # x-coordinate of intersection point of two lines whose slopes
-        # were calculated above
-        xi = (mL*pntA.x - mR*self.x + self.y - pntA.y) / (mL - mR)
+        c = (0.5*(rA**2 + rB**2)/R**2 - b**2 - 0.25)**0.5
+        cx = c * (pntB.y - pntA.y)
+        cy = c * (pntA.x - pntB.x)
 
-        # Reflected point coordinates
-        xR = 2*(xi - self.x)
-        yR = mR*(xR - self.x) + self.y
+        p1 = CartesianPoint2D(ax + bx + cx, ay + by + cy)
+        p2 = CartesianPoint2D(ax + bx - cx, ay + by - cy)
 
-        self.x = xR
-        self.y = yR
+        if self.distance_to(p1) > self.distance_to(p2):
+            self.x = p2.x
+            self.y = p2.y
+        else:
+            self.x = p1.x
+            self.y = p1.y
 
     def rotate(self, center: Union[Array_Float2, 'CartesianPoint2D'],
                angle: float, angle_units: str = 'rad') -> None:
