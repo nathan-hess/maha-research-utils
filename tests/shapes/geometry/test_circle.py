@@ -225,6 +225,22 @@ class Test_Circle(unittest.TestCase):
                 for i in range(num_coordinates):
                     self.assertTrue(np.allclose(points[i], expected_points[i]))
 
+    def test_reflect(self):
+        # Verifies that a circle can be reflected about an arbitrary line
+        pntA = CartesianPoint2D(6, 0)
+        pntB = CartesianPoint2D(6, 3)
+
+        self.circle.reflect(pntA=pntA, pntB=pntB)
+
+        with self.subTest(quantity='position'):
+            self.assertLessEqual(
+                self.circle.center.distance_to(CartesianPoint2D(10.8, 3.5)),
+                TEST_FLOAT_TOLERANCE,
+            )
+
+        with self.subTest(quantity='radius'):
+            self.assertEqual(self.circle.radius, self.circle_radius)
+
     def test_rotate(self):
         # Verifies that circle can be rotated about a point
         with self.subTest(center=(0, 0)):
