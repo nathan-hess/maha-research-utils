@@ -218,12 +218,13 @@ class CartesianPoint2D(Shape2D, Point):
             raise ValueError('Points on the line must be at a nonzero '
                              'distance from each other')
 
-        # Find two possible intersection points
-        numerator = (((self.x - pntA.x) / (pntB.x - pntA.x))
-                     - ((self.y - pntA.y) / (pntB.y - pntA.y)))
-        denominator = (((pntB.x - pntA.x) / (pntB.y - pntA.y))
-                       + ((pntB.y - pntA.y) / (pntB.x - pntA.x)))
-        t = 2.0 * numerator / denominator
+        A = np.array([[pntB.x - pntA.x, pntB.y - pntA.y],
+                      [pntB.y - pntA.y, pntA.x - pntB.x]])
+        b = np.array([[self.x - pntA.x],
+                      [self.y - pntA.y]])
+        x = np.linalg.solve(A, b)
+
+        t = 2.0 * x[1]
 
         self.x += (pntA.y - pntB.y) * t
         self.y += (pntB.x - pntA.x) * t
