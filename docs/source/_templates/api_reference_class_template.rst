@@ -17,6 +17,8 @@
    np
    num
    OpenShape
+   pntA
+   pntB
    PolygonFile
    printDict
    SimResults
