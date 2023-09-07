@@ -143,6 +143,27 @@ class Shape2D(Geometry):
         """
         raise NotImplementedError  # pragma: no cover
 
+    def reflect(self, pntA: Union[Array_Float2, 'CartesianPoint2D'],
+                pntB: Union[Array_Float2, 'CartesianPoint2D']) -> None:
+        """Reflects the shape across a line defined by two points
+
+        Parameters
+        ----------
+        pntA : list or tuple or CartesianPoint2D
+            One point on the line across which the shape is to be reflected
+        pntB : list or tuple or CartesianPoint2D
+            Another point on the line across which the shape is to be reflected
+        """
+        raise NotImplementedError  # pragma: no cover
+
+    def reflect_x(self):
+        """Reflects the shape over the :math:`x`-axis"""
+        self.reflect((0.0, 0.0), (1.0, 0.0))
+
+    def reflect_y(self):
+        """Reflects the shape over the :math:`y`-axis"""
+        self.reflect((0.0, 0.0), (0.0, 1.0))
+
     def rotate(self, center: Union[Array_Float2, 'CartesianPoint2D'],
                angle: float, angle_units: str = 'rad') -> None:
         """Rotates the shape in the :math:`xy`-plane
