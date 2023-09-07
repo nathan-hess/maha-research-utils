@@ -18,7 +18,7 @@
 furo
 matplotlib
 numpy
-Sphinx
+Sphinx >= 7.0.0
 sphinx_design
 sphinx-copybutton
 sphinx-remove-toctrees
