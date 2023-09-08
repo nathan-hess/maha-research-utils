@@ -186,11 +186,41 @@ class Test_Canvas_Transform(Test_Canvas):
         self.layer2 = Layer()
         self.canvas = Canvas(self.layer1, self.layer2)
 
+        self.layer1.reflect = Mock()
+        self.layer2.reflect = Mock()
+
+        self.layer1.reflect_x = Mock()
+        self.layer2.reflect_x = Mock()
+
+        self.layer1.reflect_y = Mock()
+        self.layer2.reflect_y = Mock()
+
         self.layer1.rotate = Mock()
-        self.layer1.rotate = Mock()
+        self.layer2.rotate = Mock()
 
         self.layer1.translate = Mock()
-        self.layer1.translate = Mock()
+        self.layer2.translate = Mock()
+
+    def test_reflect(self):
+        # Verifies that reflecting a canvas reflects all layers in the canvas
+        self.canvas.reflect(pntA=(1, 2), pntB=(3, 4))
+
+        self.layer1.reflect.assert_called_once_with(pntA=(1, 2), pntB=(3, 4))
+        self.layer2.reflect.assert_called_once_with(pntA=(1, 2), pntB=(3, 4))
+
+    def test_reflect_x(self):
+        # Verifies that reflecting a canvas reflects all layers in the canvas
+        self.canvas.reflect_x()
+
+        self.layer1.reflect_x.assert_called_once()
+        self.layer2.reflect_x.assert_called_once()
+
+    def test_reflect_y(self):
+        # Verifies that reflecting a canvas reflects all layers in the canvas
+        self.canvas.reflect_y()
+
+        self.layer1.reflect_y.assert_called_once()
+        self.layer2.reflect_y.assert_called_once()
 
     def test_rotate(self):
         # Verifies that rotating a canvas rotates all layers in the canvas
