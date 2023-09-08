@@ -181,6 +181,32 @@ class Layer(pyxx.arrays.TypedListWithID[Shape2D]):
 
         return None
 
+    def reflect(self, pntA: Union[Array_Float2, 'CartesianPoint2D'],
+                pntB: Union[Array_Float2, 'CartesianPoint2D']) -> None:
+        """Reflects all shapes in the layer about a line specified by two points
+
+        Parameters
+        ----------
+        pntA : list or tuple or CartesianPoint2D
+            One point on the line across which the shape is to be reflected
+        pntB : list or tuple or CartesianPoint2D
+            Another point on the line across which the shape is to be reflected
+        """
+        for shape in self:
+            shape.reflect(pntA=pntA, pntB=pntB)
+
+    def reflect_x(self) -> None:
+        """Reflects all shapes in the layer about the :math:`x`-axis
+        """
+        for shape in self:
+            shape.reflect_x()
+
+    def reflect_y(self) -> None:
+        """Reflects all shapes in the layer about the :math:`y`-axis
+        """
+        for shape in self:
+            shape.reflect_y()
+
     def rotate(self, center: Union[Array_Float2, CartesianPoint2D],
                angle: float, angle_units: str = 'rad') -> None:
         """Rotates all shapes in the layer a given angle in the :math:`xy`-plane

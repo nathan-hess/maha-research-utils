@@ -281,6 +281,18 @@ class Test_Layer_Transform(Test_Layer):
 
         self.layer = Layer(self.circle1, self.circle2, self.closed_shape)
 
+        self.circle1.reflect = Mock()
+        self.circle2.reflect = Mock()
+        self.closed_shape.reflect = Mock()
+
+        self.circle1.reflect_x = Mock()
+        self.circle2.reflect_x = Mock()
+        self.closed_shape.reflect_x = Mock()
+
+        self.circle1.reflect_y = Mock()
+        self.circle2.reflect_y = Mock()
+        self.closed_shape.reflect_y = Mock()
+
         self.circle1.rotate = Mock()
         self.circle2.rotate = Mock()
         self.closed_shape.rotate = Mock()
@@ -288,6 +300,30 @@ class Test_Layer_Transform(Test_Layer):
         self.circle1.translate = Mock()
         self.circle2.translate = Mock()
         self.closed_shape.translate = Mock()
+
+    def test_reflect(self):
+        # Verifies that reflecting a layer reflects all shapes in the layer
+        self.layer.reflect(pntA=(1, 2), pntB=(3, 4))
+
+        self.circle1.reflect.assert_called_once_with(pntA=(1, 2), pntB=(3, 4))
+        self.circle2.reflect.assert_called_once_with(pntA=(1, 2), pntB=(3, 4))
+        self.closed_shape.reflect.assert_called_once_with(pntA=(1, 2), pntB=(3, 4))
+
+    def test_reflect_x(self):
+        # Verifies that reflecting a layer reflects all shapes in the layer
+        self.layer.reflect_x()
+
+        self.circle1.reflect_x.assert_called_once()
+        self.circle2.reflect_x.assert_called_once()
+        self.closed_shape.reflect_x.assert_called_once()
+
+    def test_reflect_y(self):
+        # Verifies that reflecting a layer reflects all shapes in the layer
+        self.layer.reflect_y()
+
+        self.circle1.reflect_y.assert_called_once()
+        self.circle2.reflect_y.assert_called_once()
+        self.closed_shape.reflect_y.assert_called_once()
 
     def test_rotate(self):
         # Verifies that rotating a layer rotates all shapes in the layer
