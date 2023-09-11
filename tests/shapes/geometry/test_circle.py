@@ -83,6 +83,10 @@ class Test_Circle(unittest.TestCase):
         # Verifies that circle center point can be retrieved correctly
         self.assertEqual(self.circle.center, self.circle_center)
 
+    def test_circumference(self):
+        # Verifies that circle circumference is calculated correctly
+        self.assertEqual(self.circle.circumference, 2.0 * math.pi * self.circle_radius)
+
     def test_set_radius(self):
         # Verifies that circle radius can be set correctly
         with self.subTest(metric='radius'):

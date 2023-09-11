@@ -150,13 +150,18 @@ class Circle(ClosedShape2D):
         self._center = CartesianPoint2D(center)
 
     @property
+    def circumference(self) -> float:
+        """The circumference of the circle"""
+        return 2.0 * math.pi * self.radius
+
+    @property
     def diameter(self) -> float:
         """The diameter of the circle"""
-        return 2 * self.radius
+        return 2.0 * self.radius
 
     @diameter.setter
     def diameter(self, diameter: float):
-        self.radius = diameter / 2
+        self.radius = 0.5 * diameter
 
     @property
     def radius(self) -> float:
