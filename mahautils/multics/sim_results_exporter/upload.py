@@ -1,8 +1,27 @@
 """Page elements for uploading simulation results files."""
 
+from typing import Dict, Union
+
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import dash                              # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
+
+from mahautils.multics import SimResults
+
+
+def parse_sim_results_vars(sim_results: SimResults
+                           ) -> Dict[str, Dict[str, Union[bool, str]]]:
+    """Returns a dictionary containing all simulation results variables and
+    their units from a Maha Multics simulation results file"""
+    data: Dict[str, Dict[str, Union[bool, str]]] = {}
+
+    for key in sim_results.variables:
+        data[key] = {
+            'export': True,
+            'units': sim_results.get_units(key),
+        }
+
+    return data
 
 
 def upload_section():

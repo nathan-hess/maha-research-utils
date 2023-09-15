@@ -10,21 +10,22 @@ to a CSV file.
 import argparse
 import os
 import sys
-from typing import List, Optional
+from typing import Dict, List, Optional, Union
 import webbrowser
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import dash                              # type: ignore
 from dash import Input, Output, State    # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
-import plotly.graph_objects as go        # type: ignore
 
-from mahautils.utils import Dictionary
+from mahautils.multics import SimResults
 
 from .constants import GUI_SHORT_NAME, PROJECT_NAME, VERSION
+from .export import export_area
 from .header import app_header
-from .io_utils import load_simresults
-from .upload import upload_section
+from .io_utils import load_simresults, sim_results_to_csv
+from .store import export_config_store
+from .upload import parse_sim_results_vars, upload_section
 
 
 ## MAIN APP CONFIGURATION ----------------------------------------------------
@@ -69,8 +70,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     # Create and load Dash app
     app.layout = dash.html.Div(
         [
+            export_config_store(),
             app_header(),
             upload_section(),
+            export_area(),
         ],
         style={
             'marginLeft': '30px',
@@ -91,27 +94,62 @@ def main(argv: Optional[List[str]] = None) -> int:
 
 
 ## GLOBAL VARIABLES FOR DATA STORAGE -----------------------------------------
-_simresults = None
+_simresults = SimResults()
 
 
-## DATA FILE MANAGEMENT ------------------------------------------------------
+## APP CALLBACKS -------------------------------------------------------------
 @app.callback(
     Output('upload-error', 'hidden'),
     Output('upload-error-message', 'children'),
+    Output('export-section', 'hidden'),
+    Output('export-config-store', 'data'),
     Input('upload-data', 'contents'),
+    State('export-config-store', 'data'),
+    prevent_initial_call=True,
 )
-def load_file(contents: Optional[str]):
-    """Uploads a simulation results file"""
-    
+def load_file(contents: Optional[str],
+              config: Optional[Dict[str, Dict[str, Union[bool, str]]]]):
+    """Uploads a simulation results file
+    """
+    # If file has not yet been uploaded, only show upload section
     if contents is None:
-        return True, ''
+        return True, '', True, None
 
-    try:
-        _simresults = load_simresults(contents)
-    except Exception as exception:
-        return (
-            False,
-            f'Error: Unable to read simulation results file ({exception})'
-        )
+    # If user just uploaded a simulation results file, parse it and initialize
+    # store with all simulation results variables
+    if dash.ctx.triggered_id == 'upload-data':
+        try:
+            load_simresults(contents, _simresults)
+        except Exception as exception:
+            return (
+                False,
+                f'Error: Unable to read simulation results file ({exception})',
+                True,
+                None,
+            )
 
-    return True, ''
+        data = parse_sim_results_vars(_simresults)
+
+        # Simulation results file was successfully read
+        return True, '', False, data
+
+
+@app.callback(
+    Output('csv-download', 'data'),
+    Input('export-button', 'n_clicks'),
+    State('export-config-store', 'data'),
+    prevent_initial_call=True,
+)
+def export_csv(n_clicks: Optional[int],
+               config: Optional[Dict[str, Dict[str, Union[bool, str]]]]):
+    """Saves the simulation results data to a CSV file and makes it
+    available to the user as a download"""
+    if config is None:
+        raise dash.exceptions.PreventUpdate
+
+    data = {
+        'base64': False,
+        'content': sim_results_to_csv(_simresults, config),
+        'filename': 'simulation_results_data.csv',
+    }
+    return data
