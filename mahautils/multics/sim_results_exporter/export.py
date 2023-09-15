@@ -21,11 +21,15 @@ def export_area():
                 'Customize Export',
                 style={'marginTop': '20px'},
             ),
-            dash.html.Div(id='export-options-section'),
+            dash.dcc.Loading(
+                dash.html.Div(id='export-options-section'),
+                fullscreen=False,
+                style={'position': 'absolute', 'top': '0px'},
+            ),
         ],
         hidden=True,
         id='export-section',
         style={
-            'marginTop': '30px',
+            'marginTop': '50px',
         },
     )
