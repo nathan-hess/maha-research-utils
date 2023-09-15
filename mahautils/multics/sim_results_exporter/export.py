@@ -62,7 +62,8 @@ def export_config_table(sim_results: SimResults,
                 dash.html.Td(config[key]['description']),
                 dash.html.Td(dbc.Input(
                     value=config[key]['units'],
-                    id={'component': 'config-export', 'key': key},
+                    id={'component': 'config-units', 'key': key},
+                    debounce=True,
                 )),
             ])
         )
@@ -83,6 +84,6 @@ def update_select_boxes(config: Optional[Dict[str, Dict[str, Union[bool, str]]]]
     """Sets all 'include in export' boxes to a user-specified setting"""
     if config is None:
         raise dash.exceptions.PreventUpdate
-    
+
     for key in config:
         config[key]['export'] = setting

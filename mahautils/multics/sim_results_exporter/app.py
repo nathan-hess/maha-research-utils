@@ -108,14 +108,18 @@ _simresults = SimResults()
     Input('select-button', 'n_clicks'),
     Input('deselect-button', 'n_clicks'),
     Input({'component': 'config-export', 'key': dash.ALL}, 'value'),
+    Input({'component': 'config-units', 'key': dash.ALL}, 'value'),
     State({'component': 'config-export', 'key': dash.ALL}, 'id'),
+    State({'component': 'config-units', 'key': dash.ALL}, 'id'),
     State('export-config-store', 'data'),
     prevent_initial_call=True,
 )
-def load_file(contents: Optional[str],
-              select_nclicks: Optional[int], deselect_nclicks: Optional[int],
-              export_vals: List[bool], export_ids: List[Dict[str, str]],
-              config: Optional[Dict[str, Dict[str, Union[bool, str]]]]):
+def export_manager(
+        contents: Optional[str],
+        select_nclicks: Optional[int], deselect_nclicks: Optional[int],
+        export_vals: List[bool], units_vals: List[str],
+        export_ids: List[Dict[str, str]], units_ids: List[Dict[str, str]],
+        config: Optional[Dict[str, Dict[str, Union[bool, str]]]]):
     """Uploads a simulation results file
     """
     # If file has not yet been uploaded, only show upload section
@@ -150,10 +154,16 @@ def load_file(contents: Optional[str],
         isinstance(dash.ctx.triggered_id, dict)
         and dash.ctx.triggered_id['component'] == 'config-export'
     ):
-        key = dash.ctx.triggered_id['key']
-        for element, val in zip(export_ids, export_vals):
-            if element['key'] == key:
-                config[key]['export'] = val
+        for element, export in zip(export_ids, export_vals):
+            config[element['key']]['export'] = export
+
+    # If user changed units, update store
+    if (
+        isinstance(dash.ctx.triggered_id, dict)
+        and dash.ctx.triggered_id['component'] == 'config-units'
+    ):
+        for element, units in zip(units_ids, units_vals):
+            config[element['key']]['units'] = units
 
     return True, '', False, config, export_config_table(_simresults, config)
 
@@ -177,3 +187,30 @@ def export_csv(n_clicks: Optional[int],
         'filename': 'simulation_results_data.csv',
     }
     return data
+
+
+@app.callback(
+    Output({'component': 'config-units', 'key': dash.MATCH}, 'invalid'),
+    Input({'component': 'config-units', 'key': dash.MATCH}, 'value'),
+    State({'component': 'config-units', 'key': dash.MATCH}, 'id'),
+)
+def validate_units(units: str, trigger_id: dict):
+    """If the user provided an incompatible or invalid unit, mark the unit
+    as invalid"""
+    key = trigger_id['key']
+
+    try:
+        return not _simresults.unit_converter.is_convertible(
+            _simresults.get_units(key), units)
+    except Exception:
+        return True
+
+
+@app.callback(
+    Output('export-button', 'disabled'),
+    Input({'component': 'config-units', 'key': dash.ALL}, 'invalid'),
+    prevent_initial_call=True,
+)
+def validate_export(invalid_units: List[bool]):
+    """Disables the export button if any units are invalid"""
+    return any(invalid_units)
