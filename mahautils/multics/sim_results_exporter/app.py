@@ -18,7 +18,7 @@ import dash                              # type: ignore
 from dash import Input, Output, State    # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 
-from mahautils.multics import SimResults
+from mahautils.multics.simresults import SimResults
 
 from .constants import GUI_SHORT_NAME, PROJECT_NAME, VERSION
 from .export import export_area, export_config_table, update_select_boxes

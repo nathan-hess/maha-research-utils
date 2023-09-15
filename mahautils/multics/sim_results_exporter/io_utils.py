@@ -5,7 +5,7 @@ from typing import Dict, List, Union
 
 import numpy as np
 
-from mahautils.multics import SimResults
+from mahautils.multics.simresults import SimResults
 
 
 def decode_base64(base64_str: str) -> str:

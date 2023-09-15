@@ -139,12 +139,13 @@ class Polygon(ClosedShape2D):
             # from border
             return any([
                 self._matplotlib_path.contains_point(
-                    point=list(point), radius=tolerance),
+                    point=list(point), radius=tolerance),  # type: ignore
                 self._matplotlib_path.contains_point(
-                    point=list(point), radius=-tolerance),
+                    point=list(point), radius=-tolerance),  # type: ignore
             ])
 
-        return self._matplotlib_path.contains_point(point=list(point), radius=0)
+        return self._matplotlib_path.contains_point(
+            point=list(point), radius=0)  # type: ignore
 
     def points(self, repeat_end: bool = False) -> Tuple[np.ndarray, ...]:
         return self._convert_xy_coordinates_to_points(repeat_end=repeat_end)

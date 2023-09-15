@@ -6,7 +6,7 @@ from typing import Dict, Optional, Union
 import dash                              # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 
-from mahautils.multics import SimResults
+from mahautils.multics.simresults import SimResults
 from .upload import parse_sim_results_vars
 
 

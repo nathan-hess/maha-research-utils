@@ -5,7 +5,7 @@ from typing import Dict, Union
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import dash  # type: ignore
 
-from mahautils.multics import SimResults
+from mahautils.multics.simresults import SimResults
 from mahautils.multics.exceptions import SimResultsDataNotFoundError
 
 
