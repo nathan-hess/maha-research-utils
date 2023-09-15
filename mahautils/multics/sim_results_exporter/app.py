@@ -21,7 +21,7 @@ import dash_bootstrap_components as dbc  # type: ignore
 from mahautils.multics import SimResults
 
 from .constants import GUI_SHORT_NAME, PROJECT_NAME, VERSION
-from .export import export_area
+from .export import export_area, export_config_table
 from .header import app_header
 from .io_utils import load_simresults, sim_results_to_csv
 from .store import export_config_store
@@ -103,6 +103,7 @@ _simresults = SimResults()
     Output('upload-error-message', 'children'),
     Output('export-section', 'hidden'),
     Output('export-config-store', 'data'),
+    Output('export-options-section', 'children'),
     Input('upload-data', 'contents'),
     State('export-config-store', 'data'),
     prevent_initial_call=True,
@@ -113,7 +114,7 @@ def load_file(contents: Optional[str],
     """
     # If file has not yet been uploaded, only show upload section
     if contents is None:
-        return True, '', True, None
+        return True, '', True, None, None
 
     # If user just uploaded a simulation results file, parse it and initialize
     # store with all simulation results variables
@@ -124,14 +125,13 @@ def load_file(contents: Optional[str],
             return (
                 False,
                 f'Error: Unable to read simulation results file ({exception})',
-                True,
-                None,
-            )
+                True, None, None)
 
-        data = parse_sim_results_vars(_simresults)
+        new_config = parse_sim_results_vars(_simresults)
 
-        # Simulation results file was successfully read
-        return True, '', False, data
+    return (
+        True, '', False, new_config,
+        export_config_table(_simresults, new_config))
 
 
 @app.callback(
