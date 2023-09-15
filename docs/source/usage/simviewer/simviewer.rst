@@ -81,14 +81,14 @@ applicable), and run:
 
 .. code-block:: shell
 
-    $ SimViewer
+    SimViewer
 
 Note that there are several optional command-line arguments.  To view these
 options, run:
 
 .. code-block:: shell
 
-    $ SimViewer --help
+    SimViewer --help
 
 One important option to notice is ``--port``.  SimViewer runs as a web app, and
 this argument sets the port on which the app is served.  For instance, to
@@ -96,7 +96,7 @@ launch a SimViewer instance on port 9876, run:
 
 .. code-block:: shell
 
-    $ SimViewer --port 9876
+    SimViewer --port 9876
 
 .. important::
 

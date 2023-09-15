@@ -464,6 +464,25 @@ class Test_SimResults_GetSetAttributes(Test_SimResults):
     def setUp(self) -> None:
         super().setUp()
 
+    def test_clear(self):
+        # Verifies that simulation results data can be cleared
+        self.assertIsNotNone(self.sim_results_01.title)
+        self.assertIsNotNone(self.sim_results_01._maha_multics_commit)
+        self.assertIsNotNone(self.sim_results_01._maha_multics_version)
+        self.assertIsNotNone(self.sim_results_01._sim_version)
+        self.assertGreater(len(self.sim_results_01._data), 0)
+        self.assertGreater(self.sim_results_01.num_time_steps, 0)
+
+        self.sim_results_01.clear()
+
+        self.assertIsNone(self.sim_results_01.title)
+        self.assertIsNone(self.sim_results_01._maha_multics_commit)
+        self.assertIsNone(self.sim_results_01._maha_multics_version)
+        self.assertIsNone(self.sim_results_01._sim_version)
+        self.assertEqual(len(self.sim_results_01._data), 0)
+        self.assertEqual(self.sim_results_01.num_time_steps, 0)
+        self.assertTrue(self.sim_results_01.trailing_newline)
+
     def test_clear_data(self):
         # Verifies that data can be cleared from desired variable(s)
         cleared_vars = self.sim_results_01.clear_data()
