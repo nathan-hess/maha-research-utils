@@ -14,6 +14,7 @@ Where ``[COMMAND]`` is one of the following:
 import sys
 
 from .multics.sim_results_viewer.app import main as run_sim_results_viewer
+from .multics.sim_results_exporter.app import main as run_sim_results_exporter
 
 
 if __name__ == '__main__':
@@ -24,5 +25,7 @@ if __name__ == '__main__':
     command = sys.argv[1]
     if command.lower() == 'simviewer':
         run_sim_results_viewer(sys.argv[2:])
+    elif command.lower() == 'simexporter':
+        run_sim_results_exporter(sys.argv[2:])
     else:
         print(f'MahaUtils: error: Invalid command "{command}"')
