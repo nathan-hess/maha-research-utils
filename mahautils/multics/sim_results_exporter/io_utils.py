@@ -18,6 +18,7 @@ def decode_base64(base64_str: str) -> str:
 def load_simresults(dash_base64_contents: str, sim_results: SimResults) -> None:
     """Loads a simulation results file uploaded by Dash a :py:class:`dcc.Upload`
     object"""
+    sim_results.clear()
     sim_results.set_contents(decode_base64(dash_base64_contents).split('\n'),
                              trailing_newline=True)
     sim_results.parse()

@@ -459,6 +459,20 @@ class SimResults(MahaMulticsConfigFile):
 
         self.set_data(key, data, units)
 
+    def clear(self) -> None:
+        """Removes all data stored in this object"""
+        self._compile_options = {}
+        self._data = Dictionary(
+            custom_except_class=SimResultsKeyError,
+            custom_except_msg='Variable "%s" not found in simulation results file'
+        )
+        self._maha_multics_commit = None
+        self._maha_multics_version = None
+        self._num_time_steps = 0
+        self._sim_version = None
+        self._title = None
+        self.trailing_newline = True
+
     def clear_data(self, regex_pattern: str = '.+') -> List[str]:
         """Removes simulation results data for any variable(s) with names
         matching a given regex pattern
