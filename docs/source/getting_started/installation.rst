@@ -14,7 +14,7 @@ is installed.  For example, to install this package on Ubuntu, run:
 
 .. code-block:: shell
 
-    $ sudo apt install libgl1
+    sudo apt install libgl1
 
 
 pip
@@ -33,14 +33,14 @@ install the latest package release is through pip:
 
         .. code-block:: shell
 
-            $ pip install mahautils
+            pip install mahautils
 
     .. tab-item:: Windows
         :sync: windows
 
         .. code-block:: powershell
 
-            C:\>pip install mahautils
+            pip install mahautils
 
 As with any Python project, it may be useful to consider setting up a
 `virtual environment <https://docs.python.org/3/library/venv.html>`__
@@ -60,14 +60,14 @@ you can install the package directly from the project's GitHub page using:
 
         .. code-block:: shell
 
-            $ pip install git+https://github.com/nathan-hess/maha-research-utils.git@main
+            pip install git+https://github.com/nathan-hess/maha-research-utils.git@main
 
     .. tab-item:: Windows
         :sync: windows
 
         .. code-block:: powershell
 
-            C:\>pip install git+https://github.com/nathan-hess/maha-research-utils.git@main
+            pip install git+https://github.com/nathan-hess/maha-research-utils.git@main
 
 
 Source Code
@@ -92,17 +92,14 @@ First, clone the source repository to a location of your choice:
 
         .. code-block:: shell
 
-            $ git clone https://github.com/nathan-hess/maha-research-utils.git
+            git clone https://github.com/nathan-hess/maha-research-utils.git
 
     .. tab-item:: Windows
         :sync: windows
 
         .. code-block:: powershell
 
-            C:\>git clone https://github.com/nathan-hess/maha-research-utils.git
-
-        Note that it is not recommended that you download the source code to
-        your ``C:\`` directory; this is merely shown as a general example.
+            git clone https://github.com/nathan-hess/maha-research-utils.git
 
 Then, add the root directory of the repository to your ``PYTHONPATH`` environment
 variable:
@@ -114,14 +111,14 @@ variable:
 
         .. code-block:: shell
 
-            $ export PYTHONPATH="$PYTHONPATH:$(pwd)/maha-research-utils"
+            export PYTHONPATH="$PYTHONPATH:$(pwd)/maha-research-utils"
 
     .. tab-item:: Windows
         :sync: windows
 
         .. code-block:: powershell
 
-            C:\>set PYTHONPATH=%PYTHONPATH%;%CD%\maha-research-utils
+            set PYTHONPATH=%PYTHONPATH%;%CD%\maha-research-utils
 
 Finally, make sure to install required dependencies through pip:
 
@@ -132,11 +129,11 @@ Finally, make sure to install required dependencies through pip:
 
         .. code-block:: shell
 
-            $ pip install -r maha-research-utils/requirements.txt
+            pip install -r maha-research-utils/requirements.txt
 
     .. tab-item:: Windows
         :sync: windows
 
         .. code-block:: powershell
 
-            C:\>pip install -r maha-research-utils\requirements.txt
+            pip install -r maha-research-utils\requirements.txt
