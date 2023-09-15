@@ -4,9 +4,23 @@ from typing import Dict, Union
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import dash                              # type: ignore
-import dash_bootstrap_components as dbc  # type: ignore
 
 from mahautils.multics import SimResults
+from mahautils.multics.exceptions import SimResultsDataNotFoundError
+
+
+def is_exportable(key: str, sim_results: SimResults):
+    """Returns whether a simulation results variable has data associated with it
+    in the simulation results file"""
+    if sim_results.num_time_steps == 0:
+        return True
+
+    try:
+        data = sim_results.get_data(key, sim_results.get_units(key))
+    except SimResultsDataNotFoundError:
+        return False
+
+    return len(data) == sim_results.num_time_steps
 
 
 def parse_sim_results_vars(sim_results: SimResults
@@ -16,10 +30,12 @@ def parse_sim_results_vars(sim_results: SimResults
     data: Dict[str, Dict[str, Union[bool, str]]] = {}
 
     for key in sim_results.variables:
-        data[key] = {
-            'export': True,
-            'units': sim_results.get_units(key),
-        }
+        if is_exportable(key, sim_results):
+            data[key] = {
+                'export': True,
+                'description': str(sim_results.get_description(key)),
+                'units': sim_results.get_units(key),
+            }
 
     return data
 

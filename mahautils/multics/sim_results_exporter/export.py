@@ -1,13 +1,13 @@
 """Page elements for saving simulation results data to a CSV file."""
 
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
 import dash                              # type: ignore
 import dash_bootstrap_components as dbc  # type: ignore
 
 from mahautils.multics import SimResults
-from .io_utils import is_exportable
+from .upload import parse_sim_results_vars
 
 
 def export_area():
@@ -44,15 +44,14 @@ def export_area():
 
 
 def export_config_table(sim_results: SimResults,
-                        config: Dict[str, Dict[str, Union[bool, str]]]):
+                        config: Optional[Dict[str, Dict[str, Union[bool, str]]]]):
     """Generates a table to allow users to select which simulation results
     variables to export"""
+    if config is None:
+        config = parse_sim_results_vars(sim_results)
+
     rows = []
-
-    for key in sim_results.variables:
-        if not is_exportable(key, sim_results):
-            continue
-
+    for key in config:
         rows.append(
             dash.html.Tr([
                 dash.html.Td(dbc.Checkbox(
@@ -60,9 +59,9 @@ def export_config_table(sim_results: SimResults,
                     id={'component': 'config-export', 'key': key},
                 )),
                 dash.html.Td(key),
-                dash.html.Td(sim_results.get_description(key)),
+                dash.html.Td(config[key]['description']),
                 dash.html.Td(dbc.Input(
-                    value=sim_results.get_units(key),
+                    value=config[key]['units'],
                     id={'component': 'config-export', 'key': key},
                 )),
             ])
