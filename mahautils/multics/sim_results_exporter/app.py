@@ -21,7 +21,7 @@ import dash_bootstrap_components as dbc  # type: ignore
 from mahautils.multics import SimResults
 
 from .constants import GUI_SHORT_NAME, PROJECT_NAME, VERSION
-from .export import export_area, export_config_table
+from .export import export_area, export_config_table, update_select_boxes
 from .header import app_header
 from .io_utils import load_simresults, sim_results_to_csv
 from .store import export_config_store
@@ -105,10 +105,16 @@ _simresults = SimResults()
     Output('export-config-store', 'data'),
     Output('export-options-section', 'children'),
     Input('upload-data', 'contents'),
+    Input('select-button', 'n_clicks'),
+    Input('deselect-button', 'n_clicks'),
+    Input({'component': 'config-export', 'key': dash.ALL}, 'value'),
+    State({'component': 'config-export', 'key': dash.ALL}, 'id'),
     State('export-config-store', 'data'),
     prevent_initial_call=True,
 )
 def load_file(contents: Optional[str],
+              select_nclicks: Optional[int], deselect_nclicks: Optional[int],
+              export_vals: List[bool], export_ids: List[Dict[str, str]],
               config: Optional[Dict[str, Dict[str, Union[bool, str]]]]):
     """Uploads a simulation results file
     """
@@ -127,11 +133,29 @@ def load_file(contents: Optional[str],
                 f'Error: Unable to read simulation results file ({exception})',
                 True, None, None)
 
-        new_config = parse_sim_results_vars(_simresults)
+        config = parse_sim_results_vars(_simresults)
 
-    return (
-        True, '', False, new_config,
-        export_config_table(_simresults, new_config))
+    # If select all or deselect all buttons were pressed, update store
+    if dash.ctx.triggered_id == 'select-button':
+        update_select_boxes(config, True)
+
+    if dash.ctx.triggered_id == 'deselect-button':
+        update_select_boxes(config, False)
+
+    if config is None:
+        raise ValueError('Internal error')
+
+    # If user selected or deselected variable for export, update store
+    if (
+        isinstance(dash.ctx.triggered_id, dict)
+        and dash.ctx.triggered_id['component'] == 'config-export'
+    ):
+        key = dash.ctx.triggered_id['key']
+        for element, val in zip(export_ids, export_vals):
+            if element['key'] == key:
+                config[key]['export'] = val
+
+    return True, '', False, config, export_config_table(_simresults, config)
 
 
 @app.callback(
