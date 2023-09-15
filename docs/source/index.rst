@@ -34,6 +34,7 @@ general-purpose research tasks as well as simplify interaction with the
 
     usage/tutorials/index
     usage/simviewer/simviewer
+    usage/simexporter/simexporter
     usage/file_formats/index
     usage/reference/index
 
