@@ -10,7 +10,7 @@ from mahautils.multics.simresults import SimResults
 from .upload import parse_sim_results_vars
 
 
-def export_area():
+def export_area(lite_mode: bool):
     """Page elements to save simulation results data to a CSV file"""
     return dash.html.Div(
         [
@@ -22,22 +22,25 @@ def export_area():
             ),
             dbc.Button('Export CSV', id='export-button'),
             dash.dcc.Download(id='csv-download'),
-            dbc.Accordion(
-                dbc.AccordionItem(
-                    title='Customize Export',
-                    children=[
-                        dbc.Button('Select All', id='select-button',
-                                   style={'marginRight': '20px'}),
-                        dbc.Button('Deselect All', id='deselect-button'),
-                        dash.dcc.Loading(
-                            dash.html.Div(id='export-options-section'),
-                            fullscreen=False,
-                            style={'position': 'absolute', 'top': '0px'},
-                        ),
-                    ],
+            dash.html.Div(
+                dbc.Accordion(
+                    dbc.AccordionItem(
+                        title='Customize Export',
+                        children=[
+                            dbc.Button('Select All', id='select-button',
+                                       style={'marginRight': '20px'}),
+                            dbc.Button('Deselect All', id='deselect-button'),
+                            dash.dcc.Loading(
+                                dash.html.Div(id='export-options-section'),
+                                fullscreen=False,
+                                style={'position': 'absolute', 'top': '0px'},
+                            ),
+                        ],
+                    ),
+                    start_collapsed=True,
+                    style={'marginTop': '30px'}
                 ),
-                start_collapsed=True,
-                style={'marginTop': '30px'}
+                hidden=lite_mode,
             ),
         ],
         hidden=True,

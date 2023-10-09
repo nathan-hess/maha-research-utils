@@ -24,7 +24,7 @@ from .constants import GUI_SHORT_NAME, PROJECT_NAME, VERSION
 from .export import export_area, export_config_table, update_select_boxes
 from .header import app_header
 from .io_utils import load_simresults, sim_results_to_csv
-from .store import export_config_store
+from .store import app_settings_store, export_config_store
 from .upload import parse_sim_results_vars, upload_section
 
 
@@ -53,6 +53,11 @@ def main(argv: Optional[List[str]] = None) -> int:
                      'results to a CSV file. Project documentation '
                      'can be found at https://mahautils.readthedocs.io.'),
     )
+    parser.add_argument('--lite', action='store_true',
+                        help=('whether to run the app in lite mode.  This removes '
+                              'export customization functionality to improve '
+                              'performance and is recommended for large '
+                              'simulation results files'))
     parser.add_argument('--port', action='store', type=int, default=8050,
                         help='port on which to serve the app (default is 8050)')
     parser.add_argument('--debug', action='store_true',
@@ -66,14 +71,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     port = int(args.port)
+    lite_mode = bool(args.lite)
 
     # Create and load Dash app
     app.layout = dash.html.Div(
         [
+            app_settings_store(lite_mode),
             export_config_store(),
-            app_header(),
+            app_header(lite_mode),
             upload_section(),
-            export_area(),
+            export_area(lite_mode),
         ],
         style={
             'marginLeft': '30px',
@@ -112,6 +119,7 @@ _simresults = SimResults()
     State({'component': 'config-export', 'key': dash.ALL}, 'id'),
     State({'component': 'config-units', 'key': dash.ALL}, 'id'),
     State('export-config-store', 'data'),
+    State('app-settings-store', 'data'),
     prevent_initial_call=True,
 )
 def export_manager(
@@ -119,7 +127,8 @@ def export_manager(
         select_nclicks: Optional[int], deselect_nclicks: Optional[int],
         export_vals: List[bool], units_vals: List[str],
         export_ids: List[Dict[str, str]], units_ids: List[Dict[str, str]],
-        config: Optional[Dict[str, Dict[str, Union[bool, str]]]]):
+        config: Optional[Dict[str, Dict[str, Union[bool, str]]]],
+        app_settings: Optional[Dict[str, bool]]):
     """Uploads a simulation results file
     """
     # If file has not yet been uploaded, only show upload section
@@ -164,6 +173,15 @@ def export_manager(
     ):
         for element, units in zip(units_ids, units_vals):
             config[element['key']]['units'] = units
+
+    # If using lite mode, prevent rendering the full table of output variables,
+    # as this can dramatically hurt performance for large simulation results files
+    if app_settings is None:
+        raise ValueError('Internal error')
+
+    if app_settings['lite']:
+        return (True, '', False, config,
+                dash.html.P('Export configuration is not available in lite mode'))
 
     return True, '', False, config, export_config_table(_simresults, config)
 
