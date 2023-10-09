@@ -24,7 +24,7 @@ from .constants import GUI_SHORT_NAME, PROJECT_NAME, VERSION
 from .export import export_area, export_config_table, update_select_boxes
 from .header import app_header
 from .io_utils import load_simresults, sim_results_to_csv
-from .store import app_settings_store, export_config_store
+from .store import export_config_store
 from .upload import parse_sim_results_vars, upload_section
 
 
@@ -53,11 +53,6 @@ def main(argv: Optional[List[str]] = None) -> int:
                      'results to a CSV file. Project documentation '
                      'can be found at https://mahautils.readthedocs.io.'),
     )
-    parser.add_argument('--lite', action='store_true',
-                        help=('whether to run the app in lite mode.  This removes '
-                              'export customization functionality to improve '
-                              'performance and is recommended for large '
-                              'simulation results files'))
     parser.add_argument('--port', action='store', type=int, default=8050,
                         help='port on which to serve the app (default is 8050)')
     parser.add_argument('--debug', action='store_true',
@@ -71,16 +66,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     port = int(args.port)
-    lite_mode = bool(args.lite)
 
     # Create and load Dash app
     app.layout = dash.html.Div(
         [
-            app_settings_store(lite_mode),
             export_config_store(),
-            app_header(lite_mode),
+            app_header(),
             upload_section(),
-            export_area(lite_mode),
+            export_area(),
         ],
         style={
             'marginLeft': '30px',
@@ -111,29 +104,30 @@ _simresults = SimResults()
     Output('export-section', 'hidden'),
     Output('export-config-store', 'data'),
     Output('export-options-section', 'children'),
+    Output('custom-export-div', 'hidden'),
     Input('upload-data', 'contents'),
     Input('select-button', 'n_clicks'),
     Input('deselect-button', 'n_clicks'),
     Input({'component': 'config-export', 'key': dash.ALL}, 'value'),
     Input({'component': 'config-units', 'key': dash.ALL}, 'value'),
+    Input('custom-export-switch', 'value'),
     State({'component': 'config-export', 'key': dash.ALL}, 'id'),
     State({'component': 'config-units', 'key': dash.ALL}, 'id'),
     State('export-config-store', 'data'),
-    State('app-settings-store', 'data'),
     prevent_initial_call=True,
 )
 def export_manager(
         contents: Optional[str],
         select_nclicks: Optional[int], deselect_nclicks: Optional[int],
         export_vals: List[bool], units_vals: List[str],
+        enable_custom_export: Optional[bool],
         export_ids: List[Dict[str, str]], units_ids: List[Dict[str, str]],
-        config: Optional[Dict[str, Dict[str, Union[bool, str]]]],
-        app_settings: Optional[Dict[str, bool]]):
+        config: Optional[Dict[str, Dict[str, Union[bool, str]]]]):
     """Uploads a simulation results file
     """
     # If file has not yet been uploaded, only show upload section
     if contents is None:
-        return True, '', True, None, None
+        return True, '', True, None, None, True
 
     # If user just uploaded a simulation results file, parse it and initialize
     # store with all simulation results variables
@@ -144,7 +138,7 @@ def export_manager(
             return (
                 False,
                 f'Error: Unable to read simulation results file ({exception})',
-                True, None, None)
+                True, None, None, True)
 
         config = parse_sim_results_vars(_simresults)
 
@@ -176,14 +170,15 @@ def export_manager(
 
     # If using lite mode, prevent rendering the full table of output variables,
     # as this can dramatically hurt performance for large simulation results files
-    if app_settings is None:
-        raise ValueError('Internal error')
+    if enable_custom_export in (False, None):
+        # Restore default export configuration
+        config = parse_sim_results_vars(_simresults)
 
-    if app_settings['lite']:
         return (True, '', False, config,
-                dash.html.P('Export configuration is not available in lite mode'))
+                dash.html.P('Export configuration is not available in lite mode'),
+                True)
 
-    return True, '', False, config, export_config_table(_simresults, config)
+    return True, '', False, config, export_config_table(_simresults, config), False
 
 
 @app.callback(

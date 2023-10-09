@@ -7,17 +7,12 @@ import dash  # type: ignore
 from .constants import GUI_LONG_NAME, PROJECT_NAME
 
 
-def app_header(lite_mode: bool):
+def app_header():
     """Creates a formatted header for the application"""
-
-    title = f'{PROJECT_NAME} {GUI_LONG_NAME}'
-
-    if lite_mode:
-        title += ' Lite'
 
     return dash.html.Div([
         dash.html.H2(
-            title,
+            f'{PROJECT_NAME} {GUI_LONG_NAME}',
             style={
                 'fontWeight': 'bold',
                 'textAlign': 'center',
