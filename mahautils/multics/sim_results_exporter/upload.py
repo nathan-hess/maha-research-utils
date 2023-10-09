@@ -3,7 +3,8 @@
 from typing import Dict, Union
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
-import dash  # type: ignore
+import dash                              # type: ignore
+import dash_bootstrap_components as dbc  # type: ignore
 
 from mahautils.multics.simresults import SimResults
 from mahautils.multics.exceptions import SimResultsDataNotFoundError
@@ -69,5 +70,19 @@ def upload_section():
             hidden=True,
             id='upload-error',
             style={'marginTop': '10px'},
-        )
+        ),
+        dbc.Toast(
+            'Your data file was successfully uploaded.',
+            header='Success!',
+            id='upload-notification',
+            dismissable=True,
+            duration=5000,
+            icon='success',
+            is_open=False,
+            style={
+                'position': 'fixed',
+                'bottom': 10,
+                'right': 10,
+            },
+        ),
     ])

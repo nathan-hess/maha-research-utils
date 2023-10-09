@@ -105,6 +105,7 @@ _simresults = SimResults()
     Output('export-config-store', 'data'),
     Output('export-options-section', 'children'),
     Output('custom-export-div', 'hidden'),
+    Output('upload-notification', 'is_open'),
     Input('upload-data', 'contents'),
     Input('select-button', 'n_clicks'),
     Input('deselect-button', 'n_clicks'),
@@ -125,9 +126,11 @@ def export_manager(
         config: Optional[Dict[str, Dict[str, Union[bool, str]]]]):
     """Uploads a simulation results file
     """
+    show_upload_notification = False
+
     # If file has not yet been uploaded, only show upload section
     if contents is None:
-        return True, '', True, None, None, True
+        return True, '', True, None, None, True, show_upload_notification
 
     # If user just uploaded a simulation results file, parse it and initialize
     # store with all simulation results variables
@@ -138,9 +141,11 @@ def export_manager(
             return (
                 False,
                 f'Error: Unable to read simulation results file ({exception})',
-                True, None, None, True)
+                True, None, None, True, show_upload_notification
+            )
 
         config = parse_sim_results_vars(_simresults)
+        show_upload_notification = True
 
     # If select all or deselect all buttons were pressed, update store
     if dash.ctx.triggered_id == 'select-button':
@@ -176,9 +181,10 @@ def export_manager(
 
         return (True, '', False, config,
                 dash.html.P('Export configuration is not available in lite mode'),
-                True)
+                True, show_upload_notification)
 
-    return True, '', False, config, export_config_table(_simresults, config), False
+    return (True, '', False, config, export_config_table(_simresults, config),
+            False, show_upload_notification)
 
 
 @app.callback(
