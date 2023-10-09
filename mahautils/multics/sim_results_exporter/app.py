@@ -104,11 +104,13 @@ _simresults = SimResults()
     Output('export-section', 'hidden'),
     Output('export-config-store', 'data'),
     Output('export-options-section', 'children'),
+    Output('custom-export-div', 'hidden'),
     Input('upload-data', 'contents'),
     Input('select-button', 'n_clicks'),
     Input('deselect-button', 'n_clicks'),
     Input({'component': 'config-export', 'key': dash.ALL}, 'value'),
     Input({'component': 'config-units', 'key': dash.ALL}, 'value'),
+    Input('custom-export-switch', 'value'),
     State({'component': 'config-export', 'key': dash.ALL}, 'id'),
     State({'component': 'config-units', 'key': dash.ALL}, 'id'),
     State('export-config-store', 'data'),
@@ -118,13 +120,14 @@ def export_manager(
         contents: Optional[str],
         select_nclicks: Optional[int], deselect_nclicks: Optional[int],
         export_vals: List[bool], units_vals: List[str],
+        enable_custom_export: Optional[bool],
         export_ids: List[Dict[str, str]], units_ids: List[Dict[str, str]],
         config: Optional[Dict[str, Dict[str, Union[bool, str]]]]):
     """Uploads a simulation results file
     """
     # If file has not yet been uploaded, only show upload section
     if contents is None:
-        return True, '', True, None, None
+        return True, '', True, None, None, True
 
     # If user just uploaded a simulation results file, parse it and initialize
     # store with all simulation results variables
@@ -135,7 +138,7 @@ def export_manager(
             return (
                 False,
                 f'Error: Unable to read simulation results file ({exception})',
-                True, None, None)
+                True, None, None, True)
 
         config = parse_sim_results_vars(_simresults)
 
@@ -165,7 +168,17 @@ def export_manager(
         for element, units in zip(units_ids, units_vals):
             config[element['key']]['units'] = units
 
-    return True, '', False, config, export_config_table(_simresults, config)
+    # If using lite mode, prevent rendering the full table of output variables,
+    # as this can dramatically hurt performance for large simulation results files
+    if enable_custom_export in (False, None):
+        # Restore default export configuration
+        config = parse_sim_results_vars(_simresults)
+
+        return (True, '', False, config,
+                dash.html.P('Export configuration is not available in lite mode'),
+                True)
+
+    return True, '', False, config, export_config_table(_simresults, config), False
 
 
 @app.callback(
