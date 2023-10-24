@@ -307,6 +307,7 @@ def validate_upload_file_name(name: Optional[str]):
     Input({'component': 'plot-config', 'tab': 'y', 'field': 'ymin'}, 'value'),
     Input({'component': 'plot-config', 'tab': 'y', 'field': 'ymax'}, 'value'),
     Input({'component': 'plot-config', 'tab': 'y', 'field': 'tick_spacing'}, 'value'),    # noqa: E501  # pylint: disable=C0301
+    Input({'component': 'plot-config', 'tab': 'y', 'field': 'scale'}, 'value'),           # noqa: E501  # pylint: disable=C0301
     Input({'component': 'plot-config', 'tab': 'y', 'field': 'legend-title'}, 'value'),    # noqa: E501  # pylint: disable=C0301
     Input({'component': 'plot-config', 'tab': 'y', 'field': 'trace-file'}, 'value'),      # noqa: E501  # pylint: disable=C0301
     Input({'component': 'plot-config', 'tab': 'y', 'field': 'trace-variable'}, 'value'),  # noqa: E501  # pylint: disable=C0301
@@ -355,6 +356,7 @@ def update_plot_config(
     y_min,
     y_max,
     y_tick_spacing,
+    y_scaling: str,
     trace_name: Optional[str],
     trace_file: Optional[str],
     trace_variable: Optional[str],
@@ -541,6 +543,7 @@ def update_plot_config(
             y_axis['ymax'] = None if y_max in (None, '') else float(y_max)
             y_axis['tick_spacing'] = None if y_tick_spacing in (None, '') \
                                           else float(y_tick_spacing)  # noqa: E127
+            y_axis['axis_scaling'] = y_scaling
 
             if len(config_y['axes'][y_axis_idx]['traces']) > 0:
                 trace = config_y['axes'][y_axis_idx]['traces'][trace_idx]
