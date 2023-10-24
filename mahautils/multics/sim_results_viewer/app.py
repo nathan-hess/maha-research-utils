@@ -549,8 +549,14 @@ def update_plot_config(
                     if trace_variable in ('', None):
                         trace_units = None
                     else:
+                        # When new data series variable is selected, update units
+                        # to match those in the simulation results file and set
+                        # legend title (if it's blank) to variable name
                         trace_units = (_sim_results_files[trace_file]
                                        .get_units(trace_variable))
+
+                        if trace['name'] in ('', None):
+                            trace_name = trace_variable
 
                 trace['name'] = trace_name
                 trace['file'] = trace_file
