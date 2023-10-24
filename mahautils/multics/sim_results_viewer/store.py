@@ -65,6 +65,7 @@ default_y_axis_settings: Dict[str, Any] = {
     'ymin': None,
     'ymax': None,
     'tick_spacing': None,
+    'axis_scaling': 'linear',
     'traces': [],
 }
 

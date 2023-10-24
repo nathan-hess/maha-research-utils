@@ -5,6 +5,7 @@ the data graph.
 import itertools
 import math
 import random
+import sys
 from typing import Any, Dict, List
 
 # Mypy type checking disabled for packages that are not PEP 561-compliant
@@ -166,12 +167,20 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
 
                 figure.add_trace(go.Scatter(**plot_data))
 
-            tick_options = {}
+            tick_options: Dict[str, Any] = {
+                'tickformat': '~g',
+            }
 
             if y_axis_data['tick_spacing'] not in (None, ''):
                 tick_options['dtick'] = y_axis_data['tick_spacing']
 
             if set_ymin or set_ymax:
+                if y_axis_data['axis_scaling'] == 'log':
+                    # If using log scale for the axis, the "range" parameter
+                    # must specify the exponent of 10 for the axis limits
+                    ymin = math.log10(max(ymin, sys.float_info.min))
+                    ymax = math.log10(max(ymax, sys.float_info.min))
+
                 tick_options['range'] = [ymin, ymax]
 
             if i == 0:
@@ -179,6 +188,7 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
                     yaxis={
                         'title': str(y_axis_data['axis_title']),
                         'color': str(y_axis_data.get('color', 'black')),
+                        'type': y_axis_data['axis_scaling'],
                         **tick_options,
                     },
                 )
@@ -191,6 +201,7 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
                         'side': 'left',
                         'position': (width_per_axis * (num_active_axes - i - 1)),
                         'color': str(y_axis_data.get('color', 'black')),
+                        'type': y_axis_data['axis_scaling'],
                         **tick_options,
                     }
                 })

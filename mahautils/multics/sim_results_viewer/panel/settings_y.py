@@ -117,6 +117,17 @@ def render_y_settings(config_y: dict, sim_results_files: SIM_RESULTS_DICT_T,
                 tick_spacing_val=axis['tick_spacing'],
             ),
             dash.html.Br(),
+            dash.html.H5('Axis Scaling'),
+            dbc.RadioItems(
+                options=[
+                    {'label': ' Linear     ',           'value': 'linear'},
+                    {'label': ' Logarithmic (base 10)', 'value': 'log'},
+                ],
+                id={'component': 'plot-config', 'tab': 'y', 'field': 'scale'},
+                value=axis['axis_scaling'],
+                inline=True,
+            ),
+            dash.html.Br(),
             dash.html.Br(),
 
             # Axis data/traces selection
