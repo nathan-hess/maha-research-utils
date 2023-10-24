@@ -11,6 +11,7 @@ from packaging.version import Version
 
 from mahautils.multics.simresults import SimResults
 from .constants import GUI_SHORT_NAME, PROJECT_NAME, VERSION
+from .store import default_y_axis_settings
 
 
 def decode_base64(base64_str: str) -> str:
@@ -61,6 +62,13 @@ def load_plot_config(dash_base64_contents: str) -> Tuple[dict, dict, dict]:
         config_general = combined_data['general']
         config_x = combined_data['x']
         config_y = combined_data['y']
+
+        # Add defaults for missing settings for compatibility with older
+        # SimViewer versions
+        for axis in config_y['axes']:  # added in v1.2.0
+            if 'axis_scaling' not in axis:
+                axis['axis_scaling'] = default_y_axis_settings['axis_scaling']
+
     except KeyError as exception:
         exception.args = (
             'Invalid plot configuration JSON file. The file does not contain '
