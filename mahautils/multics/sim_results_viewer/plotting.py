@@ -167,7 +167,9 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
 
                 figure.add_trace(go.Scatter(**plot_data))
 
-            tick_options = {}
+            tick_options: Dict[str, Any] = {
+                'tickformat': '~g',
+            }
 
             if y_axis_data['tick_spacing'] not in (None, ''):
                 tick_options['dtick'] = y_axis_data['tick_spacing']
