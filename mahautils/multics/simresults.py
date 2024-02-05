@@ -680,7 +680,7 @@ class SimResults(MahaMulticsConfigFile):
             section_label      = 'printDict',
             begin_regex        = self.__printdict_begin_regex,
             end_regex          = self.__printdict_end_regex,
-            section_line_regex = r'^\s*([@?])\s*([\w\d\._]+)\s+\[([^\s]+)\]\s*$',
+            section_line_regex = r'^\s*([@?])\s*([^\s]+)\s+\[([^\s]+)\]\s*$',
             max_sections       = 1,
         )
 
