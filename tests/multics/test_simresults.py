@@ -298,11 +298,18 @@ class Test_SimResults_RemoveAsteriskVars(Test_SimResults):
                 '    @fourthVar_*(1,5) [m]',
                 '    @fifthVar_*(1,5) [m]',
                 '    ?sixthVar [m]',
-                '    ?seventhVar_**.*(1,2)data [m]',
+                '    ?seventhVar_*(1,2345) [m]',
                 '    ?eighthVar [m]',
+                '    ?ninthVar_**.*(1,2)data [m]',
+                '    ?tenth*Variable [m]',
+                '    ?eleventh*Variable_** [m]',
+                '    @Moment_*  [N*m]',
+                '    @Moment!@#$%^&*()-_+=[]{}|:;"\'<,>./?   [N*m]',
+                '    @ Moment-X_**   [N*m]',
                 '}',
                 ('$firstVar_1::$firstVar_2::$secondVar::$fourthVar_3::$fourthVar_60::'
-                 '$fourthVar_7::$seventhVar_12.3data::$seventhVar_3.142data::'),
+                 '$fourthVar_7::$seventhVar_123::$seventhVar_3142::$ninthVar_**.*(1,2)data::'
+                 '$eleventh*Variable_1::$eleventh*Variable_50::$Moment-X_900::$Moment-X_0::'),
             ],
             trailing_newline=True,
         )
@@ -320,12 +327,21 @@ class Test_SimResults_RemoveAsteriskVars(Test_SimResults):
                 '    @fourthVar_60 [m]',
                 '    @fourthVar_7 [m]',
                 '    ?sixthVar [m]',
-                '    ?seventhVar_12.3data [m]',
-                '    ?seventhVar_3.142data [m]',
+                '    ?seventhVar_123 [m]',
+                '    ?seventhVar_3142 [m]',
                 '    ?eighthVar [m]',
+                '    ?ninthVar_**.*(1,2)data [m]',
+                '    ?tenth*Variable [m]',
+                '    ?eleventh*Variable_1 [m]',
+                '    ?eleventh*Variable_50 [m]',
+                '    @Moment_*  [N*m]',
+                '    @Moment!@#$%^&*()-_+=[]{}|:;"\'<,>./?   [N*m]',
+                '    @ Moment-X_900   [N*m]',
+                '    @ Moment-X_0   [N*m]',
                 '}',
                 ('$firstVar_1::$firstVar_2::$secondVar::$fourthVar_3::$fourthVar_60::'
-                 '$fourthVar_7::$seventhVar_12.3data::$seventhVar_3.142data::'),
+                 '$fourthVar_7::$seventhVar_123::$seventhVar_3142::$ninthVar_**.*(1,2)data::'
+                 '$eleventh*Variable_1::$eleventh*Variable_50::$Moment-X_900::$Moment-X_0::'),
             ],
         )
 
@@ -361,17 +377,21 @@ class Test_SimResults_RemoveAsteriskVars(Test_SimResults):
         # Verifies that if variables with an asterisk are present in the
         # "printDict" section but no simulation results data are present, an
         # exception is thrown
-        self.sim_results_blank.set_contents(
-            [
-                'printDict{',
-                '    @myVar** [m]',
-                '}',
-            ],
-            trailing_newline=True,
-        )
+        test_vars = ['myVar_**', 'myVar_*(3,14)']
 
-        with self.assertRaises(SimResultsDataNotFoundError):
-            self.sim_results_blank.parse()
+        for var in test_vars:
+            with self.subTest(variable=var):
+                self.sim_results_blank.set_contents(
+                    [
+                        'printDict{',
+                        f'    @{var} [m]',
+                        '}',
+                    ],
+                    trailing_newline=True,
+                )
+
+                with self.assertRaises(SimResultsDataNotFoundError):
+                    self.sim_results_blank.parse()
 
 
 class Test_SimResults_ReadProperties(Test_SimResults):
