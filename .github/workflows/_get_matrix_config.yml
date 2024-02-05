@@ -22,7 +22,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Check Out Repository Files
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run Setup Action
         uses: ./.github/workflows/composite-actions/load-workflow-config

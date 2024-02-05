@@ -34,7 +34,7 @@ jobs:
       matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
     steps:
       - name: Check Out Repository Files
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run Setup Action
         uses: ./.github/workflows/composite-actions/setup
@@ -72,7 +72,7 @@ jobs:
       matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
     steps:
       - name: Check Out Repository Files
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run Setup Action
         uses: ./.github/workflows/composite-actions/setup
@@ -117,7 +117,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check Out Repository Files
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run Setup Action
         uses: ./.github/workflows/composite-actions/setup
@@ -157,7 +157,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check Out Repository Files
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run Setup Action
         uses: ./.github/workflows/composite-actions/setup
@@ -171,7 +171,7 @@ jobs:
         run: twine check --strict dist/*
 
       - name: Upload Package as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist-upload
           path: dist/

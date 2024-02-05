@@ -26,13 +26,13 @@ runs:
       uses: ./.github/workflows/composite-actions/load-workflow-config
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       if: ${{ inputs.python-version != 'release' }}
       with:
         python-version: ${{ inputs.python-version }}
 
     - name: Set up Python (Version Used for Packaging Releases)
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       if: ${{ inputs.python-version == 'release' }}
       with:
         python-version: ${{ env.PYTHON_RELEASE_VERSION }}
