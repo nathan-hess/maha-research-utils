@@ -273,6 +273,17 @@ class Test_SimResults_Parse(Test_SimResults):
         with self.assertRaises(InvalidSimResultsFormatError):
             SimResults(SAMPLE_FILES_DIR / 'simulation_results_08.txt')
 
+    def test_read_no_results(self):
+        # Verifies that simulation results files with no results but containing
+        # variable descriptions (on the line beginning with "$") can be parsed
+        sim_results = SimResults(SAMPLE_FILES_DIR / 'simulation_results_09.txt')
+
+        self.assertTupleEqual(
+            sim_results.variables,
+            ('t', 'xBody', 'yBody', 'zBody', 'vxBody',
+             'FxSpring', 'FySpring', 'FzSpring', 'MxBody')
+        )
+
 
 class Test_SimResults_RemoveAsteriskVars(Test_SimResults):
     def test_replace_variables(self):

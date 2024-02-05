@@ -775,6 +775,10 @@ class SimResults(MahaMulticsConfigFile):
                         dtype=np.float64,
                     ))
 
+                    if data_array.shape == (0,):
+                        # No simulation results data are stored in the file
+                        break
+
                     if data_array.ndim != 2:
                         # Due to the list comprehension above, this condition
                         # should never occur; however, it is checked anyway to
