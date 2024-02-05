@@ -1,0 +1,20 @@
+printDict{
+    @t          [s]
+
+    # Body Position
+    ?xBody      [m]
+    ?yBody      [mm]
+    ?zBody      [m]
+
+    # Speed
+    ?vxBody     [micron/s]
+
+    # Spring Force
+    ?FxSpring   [N]
+    ?FySpring   [N]
+    ?FzSpring   [N]
+
+    # Torque
+    ?MxBody     [N*m]
+}
+$t:s:Sim Time$xBody:m:Body casing frame position in x$yBody:mm:Body casing frame position in y$zBody:m:$FxSpring:N:$FySpring:N:Spring Force y$FzSpring:N:Spring Force z
