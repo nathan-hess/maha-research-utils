@@ -10,7 +10,7 @@
 
 MahaUtils provides a collection of Python tools to support research work at the [Maha Fluid Power Research Center](https://engineering.purdue.edu/Maha/) at [Purdue University](https://www.purdue.edu/).  The classes, functions, and other objects in this package are intended to assist with general-purpose research tasks as well as simplify interaction with the [Maha Multics](https://avaccadev.github.io/Multics/) software.
 
-> **Warning**
+> [!WARNING]
 > The MahaUtils source code and documentation refers to the "Maha Multics" software in a number of places.  **The "Maha Multics" software is NOT related to the [Multics operating system](https://en.wikipedia.org/wiki/Multics).**  It is an unrelated fluid simulation software designed for analyzing hydraulic pumps and motors.
 
 Most of the tools in this package were originally separate scripts, written by Nathan Hess during various research work.  They were combined into a single Python package as a way to reduce duplicate code, ensure these "utility scripts" were tested and robust, and make it easier to share the code.
