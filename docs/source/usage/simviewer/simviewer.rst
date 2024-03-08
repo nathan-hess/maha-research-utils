@@ -234,7 +234,7 @@ Exporting Plot Configuration Settings
 Once you have configured your plot with all desired options, navigate to the
 "General" tab and click the "Export" button:
 
-.. figure:: ./images/general_config.png
+.. figure:: ./images/export_button.png
 
 This will save all plot configuration settings to a JSON file.
 
