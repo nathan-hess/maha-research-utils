@@ -355,9 +355,13 @@ class PolygonFile(MahaMulticsConfigFile):
                                   f'{line_idx+1}): {exception.args[0]}',)
                 raise
 
-            time_vals = list(np.linspace(
-                initial_time, time_step*(num_time_steps - 1) + initial_time,
-                num_time_steps))
+            time_vals = [
+                float(x) for x in np.linspace(
+                    initial_time,
+                    time_step*(num_time_steps - 1) + initial_time,
+                    num_time_steps,
+                )
+            ]
 
         else:
             time_vals = [0]
