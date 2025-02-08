@@ -1116,11 +1116,11 @@ class SimResults(MahaMulticsConfigFile):
 
         1. ``'error'``: If simulation results data are present, throw an error
         2. ``'convert_data'``: If simulation results data are present, convert
-           it to the units given by the ``units`` argument (e.g., :math:`3\ m`
-           would become :math:`0.003\ mm`)
+           it to the units given by the ``units`` argument (e.g., :math:`3\\ m`
+           would become :math:`0.003\\ mm`)
         3. ``'keep_data_values'``: If simulation results data are present,
            keep the same values of the data but change the units (e.g.,
-           :math:`3\ m` would become :math:`3\ mm`)
+           :math:`3\\ m` would become :math:`3\\ mm`)
         """
         # Validate inputs
         valid_actions = ['error', 'convert_data', 'keep_data_values']

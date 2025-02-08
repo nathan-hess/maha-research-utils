@@ -926,6 +926,7 @@ class VTKFile(pyxx.files.BinaryFile):
             y_points.append(float(y))
             z_points.append(float(z))
 
+        df_data: Dict[str, Any]
         if unit_conversion_enabled:
             df_data = {
                 f'x[{self.coordinate_units}]': x_points,
@@ -997,6 +998,7 @@ class VTKFile(pyxx.files.BinaryFile):
                     f'points ({self.num_points})')
 
             # Modify data to match expected format for Pandas
+            pd_array: Union[List[float], List[np.float64], List[np.ndarray]]
             if array.ndim == 1:  # Array contains a scalar for each grid point
                 self._vtk_data_types[identifier] = VTKDataType.scalar
                 pd_array = list(array)

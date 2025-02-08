@@ -46,8 +46,8 @@ _selector_button_style = {
 }
 
 
-def numbered_item_selector(pagination_id, add_button_id,
-                           hide_show_button_id, delete_button_id,
+def numbered_item_selector(pagination_id, add_button_id, hide_show_button_id,
+                           duplicate_button_id, delete_button_id,
                            name: str, name_plural: str,
                            num_items: int, active_page: int,
                            is_active_page_shown: bool,
@@ -109,6 +109,14 @@ def numbered_item_selector(pagination_id, add_button_id,
                             ),
                         ),
                         dbc.Button(
+                            dash.html.I(className='fa-regular fa-clone'),
+                            id=duplicate_button_id,
+                            size='md',
+                            n_clicks=0,
+                            style=_selector_button_style,
+                            disabled=(not axis_exists),
+                        ),
+                        dbc.Button(
                             dash.html.I(className='bi bi-trash'),
                             id=delete_button_id,
                             color='danger',
@@ -128,6 +136,9 @@ def numbered_item_selector(pagination_id, add_button_id,
         dbc.Tooltip(f'{"Hide" if is_active_page_shown else "Show"} the '
                     f'currently selected {name}',
                     target=hide_show_button_id, trigger='hover'),
+        dbc.Tooltip(f'Duplicate the currently selected {name}',
+                    target=duplicate_button_id,
+                    trigger='hover'),
         dbc.Tooltip(f'Delete the currently selected {name}',
                     target=delete_button_id,
                     trigger='hover'),
