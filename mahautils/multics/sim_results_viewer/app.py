@@ -298,9 +298,11 @@ def validate_upload_file_name(name: Optional[str]):
     Input({'component': 'plot-config', 'tab': 'x', 'field': 'tick_spacing'}, 'value'),  # noqa: E501  # pylint: disable=C0301
     Input('add-y-axis-button', 'n_clicks'),
     Input('delete-y-axis-button', 'n_clicks'),
+    Input('duplicate-y-axis-button', 'n_clicks'),
     Input('hide-show-y-axis-button', 'n_clicks'),
     Input('add-y-data-button', 'n_clicks'),
     Input('delete-y-data-button', 'n_clicks'),
+    Input('duplicate-y-data-button', 'n_clicks'),
     Input('hide-show-y-data-button', 'n_clicks'),
     Input({'component': 'plot-config', 'tab': 'y', 'field': 'title'}, 'value'),
     Input({'component': 'plot-config', 'tab': 'y', 'field': 'axis-color'}, 'value'),  # noqa: E501  # pylint: disable=C0301
@@ -347,9 +349,11 @@ def update_plot_config(
     x_tick_spacing,
     add_y_axis_clicks: int,
     delete_y_axis_clicks: int,
+    duplicate_y_axis_clicks: int,
     hide_show_y_axis_clicks: int,
     add_trace_clicks: int,
     delete_trace_clicks: int,
+    duplicate_trace_clicks: int,
     hide_show_trace_clicks: int,
     y_title: Optional[str],
     y_color: Optional[str],
@@ -441,6 +445,14 @@ def update_plot_config(
         else:
             raise dash.exceptions.PreventUpdate
 
+    elif dash.ctx.triggered_id == 'duplicate-y-axis-button':
+        if duplicate_y_axis_clicks > 0:
+            config_y['axes'].append(copy.deepcopy(config_y['axes'][y_axis_idx]))
+        else:
+            # Callback is fired when components are dynamically generated, so
+            # if this is the case, skip running actions
+            raise dash.exceptions.PreventUpdate
+
     elif dash.ctx.triggered_id == 'hide-show-y-axis-button':
         if hide_show_y_axis_clicks > 0:
             config_y['axes'][y_axis_idx]['enabled'] \
@@ -461,6 +473,13 @@ def update_plot_config(
     elif dash.ctx.triggered_id == 'delete-y-data-button':
         if delete_trace_clicks > 0:
             del config_y['axes'][y_axis_idx]['traces'][trace_idx]
+        else:
+            raise dash.exceptions.PreventUpdate
+
+    elif dash.ctx.triggered_id == 'duplicate-y-data-button':
+        if duplicate_trace_clicks > 0:
+            config_y['axes'][y_axis_idx]['traces'].append(
+                config_y['axes'][y_axis_idx]['traces'][trace_idx])
         else:
             raise dash.exceptions.PreventUpdate
 
@@ -622,10 +641,13 @@ def render_ui_x(config_x: dict):
     Input('y-data-selector', 'active_page'),
     Input('add-y-axis-button', 'n_clicks'),
     Input('add-y-data-button', 'n_clicks'),
+    Input('duplicate-y-axis-button', 'n_clicks'),
+    Input('duplicate-y-data-button', 'n_clicks'),
 )
 def render_ui_y(config_y: dict, file_metadata: dict,
                 selected_axis_page: int, selected_trace_page: int,
-                add_y_axis_clicks: int, add_y_data_clicks: int):
+                add_y_axis_clicks: int, add_y_data_clicks: int,
+                duplicate_y_axis_clicks: int, duplicate_y_data_clicks: int):
     """Generates the UI elements that allow the user to configure y-axis
     plot settings"""
     if dash.ctx.triggered_id == 'y-axis-selector':
@@ -635,10 +657,10 @@ def render_ui_y(config_y: dict, file_metadata: dict,
 
     # If the user just created a new y-axis or data series, display it
     num_axes = len(config_y['axes'])
-    if dash.ctx.triggered_id == 'add-y-axis-button':
+    if dash.ctx.triggered_id in ('add-y-axis-button', 'duplicate-y-axis-button'):
         selected_axis_page = num_axes
 
-    if dash.ctx.triggered_id == 'add-y-data-button':
+    if dash.ctx.triggered_id in ('add-y-data-button', 'duplicate-y-data-button'):
         num_traces = len(config_y['axes'][selected_axis_page-1]['traces'])
         selected_trace_page = num_traces
 
