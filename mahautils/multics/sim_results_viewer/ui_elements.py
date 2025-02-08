@@ -82,7 +82,6 @@ def numbered_item_selector(pagination_id, add_button_id, hide_show_button_id,
                         hidden=axis_exists,
                     ),
                 ],
-                xs=4, sm=4, md=5, lg=6, xl=7, xxl=8,
             ),
             dbc.Col(
                 dash.html.Div(
@@ -129,7 +128,7 @@ def numbered_item_selector(pagination_id, add_button_id, hide_show_button_id,
                     style={'textAlign': 'right'}
                 ),
             ),
-        ], style={'marginBottom': '0px'}),
+        ], justify='between', style={'marginBottom': '0px'}),
         dbc.Tooltip(f'Select a {name} to edit', target=pagination_id,
                     trigger='hover'),
         dbc.Tooltip(f'Add a new {name}', target=add_button_id, trigger='hover'),
