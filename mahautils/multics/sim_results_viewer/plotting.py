@@ -79,6 +79,14 @@ def update_graph(config_general: dict, config_x: dict, config_y: dict,
     num_active_axes = sum(x['enabled'] for x in y_axes)
     width_per_axis = float(config_general['width_per_y_axis'])
 
+    # Validate inputs
+    if width_per_axis * (num_active_axes - 1) >= 1:
+        raise ValueError(
+            'Too many axes to display on the screen.  More axes are configured '
+            'and visible than can be displayed on the screen.  Please either '
+            'hide or delete unused y-axes or reduce the "Vertical Axis '
+            'Spacing" setting')
+
     # Settings for x-axis
     if (axis_title := config_x['axis_title']) not in (None, ''):
         if append_units:
